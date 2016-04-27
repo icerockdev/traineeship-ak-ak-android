@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">MegaNotes</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="create_note">Создать</string>
+    <string name="delete_note">Удалить</string>
+    <string name="title_note">Заголовок</string>
+    <string name="note">Заметка</string>
+    <string name="done_create">Готово</string>
+
+    <string name="drawer_item_all">Все</string>
+    <string name="drawer_item_work">Работа</string>
+    <string name="drawer_item_home">Дом</string>
+    <string name="drawer_item_create">Создать</string>
+    <string name="drawer_menu_info">Информация</string>
+    <string name="drawer_item_info">О программе</string>
+    <string name="drawer_menu_manager">Управление</string>
+    <string name="drawer_item_delete">Удалить</string>
+
+    <string name="uploadImg">Загрузить изображение</string>
+    <string name="gallery">Галерея</string>
+    <string name="camera">Камера</string>
+    <string name="add_image">Добавить изображение</string>
+    <string name="dialog_select_app_key">DialogSelectApp</string>
+    <string name="error_upload_img">Не удалось загрузить изображение</string>
+
+    <string name="item_del">Удалить</string>
+    <string name="item_edit">Редактировать</string>
+
+    <string name="buttonDel">Удалить</string>
+    <string name="buttonCancel">Отмена</string>
+    <string name="titleDeleteDialog">Внимание!</string>
+    <string name="messageDeleteDialog">Вы действительно хотите удалить заметку</string>
+    <string name="messageDeleteAllNotesDialog">Вы действительно хотите удалить все заметки?</string>
+
+    <string name="snackBarMessage">Не возможно добавить пустую заметку!</string>
+</resources>
