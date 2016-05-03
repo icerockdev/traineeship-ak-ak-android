@@ -1,6 +1,5 @@
 package ru.Artem.meganotes.app.fragments;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,7 +7,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.*;
-import android.util.Log;
 import android.view.*;
 import android.widget.TextView;
 import ru.Artem.meganotes.app.activity.CreateNoteActivity;
@@ -18,43 +16,28 @@ import ru.Artem.meganotes.app.dialogs.AddImageDialog;
 import ru.Artem.meganotes.app.dialogs.DeleteNoteDialog;
 import ru.Artem.meganotes.app.models.ModelNote;
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
-import ru.Artem.meganotes.app.pojo.HelpClass;
 import ru.Artem.meganotes.app.R;
+import ru.Artem.meganotes.app.utils.RecyclerViewUtils;
 
 import java.util.List;
 
-public class BaseNoteFragment extends Fragment {
+public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInteractionFragment {
 
-    protected List<ModelNote> mNotesList;
-    protected DataBaseHelper mDataBaseHelper;
-    private OnActionBarListener mActionBarListener;
+    private List<ModelNote> mNotesList;
     private MainAdapter mAdapter;
     private FloatingActionButton mCreateNoteFAB;
+    private ModelNote mDeleteNote;
 
-    public final static String EDIT_NOTE_KEY = "noteEdit";
-    public final static String CREATE_NOTE_KEY = "noteCreate";
-    protected final String LOG_TAG = "myLogs";
-    public static final int EDIT_NOTE_REQUEST = 1000;
-    public static final int CREATE_NOTE_REQUEST = 1001;
-
-    private HelpClass mHelpClass = new HelpClass();
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-        if(context instanceof OnActionBarListener) {
-            mActionBarListener = (OnActionBarListener) context;
-        }
-    }
+    private final String LOG_TAG = BaseNoteFragment.class.getName();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        mDataBaseHelper = DataBaseHelper.getInstance(getActivity());
-        mNotesList = mDataBaseHelper.getNotes(null);
+        DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(getActivity().getApplicationContext());
+
+        mNotesList = dataBaseHelper.getNotes();
     }
 
     @Override
@@ -62,10 +45,10 @@ public class BaseNoteFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        mAdapter = new MainAdapter(mNotesList, getActivity());
+        mAdapter = new MainAdapter(mNotesList);
 
         mCreateNoteFAB = (FloatingActionButton)  rootView.findViewById(R.id.createNote);
-        mHelpClass.initRecyclerView(new LinearLayoutManager(getActivity()),
+        RecyclerViewUtils.initRecyclerView(new LinearLayoutManager(getActivity()),
                 (RecyclerView) rootView.findViewById(R.id.recyclerView), mAdapter);
 
         return rootView;
@@ -78,7 +61,7 @@ public class BaseNoteFragment extends Fragment {
         mCreateNoteFAB.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(), CreateNoteActivity.class);
-                startActivityForResult(intent, CREATE_NOTE_REQUEST);
+                startActivityForResult(intent, CreateNoteActivity.CREATE_NOTE_REQUEST);
             }
         });
 
@@ -89,91 +72,67 @@ public class BaseNoteFragment extends Fragment {
 
                 mNotesList.get(position).setPositionInAdapter(position);
 
-                intent.putExtra(EDIT_NOTE_KEY, mNotesList.get(position));
-                startActivityForResult(intent, EDIT_NOTE_REQUEST);
+                intent.putExtra(DetailedActivity.EDIT_NOTE_KEY, mNotesList.get(position));
+                startActivityForResult(intent, DetailedActivity.EDIT_NOTE_REQUEST);
             }
         });
 
         mAdapter.SetOnItemLongClickListener(new MainAdapter.OnLongItemClickListener() {
             @Override
             public void onLongItemClick(View view, final int position) {
-                final TextView nameNote = (TextView) view.findViewById(R.id.nameNote);
+                TextView nameNote = (TextView) view.findViewById(R.id.nameNote);
+                DeleteNoteDialog deleteNoteDialog = DeleteNoteDialog.newInstance(nameNote.getText().toString());
 
-                final DeleteNoteDialog deleteNoteDialog = DeleteNoteDialog.newInstance(nameNote.getText().toString());
+                mDeleteNote = mNotesList.get(position);
+                mDeleteNote.setPositionInAdapter(position);
 
-                deleteNoteDialog.setOnClickListener(new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(getActivity());
-
-                        switch (which) {
-                            case DialogInterface.BUTTON_POSITIVE:
-                                dataBaseHelper.onDeleteSelectedNote(new String[]
-                                        {String.valueOf(mNotesList.get(position).getId())});
-
-                                mNotesList.remove(position);
-                                mAdapter.notifyItemRemoved(position);
-                                deleteNoteDialog.onDismiss(null);
-                                break;
-                            case DialogInterface.BUTTON_NEGATIVE:
-                                deleteNoteDialog.onDismiss(null);
-                                break;
-                        }
-                    }
-                });
+                deleteNoteDialog.setTargetFragment(BaseNoteFragment.this, 1);
                 deleteNoteDialog.show(getFragmentManager().beginTransaction(), AddImageDialog.DIALOG_KEY);
             }
         });
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.menu_main, menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        super.onOptionsItemSelected(item);
-
-        switch (item.getItemId()) {
-            case R.id.goToDeleteFrag:
-                mActionBarListener.onClickItemMenu();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (data != null) {
             switch (requestCode) {
-                case EDIT_NOTE_REQUEST:
-                    ModelNote editNote = data.getParcelableExtra(EDIT_NOTE_KEY);
+                case DetailedActivity.EDIT_NOTE_REQUEST:
+                    ModelNote editNote = data.getParcelableExtra(DetailedActivity.EDIT_NOTE_KEY);
 
                     mNotesList.set(editNote.getPositionInAdapter(), editNote);
                     mAdapter.notifyItemChanged(editNote.getPositionInAdapter(), editNote);
+
                     break;
-                case CREATE_NOTE_REQUEST:
-                    ModelNote createNote = data.getParcelableExtra(CREATE_NOTE_KEY);
+                case CreateNoteActivity.CREATE_NOTE_REQUEST:
+                    ModelNote createNote = data.getParcelableExtra(CreateNoteActivity.CREATE_NOTE_KEY);
 
                     mNotesList.add(createNote);
-                    mAdapter.notifyItemInserted(mAdapter.getItemCount() - 1); //вопрос про добавление в разных фрагментах
+                    mAdapter.notifyItemInserted(mAdapter.getItemCount() - 1);
+
                     break;
             }
         }
     }
 
-    public interface OnActionBarListener {
-        void onClickItemMenu();
-    }
-
     @Override
     public void onDestroyView() {
         mCreateNoteFAB = null;
-        mAdapter = null;
-        mNotesList = null;
+
         super.onDestroyView();
+    }
+
+    @Override
+    public void callBack(DialogInterface dialog, int which) {
+        DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(getActivity());
+
+        if (mDeleteNote != null) {
+            if (which == DialogInterface.BUTTON_POSITIVE) {
+                dataBaseHelper.onDeleteSelectedNote(new String[]
+                        {String.valueOf(mDeleteNote.getId())});
+
+                mNotesList.remove(mDeleteNote.getPositionInAdapter());
+                mAdapter.notifyItemRemoved(mDeleteNote.getPositionInAdapter());
+            }
+        }
     }
 }
