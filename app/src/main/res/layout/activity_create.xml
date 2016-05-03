@@ -1,7 +1,7 @@
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_height="match_parent"
         android:orientation="vertical"
         android:id="@+id/layoutCreate">
 
@@ -10,14 +10,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/colorPrimary"
-            android:minHeight="?attr/actionBarSize"
-            app:theme="@style/MaterialDrawerTheme">
-
-        <Spinner
-                android:layout_width="wrap_content"
-                android:layout_height="?attr/actionBarSize"
-                android:id="@+id/spinner"
-                app:theme="@style/MaterialDrawerTheme.Light"/>
+            android:minHeight="?attr/actionBarSize">
     </android.support.v7.widget.Toolbar>
 
     <ScrollView
