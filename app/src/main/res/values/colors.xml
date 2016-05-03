@@ -1,3 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="colorPrimary">#795548</color>
+    <color name="colorPrimaryDark">#5d4037</color>
+    <color name="colorAccent">#fdd835</color>
+
+    <color name="material_primary_icon">#8A000000</color>
+    <color name="colorBlack">#000000</color>
+
+    <color name="colorTitleText">#ffffff</color>
+    <color name="colorButtonHome">#ffffff</color>
 </resources>
