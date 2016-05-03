@@ -26,13 +26,12 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public static final String IMG_PATH_COLUMN = "img_path";
     public static final String CREATE_DATE_COLUMN = "create_date";
     public static final String LAST_UPDATE_DATE_COLUMN = "last_update_date";
-    public static final String CATEGORY_COLUMN = "category_column";
 
     private static final String CREATE_TABLE = "CREATE TABLE " + DATABASE_TABLE
             + " (" + ID_COLUMN + " INTEGER PRIMARY KEY AUTOINCREMENT, " + TITLE_NOTES_COLUMN
             + " TEXT NOT NULL, " + CONTENT_COLUMN + " TEXT, " + IMG_PATH_COLUMN
             + " TEXT, " + CREATE_DATE_COLUMN + " TEXT NOT NULL, " + LAST_UPDATE_DATE_COLUMN
-            + " TEXT, " + CATEGORY_COLUMN + " INTEGER NOT NULL);";
+            + " TEXT);";
 
     private static DataBaseHelper mInstance;
     private static SQLiteDatabase mSqLiteDatabase;
@@ -61,7 +60,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     }
 
     public void addData(String titleNote, String contentNote, String imgPath,
-                               String createDateNote, String lastUpdateDate, int category) {
+                               String createDateNote, String lastUpdateDate) {
         try {
             ContentValues values = new ContentValues();
 
@@ -71,7 +70,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             values.put(DataBaseHelper.IMG_PATH_COLUMN, imgPath);
             values.put(DataBaseHelper.CREATE_DATE_COLUMN, createDateNote);
             values.put(DataBaseHelper.LAST_UPDATE_DATE_COLUMN, lastUpdateDate);
-            values.put(DataBaseHelper.CATEGORY_COLUMN, category);
 
             mSqLiteDatabase.insert(DataBaseHelper.DATABASE_TABLE, null, values);
         } catch (Throwable t) {
@@ -89,9 +87,8 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
         String query = "select " + DataBaseHelper.TITLE_NOTES_COLUMN + ", "
                 + DataBaseHelper.CONTENT_COLUMN + ", " + DataBaseHelper.LAST_UPDATE_DATE_COLUMN + ", "
-                + DataBaseHelper.IMG_PATH_COLUMN + ", " + DataBaseHelper.ID_COLUMN + ", "
-                + DataBaseHelper.CATEGORY_COLUMN + " from " + DataBaseHelper.DATABASE_TABLE
-                + " where " + DataBaseHelper.ID_COLUMN + " = (select last_insert_rowid())";
+                + DataBaseHelper.IMG_PATH_COLUMN + ", " + DataBaseHelper.ID_COLUMN +  " from "
+                + DataBaseHelper.DATABASE_TABLE + " where " + DataBaseHelper.ID_COLUMN + " = (select last_insert_rowid())";
 
         Cursor cursor = mSqLiteDatabase.rawQuery(query, null);
 
@@ -108,7 +105,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return newNote;
     }
 
-    public List<ModelNote> getNotes(String[] where) {
+    public List<ModelNote> getNotes() {
         List<ModelNote> notesList = new ArrayList<ModelNote>();
 
         String query = "select " + DataBaseHelper.TITLE_NOTES_COLUMN + ", "
@@ -116,11 +113,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 + DataBaseHelper.IMG_PATH_COLUMN + ", " + DataBaseHelper.ID_COLUMN + " from "
                 + DataBaseHelper.DATABASE_TABLE;
 
-        if (where != null) {
-            query += " where " + CATEGORY_COLUMN + " = ?";
-        }
-
-        Cursor cursor = mSqLiteDatabase.rawQuery(query, where);
+        Cursor cursor = mSqLiteDatabase.rawQuery(query, null);
 
         while (cursor.moveToNext()) {
             notesList.add(new ModelNote(
