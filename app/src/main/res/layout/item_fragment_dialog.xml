@@ -15,7 +15,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@color/material_drawer_primary_text"
+            android:textColor="@color/colorBlack"
             android:id="@+id/appName"
             android:layout_marginTop="8dp"
             android:layout_marginLeft="56dp"
