@@ -1,7 +1,9 @@
 package ru.Artem.meganotes.app.dialogs;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,11 +23,19 @@ import java.util.List;
 public class AddImageDialog extends android.support.v4.app.DialogFragment {
 
     public static final String DIALOG_KEY = "dialogAddImage";
-    private AdapterView.OnItemClickListener mOnItemClickListener;
     private FragmentDialogAdapter mFragmentDialogAdapter;
+    private OnItemListClickListener mListener;
 
-    public void setOnItemClickListener(AdapterView.OnItemClickListener onItemClickListener) {
-        this.mOnItemClickListener = onItemClickListener;
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        try {
+            mListener = (OnItemListClickListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " должен реализовывать интерфейс OnItemListClickListener");
+        }
     }
 
     @Override
@@ -42,15 +52,24 @@ public class AddImageDialog extends android.support.v4.app.DialogFragment {
         getDialog().setTitle(getString(R.string.add_image));
 
         listView.setAdapter(mFragmentDialogAdapter);
-        listView.setOnItemClickListener(mOnItemClickListener);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                mListener.onClick(AddImageDialog.this, position);
+            }
+        });
         return dialogView;
     }
 
     private List<ModelTypeApp> initData() {
         List<ModelTypeApp> listApp;
-        listApp = new ArrayList<ModelTypeApp>();
+        listApp = new ArrayList<>();
         listApp.add(new ModelTypeApp(getString(R.string.camera), GoogleMaterial.Icon.gmd_camera));
         listApp.add(new ModelTypeApp(getString(R.string.gallery), GoogleMaterial.Icon.gmd_photo));
         return listApp;
+    }
+
+    public interface OnItemListClickListener {
+        void onClick(DialogFragment dialogFragment, int position);
     }
 }

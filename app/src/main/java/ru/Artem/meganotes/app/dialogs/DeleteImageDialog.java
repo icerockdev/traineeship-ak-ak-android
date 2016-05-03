@@ -1,5 +1,6 @@
 package ru.Artem.meganotes.app.dialogs;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -17,11 +18,19 @@ import ru.Artem.meganotes.app.R;
  */
 public class DeleteImageDialog extends DialogFragment {
 
-    private AdapterView.OnItemClickListener mOnItemClickListener;
+    private OnClickListenerDelete mOnItemClickListener;
     public static final String DIALOG_KEY = "dialogDeleteImage";
 
-    public void setOnItemClickListener(AdapterView.OnItemClickListener onItemClickListener) {
-        this.mOnItemClickListener = onItemClickListener;
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        try {
+            mOnItemClickListener = (OnClickListenerDelete) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " должен реализовывать интерфейс OnClickListenerDelete");
+        }
     }
 
     @Override
@@ -36,8 +45,18 @@ public class DeleteImageDialog extends DialogFragment {
                 new String[] {getString(R.string.item_del)});
 
         listView.setAdapter(adapter);
-        listView.setOnItemClickListener(mOnItemClickListener);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                mOnItemClickListener.onDeleteImage(DeleteImageDialog.this, position);
+            }
+        });
 
         return viewDialog;
+    }
+
+    public interface OnClickListenerDelete {
+        void onDeleteImage(DialogFragment dialog, int position);
     }
 }
