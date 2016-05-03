@@ -14,8 +14,7 @@ import ru.Artem.meganotes.app.R;
 public class DeleteNoteDialog extends DialogFragment {
 
     private static final String ARGS_KEY = "titleNote";
-    private static final String LOG_TAG = "myLogs";
-    private DialogInterface.OnClickListener mOnClickListener;
+    private static final String LOG_TAG = DeleteNoteDialog.class.getName();
 
     public static DeleteNoteDialog newInstance(String titleNote) {
         DeleteNoteDialog deleteFragment = new DeleteNoteDialog();
@@ -28,19 +27,26 @@ public class DeleteNoteDialog extends DialogFragment {
         return deleteFragment;
     }
 
-    public void setOnClickListener(DialogInterface.OnClickListener mOnClickListener){
-        this.mOnClickListener = mOnClickListener;
-    }
-
     @Override
     public Dialog onCreateDialog(final Bundle savedInstanceState) {
-        if (mOnClickListener == null)
-            mOnClickListener = (DialogInterface.OnClickListener) getTargetFragment();
         return new AlertDialog.Builder(getActivity())
                 .setTitle(R.string.titleDeleteDialog)
-                .setPositiveButton(R.string.buttonDel, mOnClickListener)
-                .setNegativeButton(R.string.buttonCancel, mOnClickListener)
+                .setPositiveButton(R.string.buttonDel, mOnClick)
+                .setNegativeButton(R.string.buttonCancel, mOnClick)
                 .setMessage(getString(R.string.messageDeleteDialog) + " " + getArguments().getString(ARGS_KEY) + "?")
                 .create();
+    }
+
+    private DialogInterface.OnClickListener mOnClick = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            OnInteractionFragment callBack = (OnInteractionFragment) getTargetFragment();
+            if (callBack != null)
+                callBack.callBack(dialog, which);
+        }
+    };
+
+    public interface OnInteractionFragment {
+        void callBack(DialogInterface dialog, int which);
     }
 }
