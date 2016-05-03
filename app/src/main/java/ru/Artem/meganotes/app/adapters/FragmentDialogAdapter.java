@@ -20,6 +20,7 @@ import java.util.List;
 public class FragmentDialogAdapter extends ArrayAdapter<ModelTypeApp> {
     private LayoutInflater mInflater;
     private Context mContext;
+
     public FragmentDialogAdapter(Context context, List<ModelTypeApp> objects) {
         super(context, R.layout.item_fragment_dialog, objects);
         this.mContext = context;
@@ -47,7 +48,7 @@ public class FragmentDialogAdapter extends ArrayAdapter<ModelTypeApp> {
             holder.nameApp.setText(modelTypeApp.getNameApp());
             Drawable drawable = new IconicsDrawable(mContext)
                     .icon(modelTypeApp.getIco())
-                    .color(mContext.getResources().getColor(R.color.material_drawer_primary_icon))
+                    .color(mContext.getResources().getColor(R.color.material_primary_icon))
                     .sizeDp(24);
             holder.icoApp.setImageDrawable(drawable);
         }
