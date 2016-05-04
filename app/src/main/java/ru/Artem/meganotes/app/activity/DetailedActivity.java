@@ -71,22 +71,22 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
             getSupportActionBar().setTitle(mSelectNote.getNameNote());
         }
 
-        final TextView textView = (TextView) findViewById(R.id.textView);
-        final EditText titleEdit = (EditText) findViewById(R.id.editTitle);
-        final EditText contentEdit = (EditText) findViewById(R.id.editContent);
+        final TextView dateView = (TextView) findViewById(R.id.textView);
+        final TextView titleView = (TextView) findViewById(R.id.editTitle);
+        final TextView contentView = (TextView) findViewById(R.id.editContent);
 
         final  DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(getApplicationContext());
 
-        textView.setText(mSelectNote.getLastUpdateNote());
-        contentEdit.setText(mSelectNote.getContent());
-        titleEdit.setText(mSelectNote.getNameNote());
+        dateView.setText(mSelectNote.getLastUpdateNote());
+        contentView.setText(mSelectNote.getContent());
+        titleView.setText(mSelectNote.getNameNote());
 
-        titleEdit.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+        titleView.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 String date = DateUtils.getDate();
 
-                imm.hideSoftInputFromWindow(titleEdit.getWindowToken(), 0);
+                imm.hideSoftInputFromWindow(titleView.getWindowToken(), 0);
 
                 mSelectNote.setNameNote(v.getText().toString());
                 mSelectNote.setLastUpdateNote(date);
@@ -96,12 +96,12 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
             }
         });
 
-        contentEdit.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+        contentView.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 String date = DateUtils.getDate();
 
-                imm.hideSoftInputFromWindow(titleEdit.getWindowToken(), 0);
+                imm.hideSoftInputFromWindow(titleView.getWindowToken(), 0);
 
                 mSelectNote.setLastUpdateNote(date);
                 mSelectNote.setContent(v.getText().toString());

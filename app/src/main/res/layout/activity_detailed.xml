@@ -21,14 +21,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
-            <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/imageNote"
-                    android:layout_centerHorizontal="true"
-                    android:adjustViewBounds="true"/>
-
-            <EditText
+            <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/editTitle"
@@ -38,7 +31,7 @@
                     android:layout_marginLeft="16dp"
                     android:hint="@string/title_note"/>
 
-            <EditText
+            <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/editContent"
@@ -55,6 +48,13 @@
                     android:layout_alignParentRight="true"
                     android:layout_below="@+id/editContent"
                     android:padding="16dp"/>
+
+            <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/imageNote"
+                    android:layout_centerHorizontal="true"
+                    android:adjustViewBounds="true"/>
 
         </RelativeLayout>
 

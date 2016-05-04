@@ -33,16 +33,16 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             + " TEXT, " + CREATE_DATE_COLUMN + " TEXT NOT NULL, " + LAST_UPDATE_DATE_COLUMN
             + " TEXT);";
 
-    private static DataBaseHelper mInstance;
+    private static DataBaseHelper sInstance;
     private static SQLiteDatabase mSqLiteDatabase;
-    private final String LOG_TAG = "myLogs";
+    private final String LOG_TAG = DataBaseHelper.class.getName();
 
     public static synchronized DataBaseHelper getInstance(Context context) {
-        if (mInstance == null) {
-            mInstance = new DataBaseHelper(context);
-            mSqLiteDatabase = mInstance.getWritableDatabase();
+        if (sInstance == null) {
+            sInstance = new DataBaseHelper(context);
+            mSqLiteDatabase = sInstance.getWritableDatabase();
         }
-        return mInstance;
+        return sInstance;
     }
 
     private DataBaseHelper(Context context) {
