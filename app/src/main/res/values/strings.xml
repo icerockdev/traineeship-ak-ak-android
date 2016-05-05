@@ -33,4 +33,6 @@
     <string name="messageDeleteAllNotesDialog">Вы действительно хотите удалить все заметки?</string>
 
     <string name="snackBarMessage">Не возможно добавить пустую заметку!</string>
+    <string name="imageView_descriptionItem">Your Image</string>
+    <string name="imageButton_descriptionItem">Delete or info button</string>
 </resources>
