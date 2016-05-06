@@ -19,6 +19,7 @@ import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
 import ru.Artem.meganotes.app.dialogs.AddImageDialog;
@@ -26,6 +27,7 @@ import ru.Artem.meganotes.app.dialogs.DeleteImageDialog;
 import ru.Artem.meganotes.app.R;
 import ru.Artem.meganotes.app.models.ModelNote;
 import ru.Artem.meganotes.app.utils.DateUtils;
+import ru.Artem.meganotes.app.utils.ImageViewUtils;
 import ru.Artem.meganotes.app.utils.ImgUtils;
 
 import java.io.FileNotFoundException;
@@ -134,6 +136,11 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                 return true;
             }
         });
+//        final ViewGroup viewGroup = (ViewGroup) ((ViewGroup) this
+//                .findViewById(android.R.id.content)).getChildAt(0);
+        LinearLayout la = (LinearLayout)findViewById(R.id.linearLayoutInDetailed);
+        ImageViewUtils testImage = new ImageViewUtils(this, la,"path","тралала");
+
     }
 
     final Handler mHandler = new Handler() {
