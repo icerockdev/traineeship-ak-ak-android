@@ -139,9 +139,21 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
 //        final ViewGroup viewGroup = (ViewGroup) ((ViewGroup) this
 //                .findViewById(android.R.id.content)).getChildAt(0);
         LinearLayout la = (LinearLayout)findViewById(R.id.linearLayoutInDetailed);
-        ImageViewUtils testImage = new ImageViewUtils(this, la,"path","тралала");
-
+        ImageViewUtils testIV = new ImageViewUtils(this);
+        testIV.setImageResource(R.drawable.android_games_mini);
+        //la.addView(testIV);
     }
+
+//    private View getCustomImageView(Context context, String imagePath, String text)
+//    {
+//        LayoutInflater inflater = getLayoutInflater();
+//        ImageViewUtils ivUt = (ImageViewUtils) inflater.inflate(R.layout.imageview_custom_style, null);
+//        ImageView imageView = (ImageView)ivUt.findViewById(R.id.imageInCustomIV);
+//        imageView.setImageURI(Uri.parse(imagePath));
+//        TextView textView = (TextView)ivUt.findViewById(R.id.textInCustomIV);
+//        textView.setText(text);
+//        //дописать inflater чтоб он сделал вьюшку
+//    }
 
     final Handler mHandler = new Handler() {
         @Override
