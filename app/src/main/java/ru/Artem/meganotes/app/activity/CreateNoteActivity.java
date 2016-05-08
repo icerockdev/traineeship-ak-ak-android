@@ -97,10 +97,11 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 if (mImageView.getDrawable() != null) {
                     filePath = mOutFilePath.toString();
                 }
+                else {
+                    filePath = "default";
+                }
 
-                dataBaseHelper.addData(mTitleNote.getText().toString(),
-                        mContentNote.getText().toString(), filePath,
-                        date, date);
+                dataBaseHelper.addData(mTitleNote.getText().toString(), mContentNote.getText().toString(), filePath, date);
 
                 ModelNote newNote = dataBaseHelper.getInsertedNote();
 
