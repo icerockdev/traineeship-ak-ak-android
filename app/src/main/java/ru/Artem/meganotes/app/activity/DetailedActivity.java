@@ -30,6 +30,7 @@ import ru.Artem.meganotes.app.utils.ImgUtils;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * Created by Артем on 13.04.2016.
@@ -91,7 +92,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                 mSelectNote.setNameNote(v.getText().toString());
                 mSelectNote.setLastUpdateNote(date);
 
-                dataBaseHelper.editData(DataBaseHelper.TITLE_NOTES_COLUMN, mWhere, v.getText().toString(), date);
+                dataBaseHelper.editData(DataBaseHelper.TITLE_NOTES_COLUMN, mWhere, v.getText().toString(), date,0);
                 return true;
             }
         });
@@ -106,14 +107,16 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                 mSelectNote.setLastUpdateNote(date);
                 mSelectNote.setContent(v.getText().toString());
 
-                dataBaseHelper.editData(DataBaseHelper.CONTENT_COLUMN, mWhere, v.getText().toString(), date);
+                dataBaseHelper.editData(DataBaseHelper.CONTENT_COLUMN, mWhere, v.getText().toString(), date,0);
                 return true;
             }
         });
 
         mImageView = (ImageView) findViewById(R.id.imageNote);
-        setImg(Uri.parse(mSelectNote.getPathImg()));
-
+        List<String> tempList = mSelectNote.getPathImg();
+        if (!tempList.isEmpty()) {
+            setImg(Uri.parse(tempList.get(0)));
+        }
         mImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -205,8 +208,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
 
             setImg(mOutFilePath);
             mSelectNote.setPathImg(mOutFilePath.toString());
-            dataBaseHelper.editData(DataBaseHelper.IMG_PATH_COLUMN, mWhere,
-                    mOutFilePath.toString(), DateUtils.getDate());
+            dataBaseHelper.editData(DataBaseHelper.IMAGE_SOURCE_COLUMN, mWhere, mOutFilePath.toString(), DateUtils.getDate(),1);
         }
     }
 
@@ -246,7 +248,8 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
 
             mImageView.setImageBitmap(null);
 
-            dataBaseHelper.editData(DataBaseHelper.IMG_PATH_COLUMN, mWhere, DELETE_IMG, date);
+            dataBaseHelper.deleteImage(mWhere[0]);
+            //dataBaseHelper.editData(DataBaseHelper.ID_IMAGE, mWhere, DELETE_IMG, date,1); // хрень, сейчас сделаю отдельную функцию
             mSelectNote.setPathImg(DELETE_IMG);
             mSelectNote.setLastUpdateNote(date);
 

@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.List;
+
 /**
  * Created by Артем on 07.04.2016.
  */
@@ -11,17 +13,17 @@ public class ModelNote implements Parcelable {
 
     private String mNameNote;
     private String mLastUpdateNote;
-    private String mPathImg;
+    private List<String> mPathImg;
     private String mContent;
     private int mId;
     private int mPositionInAdapter;
     private Bitmap mBitmap;
 
-    public ModelNote(String nameNote, String noteContent, String lastUpdateNote, String pathImg, int id) {
+    public ModelNote(String nameNote, String noteContent, String lastUpdateNote, List<String> paths, int id) {
         this.mNameNote = nameNote;
         this.mLastUpdateNote = lastUpdateNote;
         this.mContent = noteContent;
-        this.mPathImg = pathImg;
+        this.mPathImg = paths;
         this.mId = id;
     }
 
@@ -29,7 +31,7 @@ public class ModelNote implements Parcelable {
         this.mNameNote = parcel.readString();
         this.mContent = parcel.readString();
         this.mLastUpdateNote = parcel.readString();
-        this.mPathImg = parcel.readString();
+        this.mPathImg.add(parcel.readArrayList();// надо разобраться как устроен Parcel и сделать
         this.mPositionInAdapter = parcel.readInt();
         this.mId = parcel.readInt();
     }
@@ -66,12 +68,12 @@ public class ModelNote implements Parcelable {
         return mLastUpdateNote;
     }
 
-    public String getPathImg() {
+    public List<String> getPathImg() {
         return mPathImg;
     }
 
     public void setPathImg(String pathImg) {
-        this.mPathImg = pathImg;
+        this.mPathImg.add(pathImg);
     }
 
     public int getId() {
@@ -110,7 +112,8 @@ public class ModelNote implements Parcelable {
         dest.writeString(mNameNote);
         dest.writeString(mContent);
         dest.writeString(mLastUpdateNote);
-        dest.writeString(mPathImg);
+        dest.writeList(mPathImg);
+        //dest.writeString(mPathImg);
         dest.writeInt(mPositionInAdapter);
         dest.writeInt(mId);
     }
