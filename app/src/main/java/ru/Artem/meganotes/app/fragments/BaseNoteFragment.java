@@ -72,8 +72,8 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
 
                 mNotesList.get(position).setPositionInAdapter(position);
 
-                intent.putExtra(DetailedActivity.EDIT_NOTE_KEY, mNotesList.get(position));
-                startActivityForResult(intent, DetailedActivity.EDIT_NOTE_REQUEST);
+                intent.putExtra(DetailedActivity.OPEN_NOTE_KEY, mNotesList.get(position));
+                startActivityForResult(intent, DetailedActivity.OPEN_NOTE_REQUEST);
             }
         });
 
@@ -96,8 +96,8 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (data != null) {
             switch (requestCode) {
-                case DetailedActivity.EDIT_NOTE_REQUEST:
-                    ModelNote editNote = data.getParcelableExtra(DetailedActivity.EDIT_NOTE_KEY);
+                case DetailedActivity.OPEN_NOTE_REQUEST:
+                    ModelNote editNote = data.getParcelableExtra(DetailedActivity.OPEN_NOTE_KEY);
 
                     mNotesList.set(editNote.getPositionInAdapter(), editNote);
                     mAdapter.notifyItemChanged(editNote.getPositionInAdapter(), editNote);
