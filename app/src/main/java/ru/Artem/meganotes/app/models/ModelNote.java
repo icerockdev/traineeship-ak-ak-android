@@ -3,8 +3,12 @@ package ru.Artem.meganotes.app.models;
 import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
 
 /**
  * Created by Артем on 07.04.2016.
@@ -31,7 +35,8 @@ public class ModelNote implements Parcelable {
         this.mNameNote = parcel.readString();
         this.mContent = parcel.readString();
         this.mLastUpdateNote = parcel.readString();
-        this.mPathImg.add(parcel.readArrayList();// надо разобраться как устроен Parcel и сделать
+        this.mPathImg = new ArrayList<String>();
+        parcel.readList(this.mPathImg, ModelNote.class.getClassLoader());
         this.mPositionInAdapter = parcel.readInt();
         this.mId = parcel.readInt();
     }
@@ -57,6 +62,7 @@ public class ModelNote implements Parcelable {
     }
 
     public String getNameNote() {
+        Log.d("ModelNote","we in getNamgeNote, and have name: "+mNameNote);
         return mNameNote;
     }
 
@@ -113,7 +119,6 @@ public class ModelNote implements Parcelable {
         dest.writeString(mContent);
         dest.writeString(mLastUpdateNote);
         dest.writeList(mPathImg);
-        //dest.writeString(mPathImg);
         dest.writeInt(mPositionInAdapter);
         dest.writeInt(mId);
     }

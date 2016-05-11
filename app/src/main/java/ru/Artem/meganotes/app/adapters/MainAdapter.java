@@ -6,12 +6,14 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Message;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import ru.Artem.meganotes.app.activity.DetailedActivity;
+import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
 import ru.Artem.meganotes.app.models.ModelNote;
 import ru.Artem.meganotes.app.R;
 
@@ -99,7 +101,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.NoteViewHolder
 
     @Override
     public void onBindViewHolder(NoteViewHolder noteViewHolder, int i) {
-        noteViewHolder.nameNote.setText(mNotesList.get(i).getNameNote());
+        noteViewHolder.nameNote.setText(mNotesList.get(i).getNameNote()); // искать ошибку, наверное понять принцип работы list adapter
         noteViewHolder.lastUpdateNote.setText(mNotesList.get(i).getLastUpdateNote());
     }
 }
