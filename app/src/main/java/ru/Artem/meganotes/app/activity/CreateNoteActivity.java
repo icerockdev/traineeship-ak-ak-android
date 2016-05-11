@@ -31,7 +31,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private EditText mTitleNote;
     private EditText mContentNote;
     private ImageView mImageView;
-    private View mView;
+    private ModelNote mEditNote;
 
     private Uri mOutFilePath = null;
     private ComponentName mCallingActivity;
@@ -40,7 +40,9 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private final int CAMERA_REQUEST = 11;
     private final String LOG_TAG = CreateNoteActivity.class.getName();
     public final static String CREATE_NOTE_KEY = "noteCreate";
-    public static final int CREATE_NOTE_REQUEST = 1001;
+    public static final int CREATE_NOTE_REQUEST = 1002;
+    public final static String EDIT_NOTE_KEY = "noteEdit";
+    public static final int EDIT_NOTE_REQUEST = 1003;
 
 
     @Override
@@ -53,9 +55,9 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         mContentNote = (EditText) findViewById(R.id.editContentNote);
         mImageView = (ImageView) findViewById(R.id.imageView);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        mView = findViewById(R.id.layoutCreate);
 
         mCallingActivity = getCallingActivity();
+        mEditNote = getIntent().getParcelableExtra(EDIT_NOTE_KEY);
 
         setSupportActionBar(toolbar);
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorTitleText));
@@ -66,20 +68,41 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             if (mCallingActivity.getClassName().equals(MainActivity.class.getName())) {
                 getSupportActionBar().setTitle(R.string.new_note);
             } else {
-                getSupportActionBar().setTitle(R.string.edit_note);//поменять на заголовок заметки
+                getSupportActionBar().setTitle(mEditNote.getNameNote());
             }
+        }
+
+        if (mEditNote != null) {
+            mTitleNote.setText(mEditNote.getNameNote());
+            mContentNote.setText(mEditNote.getContent());
+
+            mContentNote.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (!hasFocus) {
+                        mEditNote.setContent(mContentNote.getText().toString());
+                    }
+                }
+            });
+
+            mTitleNote.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (!hasFocus) {
+                        mEditNote.setNameNote(mTitleNote.getText().toString());
+                    }
+                }
+            });
+
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
-        if (mCallingActivity.getClassName().equals(MainActivity.class.getName())){
-            getMenuInflater().inflate(R.menu.menu_create, menu);
-        }
-        else {
-            getMenuInflater().inflate(R.menu.menu_edit, menu);
-        }
+
+        getMenuInflater().inflate(R.menu.menu_create, menu);
+
         return true;
     }
 
@@ -100,6 +123,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
         } else if (id == R.id.close_with_out_save) {
             mContentNote.setText("");
+            mTitleNote.setText("");
 
             finish();
         }
@@ -118,13 +142,14 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 filePath = mOutFilePath.toString();
             }
 
+            Intent intent = new Intent();
+
             if (mCallingActivity.getClassName().equals(MainActivity.class.getName())) {
                 dataBaseHelper.addData(mTitleNote.getText().toString(),
                         mContentNote.getText().toString(), filePath,
                         date, date);
                 ModelNote newNote = dataBaseHelper.getInsertedNote();
 
-                Intent intent = new Intent();
                 intent.putExtra(CREATE_NOTE_KEY, newNote);
                 setResult(CREATE_NOTE_REQUEST, intent);
             } //иначе dataBaseHelper.edit(...);
@@ -155,10 +180,10 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
                     ActivityCompat.requestPermissions(CreateNoteActivity.this,
                             new String[]{Manifest.permission.CAMERA}, 0);
-
                 } else {
                     mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, LOG_TAG);
                 }
+
                 break;
             case 1:
                 if (ActivityCompat.checkSelfPermission(CreateNoteActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -168,6 +193,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 } else {
                     ImgUtils.galleryRequest(CreateNoteActivity.this, GALLERY_REQUEST);
                 }
+
                 break;
         }
 
