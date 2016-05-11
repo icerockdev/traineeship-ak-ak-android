@@ -2,7 +2,6 @@ package ru.Artem.meganotes.app.activity;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -15,9 +14,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.*;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
@@ -50,6 +48,7 @@ public class DetailedActivity extends AppCompatActivity implements AddImageDialo
     private final String LOG_TAG = DetailedActivity.class.getName();
     public final static String OPEN_NOTE_KEY = "noteOpen";
     public static final int OPEN_NOTE_REQUEST = 1001;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -152,6 +151,12 @@ public class DetailedActivity extends AppCompatActivity implements AddImageDialo
 
                 intent.putExtra(CreateNoteActivity.EDIT_NOTE_KEY, mSelectNote);
                 startActivityForResult(intent, CreateNoteActivity.EDIT_NOTE_REQUEST);
+                return true;
+            case R.id.delete_note:
+                mSelectNote.setDeletedNote(true);
+
+                finish();
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
