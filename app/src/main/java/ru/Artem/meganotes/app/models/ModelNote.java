@@ -16,6 +16,7 @@ public class ModelNote implements Parcelable {
     private int mId;
     private int mPositionInAdapter;
     private Bitmap mBitmap;
+    private boolean mDeletedNote;
 
     public ModelNote(String nameNote, String noteContent, String lastUpdateNote, String pathImg, int id) {
         this.mNameNote = nameNote;
@@ -32,6 +33,15 @@ public class ModelNote implements Parcelable {
         this.mPathImg = parcel.readString();
         this.mPositionInAdapter = parcel.readInt();
         this.mId = parcel.readInt();
+        this.mDeletedNote = parcel.readByte() != 0;
+    }
+
+    public boolean isDeletedNote() {
+        return mDeletedNote;
+    }
+
+    public void setDeletedNote(boolean mDeletedNote) {
+        this.mDeletedNote = mDeletedNote;
     }
 
     public void setLastUpdateNote(String mLastUpdateNote) {
@@ -113,5 +123,6 @@ public class ModelNote implements Parcelable {
         dest.writeString(mPathImg);
         dest.writeInt(mPositionInAdapter);
         dest.writeInt(mId);
+        dest.writeByte((byte) (mDeletedNote ? 1 : 0));
     }
 }
