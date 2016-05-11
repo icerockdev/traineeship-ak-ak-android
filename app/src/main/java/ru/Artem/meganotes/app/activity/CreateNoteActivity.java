@@ -11,6 +11,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -104,7 +105,9 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 dataBaseHelper.addData(mTitleNote.getText().toString(), mContentNote.getText().toString(), filePath, date);
 
                 ModelNote newNote = dataBaseHelper.getInsertedNote();
-
+                Log.d(LOG_TAG,"what we have in newNote?");
+                Log.d(LOG_TAG,"newNote name: "+newNote.getNameNote());
+                Log.d(LOG_TAG,"newNote name: "+newNote.getContent());
                 Intent intent = new Intent();
                 intent.putExtra(CREATE_NOTE_KEY, newNote);
                 setResult(CREATE_NOTE_REQUEST, intent);

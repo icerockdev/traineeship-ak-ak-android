@@ -85,14 +85,12 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             values.put(DataBaseHelper.LAST_UPDATE_DATE_COLUMN, lastUpdateDate);
 
             long insertedNoteID = sSqLiteDatabase.insert(DataBaseHelper.DATABASE_TABLE_NOTES, null, values);
-            Log.d(LOG_TAG,"we inserted in notes table:"+insertedNoteID);
 
             ContentValues imagepath = new ContentValues();
             imagepath.put(DataBaseHelper.IMAGE_SOURCE_COLUMN, imgPath);
-            imagepath.put(DataBaseHelper.ID_NOTE_COLUMN,insertedNoteID); // вызывает вопросы, но пока оставлю так
+            imagepath.put(DataBaseHelper.ID_NOTE_COLUMN, insertedNoteID);
 
             long insertedImageID = sSqLiteDatabase.insert(DataBaseHelper.DATABASE_TABLE_IMAGES, null, imagepath);
-            Log.d(LOG_TAG,"we inserted in imagePaths table: "+insertedImageID);
         } catch (Throwable t) {
             Log.e(LOG_TAG, "Ошибка при добавлении в базу");
         }
@@ -106,72 +104,52 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public ModelNote getInsertedNote() {
         ModelNote newNote = null;
 
-//        String query = "SELECT " + DataBaseHelper.ID_COLUMN +", " + DataBaseHelper.TITLE_NOTES_COLUMN + ", "
-//                + DataBaseHelper.CONTENT_COLUMN + ", " + DataBaseHelper.LAST_UPDATE_DATE_COLUMN + ", "
-//                + " FROM " + DataBaseHelper.DATABASE_TABLE_NOTES + " WHERE " + DataBaseHelper.ID_COLUMN + " = (select last_insert_rowid())";
         String query = "select " + DataBaseHelper.TITLE_NOTES_COLUMN + ", "
                 + DataBaseHelper.CONTENT_COLUMN + ", " + DataBaseHelper.LAST_UPDATE_DATE_COLUMN + ", "
                 + DataBaseHelper.ID_COLUMN +  " from "
                 + DataBaseHelper.DATABASE_TABLE_NOTES + " where " + DataBaseHelper.ID_COLUMN + " = (select last_insert_rowid())";
-
-
-        //Cursor cursor = sSqLiteDatabase.query(DATABASE_TABLE_NOTES, null, ID_COLUMN + " = ?", new String[]{"SELECT last_insert_rowid()"}, null, null, null);
+        //оставил именно rawQuery потому что не смог обычный db.query заставить работать с last_insert_rowid()
 
         Cursor cursor = sSqLiteDatabase.rawQuery(query, null);
-        Log.d(LOG_TAG,"we have in main cursor is:"+cursor.getCount()+" items");
         cursor.moveToFirst();
         int tempId = cursor.getInt(cursor.getColumnIndex(ID_COLUMN));
-
-//        String imageQuery = "select "+DataBaseHelper.ID_IMAGE+", "+DataBaseHelper.ID_NOTE_COLUMN+", "+DataBaseHelper.IMAGE_SOURCE_COLUMN+", "
-//                + "from "+DataBaseHelper.DATABASE_TABLE_IMAGES + " where " +DataBaseHelper.ID_NOTE_COLUMN+" = "+tempId; // last_insert_rowid() тут не работает, ибо реализован только для primary key
-
         Cursor imageCursor = sSqLiteDatabase.query(DATABASE_TABLE_IMAGES, null, ID_NOTE_COLUMN+"= ?", new String[]{String.valueOf(tempId)}, null, null, null);
-        Log.d(LOG_TAG,"we have in imageCursor is:"+imageCursor.getCount()+" items");
-
+        imageCursor.moveToFirst();
         List<String> tempList = new ArrayList<String>();
 
         if (imageCursor.moveToFirst()) {
-            Log.d(LOG_TAG,"we can moveToFirst!");
-            if (imageCursor.moveToNext()) {
+            do {
                 tempList.add(imageCursor.getString(imageCursor.getColumnIndex(DataBaseHelper.IMAGE_SOURCE_COLUMN)));
-            }
+            } while (imageCursor.moveToNext());
         }
-
-        while (cursor.moveToNext()) {
+        cursor.moveToFirst();
+        do {
             newNote = new ModelNote(
                     cursor.getString(cursor.getColumnIndex(DataBaseHelper.TITLE_NOTES_COLUMN)),
                     cursor.getString(cursor.getColumnIndex(DataBaseHelper.CONTENT_COLUMN)),
                     cursor.getString(cursor.getColumnIndex(DataBaseHelper.LAST_UPDATE_DATE_COLUMN)),
                     tempList,
                     cursor.getInt(cursor.getColumnIndex(DataBaseHelper.ID_COLUMN)));
-        }
-
+        } while (cursor.moveToNext());
         cursor.close();
         imageCursor.close();
         return newNote;
     }
 
     public List<ModelNote> getNotes() {
-        Log.d(LOG_TAG,"we in getNotes");
         List<ModelNote> notesList = new ArrayList<ModelNote>();
 
         Cursor cursor = sSqLiteDatabase.query(DATABASE_TABLE_NOTES, null, null, null, null, null, null);
         Cursor imageCursor = sSqLiteDatabase.query(DATABASE_TABLE_IMAGES, null, null, null, null, null, null);
 
-        Log.d(LOG_TAG,"we have in cursor "+cursor.getCount());
-        Log.d(LOG_TAG,"we have in imageCursor is"+imageCursor.getCount());
         List<String> tempList = new ArrayList<String>();
 
-        int i=0;
         if (imageCursor.moveToFirst()) {
-            Log.d(LOG_TAG,"we can moveToFirst");
             while (imageCursor.moveToNext()) {
-                Log.d(LOG_TAG,"Iteration circle is:"+i);
                 tempList.add(imageCursor.getString(imageCursor.getColumnIndex(IMAGE_SOURCE_COLUMN)));
             }
         }else
         {
-            Log.d(LOG_TAG,"we in else moveToFirst");
             tempList.add("image");
         }
 
@@ -184,7 +162,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                     cursor.getInt(cursor.getColumnIndex(DataBaseHelper.ID_COLUMN)))
             );
         }
-
         cursor.close();
         return notesList;
     }

@@ -101,7 +101,12 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.NoteViewHolder
 
     @Override
     public void onBindViewHolder(NoteViewHolder noteViewHolder, int i) {
-        noteViewHolder.nameNote.setText(mNotesList.get(i).getNameNote()); // искать ошибку, наверное понять принцип работы list adapter
+        Log.d("LOG","we have in i is: "+i);
+        Log.d("LOG","we have in NoteList: "+mNotesList.size()+" elements");
+        if (i>0) {
+            Log.d("LOG", "we can access to i-1 elem? " + mNotesList.get(i - 1).getNameNote() + " its her name");
+        }
+        noteViewHolder.nameNote.setText(mNotesList.get(i).getNameNote()); // пытаюсь забиндить элемент, к которому почему-то не могу получить доступ, хотя в mNoteList он есть и в бд он есть
         noteViewHolder.lastUpdateNote.setText(mNotesList.get(i).getLastUpdateNote());
     }
 }
