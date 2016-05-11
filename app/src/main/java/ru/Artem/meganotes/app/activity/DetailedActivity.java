@@ -35,8 +35,8 @@ import java.io.InputStream;
  * Created by Артем on 13.04.2016.
  */
 
-public class DetailedActivity extends AppCompatActivity implements EditText.OnEditorActionListener,
-        AddImageDialog.OnItemListClickListener, DeleteImageDialog.OnClickListenerDelete {
+public class DetailedActivity extends AppCompatActivity implements AddImageDialog.OnItemListClickListener,
+        DeleteImageDialog.OnClickListenerDelete {
 
     private String[] mWhere;
     private ImageView mImageView;
@@ -48,22 +48,22 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
     private final int CAMERA_REQUEST = 2;
     public static final String DELETE_IMG = "null";
     private final String LOG_TAG = DetailedActivity.class.getName();
-    public final static String EDIT_NOTE_KEY = "noteEdit";
-    public static final int EDIT_NOTE_REQUEST = 1000;
+    public final static String OPEN_NOTE_KEY = "noteOpen";
+    public static final int OPEN_NOTE_REQUEST = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_detailed);
-        final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
-        mSelectNote = getIntent().getParcelableExtra(EDIT_NOTE_KEY);
+        mSelectNote = getIntent().getParcelableExtra(OPEN_NOTE_KEY);
         mWhere = new String[] {String.valueOf(mSelectNote.getId())};
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarDetailed);
 
         setSupportActionBar(toolbar);
+
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorTitleText));
 
         if (getSupportActionBar() != null) {
@@ -71,45 +71,9 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
             getSupportActionBar().setTitle(mSelectNote.getNameNote());
         }
 
-        final TextView textView = (TextView) findViewById(R.id.textView);
-        final EditText titleEdit = (EditText) findViewById(R.id.editTitle);
-        final EditText contentEdit = (EditText) findViewById(R.id.editContent);
+        TextView txtContent = (TextView) findViewById(R.id.txtContent);
 
-        final  DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(getApplicationContext());
-
-        textView.setText(mSelectNote.getLastUpdateNote());
-        contentEdit.setText(mSelectNote.getContent());
-        titleEdit.setText(mSelectNote.getNameNote());
-
-        titleEdit.setOnEditorActionListener(new EditText.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                String date = DateUtils.getDate();
-
-                imm.hideSoftInputFromWindow(titleEdit.getWindowToken(), 0);
-
-                mSelectNote.setNameNote(v.getText().toString());
-                mSelectNote.setLastUpdateNote(date);
-
-                dataBaseHelper.editData(DataBaseHelper.TITLE_NOTES_COLUMN, mWhere, v.getText().toString(), date);
-                return true;
-            }
-        });
-
-        contentEdit.setOnEditorActionListener(new EditText.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                String date = DateUtils.getDate();
-
-                imm.hideSoftInputFromWindow(titleEdit.getWindowToken(), 0);
-
-                mSelectNote.setLastUpdateNote(date);
-                mSelectNote.setContent(v.getText().toString());
-
-                dataBaseHelper.editData(DataBaseHelper.CONTENT_COLUMN, mWhere, v.getText().toString(), date);
-                return true;
-            }
-        });
+        txtContent.setText(mSelectNote.getContent());
 
         mImageView = (ImageView) findViewById(R.id.imageNote);
         setImg(Uri.parse(mSelectNote.getPathImg()));
@@ -168,10 +132,26 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+
+        getMenuInflater().inflate(R.menu.menu_detailed, menu);
+
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
+
+                return true;
+            case R.id.edit_note:
+                Intent intent = new Intent(this, CreateNoteActivity.class);
+
+                intent.putExtra(CreateNoteActivity.EDIT_NOTE_KEY, mSelectNote);
+                startActivityForResult(intent, CreateNoteActivity.EDIT_NOTE_REQUEST);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -181,15 +161,11 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
     @Override
     public void finish() {
         Intent intent = new Intent();
-        intent.putExtra(EDIT_NOTE_KEY, mSelectNote);
-        setResult(EDIT_NOTE_REQUEST, intent);
+
+        intent.putExtra(OPEN_NOTE_KEY, mSelectNote);
+        setResult(OPEN_NOTE_REQUEST, intent);
 
         super.finish();
-    }
-
-    @Override
-    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-        return false;
     }
 
     @Override
