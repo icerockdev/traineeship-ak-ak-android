@@ -44,7 +44,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     private static DataBaseHelper sInstance;
     private static SQLiteDatabase sSqLiteDatabase;
-    private final String LOG_TAG = DataBaseHelper.class.getName();
+    private static final String LOG_TAG = DataBaseHelper.class.getName();
 
     public static synchronized DataBaseHelper getInstance(Context context) {
         if (sInstance == null) {
@@ -76,7 +76,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public void addData(String titleNote, String contentNote, String imgPath, String lastUpdateDate) {
+    public static void addData(String titleNote, String contentNote, String imgPath, String lastUpdateDate) {
         try {
             ContentValues values = new ContentValues();
 
@@ -96,12 +96,12 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void onDeleteSelectedNote(String[] id) {
+    public static void onDeleteSelectedNote(String[] id) {
         sSqLiteDatabase.delete(DataBaseHelper.DATABASE_TABLE_NOTES,
                 DataBaseHelper.ID_COLUMN  + " = ?", id);
     }
 
-    public ModelNote getInsertedNote() {
+    public static ModelNote getInsertedNote() {
         ModelNote newNote = null;
 
         String query = "select " + DataBaseHelper.TITLE_NOTES_COLUMN + ", "
@@ -136,7 +136,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return newNote;
     }
 
-    public List<ModelNote> getNotes() {
+    public static List<ModelNote> getNotes() {
         List<ModelNote> notesList = new ArrayList<ModelNote>();
 
         Cursor cursor = sSqLiteDatabase.query(DATABASE_TABLE_NOTES, null, null, null, null, null, null);
@@ -166,7 +166,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return notesList;
     }
 
-    public void editData(String column, String[] where, String value, String lastUpdateDate, int table) {
+    public static void editData(String column, String[] where, String value, String lastUpdateDate, int table) {
         if (table==0) { //данные изменяются в 1-ой таблице, notes
             ContentValues values = new ContentValues();
 
@@ -188,12 +188,12 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void deleteImage(String id)
+    public static void deleteImage(String id)
     {
         sSqLiteDatabase.delete(DATABASE_TABLE_NOTES,ID_IMAGE+"= ?",new String[]{id});
     }
 
-    public void deleteAll() {
+    public static void deleteAll() {
         sSqLiteDatabase.delete(DataBaseHelper.DATABASE_TABLE_NOTES, null, null);
     }
 }
