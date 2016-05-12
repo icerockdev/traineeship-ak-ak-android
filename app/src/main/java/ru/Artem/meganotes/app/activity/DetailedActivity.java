@@ -47,6 +47,8 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
 
     private final int GALLERY_REQUEST = 1;
     private final int CAMERA_REQUEST = 2;
+    private final int EDIT_NOTE_TABLE = 0;
+    private final int EDIT_IMAGE_TABLE = 1;
     public static final String DELETE_IMG = "null";
     private final String LOG_TAG = DetailedActivity.class.getName();
     public final static String EDIT_NOTE_KEY = "noteEdit";
@@ -92,7 +94,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                 mSelectNote.setNameNote(v.getText().toString());
                 mSelectNote.setLastUpdateNote(date);
 
-                dataBaseHelper.editData(DataBaseHelper.TITLE_NOTES_COLUMN, mWhere, v.getText().toString(), date,0);
+                dataBaseHelper.editData(DataBaseHelper.TITLE_NOTES_COLUMN, mWhere, v.getText().toString(), date, EDIT_NOTE_TABLE);
                 return true;
             }
         });
@@ -107,7 +109,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                 mSelectNote.setLastUpdateNote(date);
                 mSelectNote.setContent(v.getText().toString());
 
-                dataBaseHelper.editData(DataBaseHelper.CONTENT_COLUMN, mWhere, v.getText().toString(), date,0);
+                dataBaseHelper.editData(DataBaseHelper.CONTENT_COLUMN, mWhere, v.getText().toString(), date, EDIT_NOTE_TABLE);
                 return true;
             }
         });
@@ -124,10 +126,8 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
 
                 addImageDialog.setStyle(DialogFragment.STYLE_NORMAL, R.style.AddImageDialog);
                 addImageDialog.show(getSupportFragmentManager(), AddImageDialog.DIALOG_KEY);
-
             }
         });
-
         mImageView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -142,29 +142,25 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
     final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            final Bitmap image = (Bitmap) msg.obj;
+            final Bitmap image = (Bitmap) msg.obj; // на данный момент этот хендлер вставляет в одно ImageView, в другой задаче сделаем интерфейс и тогда добавление множества кастомных imageView в LinearLayout.
             mImageView.setImageBitmap(image);
         }
     };
 
     private void setImg(final Uri pathImg) {
-
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 InputStream inputStream;
-
                 try {
                     inputStream = getContentResolver()
                             .openInputStream(pathImg);
                     final Message message = mHandler.obtainMessage(1,
                             BitmapFactory.decodeStream(inputStream, null, null));
-
                     mHandler.sendMessage(message);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
-
             }
         });
         thread.start();
@@ -205,10 +201,9 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
             if (requestCode == GALLERY_REQUEST) {
                 mOutFilePath = data.getData();
             }
-
             setImg(mOutFilePath);
             mSelectNote.setPathImg(mOutFilePath.toString());
-            dataBaseHelper.editData(DataBaseHelper.IMAGE_SOURCE_COLUMN, mWhere, mOutFilePath.toString(), DateUtils.getDate(),1);
+            dataBaseHelper.editData(DataBaseHelper.IMAGE_SOURCE_COLUMN, mWhere, mOutFilePath.toString(), DateUtils.getDate(),EDIT_IMAGE_TABLE);
         }
     }
 
@@ -236,7 +231,6 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                 }
                 break;
         }
-
         dialogFragment.dismiss();
     }
 
@@ -249,7 +243,6 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
             mImageView.setImageBitmap(null);
 
             dataBaseHelper.deleteImage(mWhere[0]);
-            //dataBaseHelper.editData(DataBaseHelper.ID_IMAGE, mWhere, DELETE_IMG, date,1); // хрень, сейчас сделаю отдельную функцию
             mSelectNote.setPathImg(DELETE_IMG);
             mSelectNote.setLastUpdateNote(date);
 

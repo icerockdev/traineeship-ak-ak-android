@@ -37,6 +37,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
     private final int GALLERY_REQUEST = 10;
     private final int CAMERA_REQUEST = 11;
+    private static final boolean DEBUG = false;
     private final String LOG_TAG = CreateNoteActivity.class.getName();
     public final static String CREATE_NOTE_KEY = "noteCreate";
     public static final int CREATE_NOTE_REQUEST = 1001;
@@ -105,9 +106,11 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 dataBaseHelper.addData(mTitleNote.getText().toString(), mContentNote.getText().toString(), filePath, date);
 
                 ModelNote newNote = dataBaseHelper.getInsertedNote();
-                Log.d(LOG_TAG,"what we have in newNote?");
-                Log.d(LOG_TAG,"newNote name: "+newNote.getNameNote());
-                Log.d(LOG_TAG,"newNote name: "+newNote.getContent());
+                if (DEBUG) {
+                    Log.d(LOG_TAG, "what we have in newNote?");
+                    Log.d(LOG_TAG, "newNote name: " + newNote.getNameNote());
+                    Log.d(LOG_TAG, "newNote name: " + newNote.getContent());
+                }
                 Intent intent = new Intent();
                 intent.putExtra(CREATE_NOTE_KEY, newNote);
                 setResult(CREATE_NOTE_REQUEST, intent);
