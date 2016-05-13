@@ -15,6 +15,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -55,6 +56,8 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
     public final static String EDIT_NOTE_KEY = "noteEdit";
     public static final int EDIT_NOTE_REQUEST = 1000;
 
+    private static final boolean DEBUG = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +85,18 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
         textView.setText(mSelectNote.getLastUpdateNote());
         contentEdit.setText(mSelectNote.getContent());
         titleEdit.setText(mSelectNote.getNameNote());
+
+        mImageView = (ImageView) findViewById(R.id.imageNote);
+        List<String> tempList = mSelectNote.getPathImg();
+        if (!tempList.isEmpty()) {
+            if (DEBUG) {
+                Log.d(LOG_TAG, "we have not emptry List");
+                for (String item : tempList) {
+                    Log.d(LOG_TAG, "path: " + item);
+                }
+            }
+            setImg(Uri.parse(tempList.get(0)));
+        }
 
         titleEdit.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
@@ -113,11 +128,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
             }
         });
 
-        mImageView = (ImageView) findViewById(R.id.imageNote);
-        List<String> tempList = mSelectNote.getPathImg();
-        if (!tempList.isEmpty()) {
-            setImg(Uri.parse(tempList.get(0)));
-        }
+
         mImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -139,6 +150,28 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
         SAVEPATH =  this.getFilesDir().toString();
     }
 
+    private void setImg(final Uri pathImg) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                InputStream inputStream;
+                if (DEBUG)
+                {
+                    Log.d(LOG_TAG,"we in setIMg, and have in path is: "+pathImg.toString());
+                }
+                try {
+                    inputStream = getContentResolver().openInputStream(pathImg);
+                    final Message message = mHandler.obtainMessage(1,
+                            BitmapFactory.decodeStream(inputStream, null, null));
+                    mHandler.sendMessage(message);
+                } catch (Exception e) {
+                    Log.d(LOG_TAG, "Error is: " + e.getMessage());
+                }
+            }
+        });
+        thread.start();
+    }
+
     final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -146,25 +179,6 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
             mImageView.setImageBitmap(image);
         }
     };
-
-    private void setImg(final Uri pathImg) {
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                InputStream inputStream;
-                try {
-                    inputStream = getContentResolver()
-                            .openInputStream(pathImg);
-                    final Message message = mHandler.obtainMessage(1,
-                            BitmapFactory.decodeStream(inputStream, null, null));
-                    mHandler.sendMessage(message);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        thread.start();
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

@@ -90,6 +90,6 @@ public class ImgUtils {
             snackbar.show();
             return e.getMessage();
         }
-        return newPath; // возвращает новый путь, который необходимо передать в базу данных для сохранения
+        return "file://"+newPath; // возвращает новый путь, который необходимо передать в базу данных для сохранения
     }
 }

@@ -70,8 +70,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle(R.string.new_note);
         }
-        SAVEPATH =  this.getFilesDir().getAbsolutePath().toString();
-        if (DEBUG) Log.d(LOG_TAG,"SavePath is: "+SAVEPATH);
+        SAVEPATH =  this.getFilesDir().toString();
     }
 
     @Override
@@ -106,8 +105,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 String filePath = "null";
 
                 if (mImageView.getDrawable() != null) {
-                    //filePath = mOutFilePath.toString();
-                    filePath = ImgUtils.savePicture(mImageView,SAVEPATH,mView,getBaseContext());
+                    filePath = ImgUtils.savePicture(mImageView,SAVEPATH,mView,getApplicationContext());
                     if (DEBUG) {
                         Log.d(LOG_TAG, "we have in filepath is: " + filePath);
                     }
