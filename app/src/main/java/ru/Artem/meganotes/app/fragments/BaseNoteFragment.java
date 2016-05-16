@@ -1,5 +1,6 @@
 package ru.Artem.meganotes.app.fragments;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,7 +10,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.*;
-import android.util.Log;
 import android.view.*;
 import android.widget.TextView;
 import ru.Artem.meganotes.app.activity.CreateNoteActivity;
@@ -32,8 +32,10 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
     private ModelNote mDeleteNote;
     private View mView;
 
-
     private final String LOG_TAG = BaseNoteFragment.class.getName();
+
+    private final int CREATE_NOTE_REQUEST = 1003;
+    private final int OPEN_NOTE_REQUEST = 1001;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -67,7 +69,7 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
         mCreateNoteFAB.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(), CreateNoteActivity.class);
-                startActivityForResult(intent, CreateNoteActivity.CREATE_NOTE_REQUEST);
+                startActivityForResult(intent, CREATE_NOTE_REQUEST);
             }
         });
 
@@ -78,8 +80,8 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
 
                 mNotesList.get(position).setPositionInAdapter(position);
 
-                intent.putExtra(DetailedActivity.OPEN_NOTE_KEY, mNotesList.get(position));
-                startActivityForResult(intent, DetailedActivity.OPEN_NOTE_REQUEST);
+                intent.putExtra(DetailedActivity.INTENT_EXTRA_OPEN_NOTE, mNotesList.get(position));
+                startActivityForResult(intent, OPEN_NOTE_REQUEST);
             }
         });
 
@@ -100,11 +102,11 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (data != null) {
+        if (data != null && resultCode == Activity.RESULT_OK) {
 
             switch (requestCode) {
-                case DetailedActivity.OPEN_NOTE_REQUEST:
-                    final ModelNote editNote = data.getParcelableExtra(DetailedActivity.OPEN_NOTE_KEY);
+                case OPEN_NOTE_REQUEST:
+                    final ModelNote editNote = data.getParcelableExtra(DetailedActivity.INTENT_EXTRA_OPEN_NOTE);
 
                     if (editNote.isDeletedNote()) {
 
@@ -115,14 +117,15 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
                                 mNotesList.remove(editNote.getPositionInAdapter());//прикрутить удаление с БД
                                 mAdapter.notifyItemRemoved(editNote.getPositionInAdapter());
 
-                                Snackbar.make(mView, R.string.snack_bar_message, Snackbar.LENGTH_INDEFINITE)
-                                        .setAction(R.string.snack_bar_button, new View.OnClickListener() {
+                                Snackbar.make(mView, R.string.snack_bar_message_delete, Snackbar.LENGTH_INDEFINITE)
+                                        .setAction(R.string.snack_bar_button_undo, new View.OnClickListener() {
                                             @Override
                                             public void onClick(View view) {
                                                 mNotesList.add(editNote.getPositionInAdapter(), editNote);//прикрутить добавление в БД
                                                 mAdapter.notifyItemInserted(editNote.getPositionInAdapter());
                                             }
                                         })
+                                        .setActionTextColor(getResources().getColor(R.color.colorAccent))
                                         .show();
                             }
                         }, 500);
@@ -132,10 +135,9 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
                         mNotesList.set(editNote.getPositionInAdapter(), editNote);
                         mAdapter.notifyItemChanged(editNote.getPositionInAdapter(), editNote);
                     }
-
                     break;
-                case CreateNoteActivity.CREATE_NOTE_REQUEST:
-                    ModelNote createNote = data.getParcelableExtra(CreateNoteActivity.CREATE_NOTE_KEY);
+                case CREATE_NOTE_REQUEST:
+                    ModelNote createNote = data.getParcelableExtra(CreateNoteActivity.INTENT_EXTRA_CREATE_NOTE);
 
                     mNotesList.add(createNote);
                     mAdapter.notifyItemInserted(mAdapter.getItemCount() - 1);

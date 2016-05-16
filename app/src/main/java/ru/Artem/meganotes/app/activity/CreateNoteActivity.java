@@ -1,8 +1,6 @@
 package ru.Artem.meganotes.app.activity;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -11,10 +9,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.*;
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
 import ru.Artem.meganotes.app.dialogs.AddImageDialog;
@@ -34,15 +30,13 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private ModelNote mEditNote;
 
     private Uri mOutFilePath = null;
-    private ComponentName mCallingActivity;
+
+    private final String LOG_TAG = CreateNoteActivity.class.getName();
 
     private final int GALLERY_REQUEST = 10;
     private final int CAMERA_REQUEST = 11;
-    private final String LOG_TAG = CreateNoteActivity.class.getName();
-    public final static String CREATE_NOTE_KEY = "noteCreate";
-    public static final int CREATE_NOTE_REQUEST = 1002;
-    public final static String EDIT_NOTE_KEY = "noteEdit";
-    public static final int EDIT_NOTE_REQUEST = 1003;
+    public final static String INTENT_EXTRA_CREATE_NOTE = "noteCreate";
+    public final static String INTENT_EXTRA_EDIT_NOTE = "noteEdit";
 
 
     @Override
@@ -56,8 +50,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         mImageView = (ImageView) findViewById(R.id.imageView);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
-        mCallingActivity = getCallingActivity();
-        mEditNote = getIntent().getParcelableExtra(EDIT_NOTE_KEY);
+        mEditNote = getIntent().getParcelableExtra(INTENT_EXTRA_EDIT_NOTE);
 
         setSupportActionBar(toolbar);
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorTitleText));
@@ -65,35 +58,13 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-            if (mCallingActivity.getClassName().equals(MainActivity.class.getName())) {
+            if (mEditNote == null) {
                 getSupportActionBar().setTitle(R.string.new_note);
             } else {
                 getSupportActionBar().setTitle(mEditNote.getNameNote());
+                mTitleNote.setText(mEditNote.getNameNote());
+                mContentNote.setText(mEditNote.getContent());
             }
-        }
-
-        if (mEditNote != null) {
-            mTitleNote.setText(mEditNote.getNameNote());
-            mContentNote.setText(mEditNote.getContent());
-
-            mContentNote.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    if (!hasFocus) {
-                        mEditNote.setContent(mContentNote.getText().toString());
-                    }
-                }
-            });
-
-            mTitleNote.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    if (!hasFocus) {
-                        mEditNote.setNameNote(mTitleNote.getText().toString());
-                    }
-                }
-            });
-
         }
     }
 
@@ -111,58 +82,24 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         int id = item.getItemId();
 
         if (id == R.id.upload_img) {
-
             final AddImageDialog addImageDialog = new AddImageDialog();
 
             addImageDialog.setStyle(DialogFragment.STYLE_NORMAL, R.style.AddImageDialog);
             addImageDialog.show(getSupportFragmentManager(), AddImageDialog.DIALOG_KEY);
-
         } else if (id == android.R.id.home) {
-
-            finish();
-
+            onSaveNote();
         } else if (id == R.id.close_with_out_save) {
-            mContentNote.setText("");
-            mTitleNote.setText("");
-
             finish();
         }
+
         return true;
-    }
-
-    @Override
-    public void finish() {
-        if (!mContentNote.getText().toString().isEmpty()) {
-
-            DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(getApplicationContext());
-            String date = DateUtils.getDate();
-            String filePath = "null";
-
-            if (mImageView.getDrawable() != null) {
-                filePath = mOutFilePath.toString();
-            }
-
-            Intent intent = new Intent();
-
-            if (mCallingActivity.getClassName().equals(MainActivity.class.getName())) {
-                dataBaseHelper.addData(mTitleNote.getText().toString(),
-                        mContentNote.getText().toString(), filePath,
-                        date, date);
-                ModelNote newNote = dataBaseHelper.getInsertedNote();
-
-                intent.putExtra(CREATE_NOTE_KEY, newNote);
-                setResult(CREATE_NOTE_REQUEST, intent);
-            } //иначе dataBaseHelper.edit(...);
-        }
-
-        super.finish();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == Activity.RESULT_OK) {
+        if (resultCode == RESULT_OK) {
             if (requestCode == GALLERY_REQUEST) {
                 mOutFilePath = data.getData();
             }
@@ -198,5 +135,37 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         }
 
         dialogFragment.dismiss();
+    }
+
+    private void onSaveNote() {
+        if (!mContentNote.getText().toString().isEmpty()) {
+
+            DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(getApplicationContext());
+            String date = DateUtils.getDate();
+            String filePath = "null";
+
+            if (mImageView.getDrawable() != null) {
+                filePath = mOutFilePath.toString();
+            }
+
+            Intent intent = new Intent();
+
+            if (mEditNote == null) {
+                dataBaseHelper.addData(mTitleNote.getText().toString(),
+                        mContentNote.getText().toString(), filePath,
+                        date, date);
+                ModelNote newNote = dataBaseHelper.getInsertedNote();
+
+                intent.putExtra(INTENT_EXTRA_CREATE_NOTE, newNote);
+            } else {//добавить изменение в БД
+                mEditNote.setNameNote(mTitleNote.getText().toString());
+                mEditNote.setContent(mContentNote.getText().toString());
+                mEditNote.setLastUpdateNote(DateUtils.getDate());
+
+                intent.putExtra(INTENT_EXTRA_EDIT_NOTE, mEditNote);
+            }
+            setResult(RESULT_OK, intent);
+        }
+        finish();
     }
 }

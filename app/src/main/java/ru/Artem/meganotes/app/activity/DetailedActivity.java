@@ -1,7 +1,6 @@
 package ru.Artem.meganotes.app.activity;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -38,17 +37,19 @@ public class DetailedActivity extends AppCompatActivity implements AddImageDialo
 
     private String[] mWhere;
     private ImageView mImageView;
+    private TextView mTxtContent;
 
     private Uri mOutFilePath = null;
     private ModelNote mSelectNote;
 
+    private final int EDIT_NOTE_REQUEST = 1002;
     private final int GALLERY_REQUEST = 1;
     private final int CAMERA_REQUEST = 2;
-    public static final String DELETE_IMG = "null";
-    private final String LOG_TAG = DetailedActivity.class.getName();
-    public final static String OPEN_NOTE_KEY = "noteOpen";
-    public static final int OPEN_NOTE_REQUEST = 1001;
 
+    public final static String INTENT_EXTRA_OPEN_NOTE = "noteOpen";
+
+
+    private final String LOG_TAG = DetailedActivity.class.getName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +57,7 @@ public class DetailedActivity extends AppCompatActivity implements AddImageDialo
 
         setContentView(R.layout.activity_detailed);
 
-        mSelectNote = getIntent().getParcelableExtra(OPEN_NOTE_KEY);
+        mSelectNote = getIntent().getParcelableExtra(INTENT_EXTRA_OPEN_NOTE);
         mWhere = new String[] {String.valueOf(mSelectNote.getId())};
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarDetailed);
@@ -70,9 +71,9 @@ public class DetailedActivity extends AppCompatActivity implements AddImageDialo
             getSupportActionBar().setTitle(mSelectNote.getNameNote());
         }
 
-        TextView txtContent = (TextView) findViewById(R.id.txtContent);
+        mTxtContent = (TextView) findViewById(R.id.txtContent);
 
-        txtContent.setText(mSelectNote.getContent());
+        mTxtContent.setText(mSelectNote.getContent());
 
         mImageView = (ImageView) findViewById(R.id.imageNote);
         setImg(Uri.parse(mSelectNote.getPathImg()));
@@ -143,34 +144,32 @@ public class DetailedActivity extends AppCompatActivity implements AddImageDialo
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                finish();
+                onInitSaveIntent();
 
+                finish();
                 return true;
             case R.id.edit_note:
                 Intent intent = new Intent(this, CreateNoteActivity.class);
 
-                intent.putExtra(CreateNoteActivity.EDIT_NOTE_KEY, mSelectNote);
-                startActivityForResult(intent, CreateNoteActivity.EDIT_NOTE_REQUEST);
+                intent.putExtra(CreateNoteActivity.INTENT_EXTRA_EDIT_NOTE, mSelectNote);
+                startActivityForResult(intent, EDIT_NOTE_REQUEST);
                 return true;
             case R.id.delete_note:
                 mSelectNote.setDeletedNote(true);
+                onInitSaveIntent();
 
                 finish();
-
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    @Override
-    public void finish() {
+    private void onInitSaveIntent() {
         Intent intent = new Intent();
 
-        intent.putExtra(OPEN_NOTE_KEY, mSelectNote);
-        setResult(OPEN_NOTE_REQUEST, intent);
-
-        super.finish();
+        intent.putExtra(INTENT_EXTRA_OPEN_NOTE, mSelectNote);
+        setResult(RESULT_OK, intent);
     }
 
     @Override
@@ -179,15 +178,22 @@ public class DetailedActivity extends AppCompatActivity implements AddImageDialo
 
         DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(this);
 
-        if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == GALLERY_REQUEST) {
-                mOutFilePath = data.getData();
-            }
+        if (resultCode == RESULT_OK) {
+            if (requestCode == GALLERY_REQUEST || requestCode == CAMERA_REQUEST) {
+                if (requestCode == GALLERY_REQUEST) mOutFilePath = data.getData();
 
-            setImg(mOutFilePath);
-            mSelectNote.setPathImg(mOutFilePath.toString());
-            dataBaseHelper.editData(DataBaseHelper.IMG_PATH_COLUMN, mWhere,
-                    mOutFilePath.toString(), DateUtils.getDate());
+                setImg(mOutFilePath);
+                mSelectNote.setPathImg(mOutFilePath.toString());
+                dataBaseHelper.editData(DataBaseHelper.IMG_PATH_COLUMN, mWhere,
+                        mOutFilePath.toString(), DateUtils.getDate());
+            } else if (requestCode == EDIT_NOTE_REQUEST) {
+                mSelectNote = data.getParcelableExtra(CreateNoteActivity.INTENT_EXTRA_EDIT_NOTE);
+
+                if (mSelectNote != null && getSupportActionBar() != null) {
+                    getSupportActionBar().setTitle(mSelectNote.getNameNote());
+                    mTxtContent.setText(mSelectNote.getContent());
+                }
+            }
         }
     }
 
@@ -227,8 +233,8 @@ public class DetailedActivity extends AppCompatActivity implements AddImageDialo
 
             mImageView.setImageBitmap(null);
 
-            dataBaseHelper.editData(DataBaseHelper.IMG_PATH_COLUMN, mWhere, DELETE_IMG, date);
-            mSelectNote.setPathImg(DELETE_IMG);
+            dataBaseHelper.editData(DataBaseHelper.IMG_PATH_COLUMN, mWhere, "null", date);
+            mSelectNote.setPathImg("null");
             mSelectNote.setLastUpdateNote(date);
 
             dialog.dismiss();
