@@ -51,7 +51,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
     private final int EDIT_NOTE_TABLE = 0;
     private final int EDIT_IMAGE_TABLE = 1;
     public static final String DELETE_IMG = "null";
-    private static String SAVEPATH;
+    private String sSavePath;
     private final String LOG_TAG = DetailedActivity.class.getName();
     public final static String EDIT_NOTE_KEY = "noteEdit";
     public static final int EDIT_NOTE_REQUEST = 1000;
@@ -95,7 +95,8 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                     Log.d(LOG_TAG, "path: " + item);
                 }
             }
-            setImg(Uri.parse(tempList.get(0)));
+            setImg(Uri.parse(tempList.get(0))); // здесь нужно будет внести изменения при
+            // множественном добавление, вместо 0 будет переменная из цикла для заполнения
         }
 
         titleEdit.setOnEditorActionListener(new EditText.OnEditorActionListener() {
@@ -147,7 +148,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                 return true;
             }
         });
-        SAVEPATH =  this.getFilesDir().toString();
+        sSavePath =  this.getFilesDir().toString();
     }
 
     private void setImg(final Uri pathImg) {
@@ -230,7 +231,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                             new String[]{Manifest.permission.CAMERA}, 0);
 
                 } else {
-                    mOutFilePath = ImgUtils.cameraRequest(DetailedActivity.this, CAMERA_REQUEST, LOG_TAG,SAVEPATH);
+                    mOutFilePath = ImgUtils.cameraRequest(DetailedActivity.this, CAMERA_REQUEST, LOG_TAG,sSavePath);
                 }
                 break;
             case 1:

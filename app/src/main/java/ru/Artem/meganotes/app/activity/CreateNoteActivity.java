@@ -45,7 +45,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private final int GALLERY_REQUEST = 10;
     private final int CAMERA_REQUEST = 11;
     private final String LOG_TAG = CreateNoteActivity.class.getName();
-    private static String SAVEPATH;
+    private String sSavePath;
     public final static String CREATE_NOTE_KEY = "noteCreate";
     public static final int CREATE_NOTE_REQUEST = 1001;
 
@@ -70,7 +70,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle(R.string.new_note);
         }
-        SAVEPATH =  this.getFilesDir().toString();
+        sSavePath =  this.getFilesDir().toString();
     }
 
     @Override
@@ -105,10 +105,8 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 String filePath = "null";
 
                 if (mImageView.getDrawable() != null) {
-                    filePath = ImgUtils.savePicture(mImageView,SAVEPATH,mView,getApplicationContext());
-                    if (DEBUG) {
-                        Log.d(LOG_TAG, "we have in filepath is: " + filePath);
-                    }
+                    filePath = ImgUtils.savePicture(mImageView,sSavePath,mView,getApplicationContext());
+                    if (DEBUG) Log.d(LOG_TAG, "we have in filepath is: " + filePath);
                 }
                 else {
                     filePath = "default";
@@ -143,7 +141,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 try {
                     img = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Snackbar.make(mView, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
                 }
                 if (DEBUG)
                 {
@@ -166,7 +164,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                             new String[]{Manifest.permission.CAMERA}, 0);
 
                 } else {
-                    mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, LOG_TAG, SAVEPATH);
+                    mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, LOG_TAG, sSavePath);
                 }
                 break;
             case 1:

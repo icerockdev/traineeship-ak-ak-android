@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import ru.Artem.meganotes.app.activity.CreateNoteActivity;
 
@@ -25,6 +26,8 @@ import ru.Artem.meganotes.app.activity.CreateNoteActivity;
  * Created by Артем on 03.05.2016.
  */
 public class ImgUtils {
+
+    private static SimpleDateFormat sDateFormat = new SimpleDateFormat("d.MM.yyyy k:m", Locale.ROOT);
 
     private static final boolean DEBUG = true;
 
@@ -68,7 +71,7 @@ public class ImgUtils {
     public static String savePicture(ImageView iv, String folderToSave, LinearLayout mLayout, Context context)
     {
         OutputStream fOut = null;
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = sDateFormat.toString();
         String imageFileName = "JPEG_" + timeStamp + "_";
         String newPath = null;
         try {
