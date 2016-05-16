@@ -34,6 +34,6 @@
     <string name="messageDeleteDialog">Вы действительно хотите удалить заметку</string>
     <string name="messageDeleteAllNotesDialog">Вы действительно хотите удалить все заметки?</string>
 
-    <string name="snack_bar_message">Заметка удалена</string>
-    <string name="snack_bar_button">Отменить</string>
+    <string name="snack_bar_message_delete">Заметка удалена</string>
+    <string name="snack_bar_button_undo">Отменить</string>
 </resources>
