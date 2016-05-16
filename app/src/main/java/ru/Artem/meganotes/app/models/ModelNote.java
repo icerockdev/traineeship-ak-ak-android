@@ -62,7 +62,6 @@ public class ModelNote implements Parcelable {
     }
 
     public String getNameNote() {
-        Log.d("ModelNote","we in getNamgeNote, and have name: "+mNameNote);
         return mNameNote;
     }
 

@@ -44,7 +44,8 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     private static DataBaseHelper sInstance;
     private static SQLiteDatabase sSqLiteDatabase;
-    private final String LOG_TAG = DataBaseHelper.class.getName();
+    private static final String LOG_TAG = DataBaseHelper.class.getName();
+    private static final int EDIT_NOTES_TABLE_KEY = 0;
 
     public static synchronized DataBaseHelper getInstance(Context context) {
         if (sInstance == null) {
@@ -76,7 +77,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public void addData(String titleNote, String contentNote, String imgPath, String lastUpdateDate) {
+    public static void addData(String titleNote, String contentNote, String imgPath, String lastUpdateDate) {
         try {
             ContentValues values = new ContentValues();
 
@@ -90,18 +91,18 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             imagepath.put(DataBaseHelper.IMAGE_SOURCE_COLUMN, imgPath);
             imagepath.put(DataBaseHelper.ID_NOTE_COLUMN, insertedNoteID);
 
-            long insertedImageID = sSqLiteDatabase.insert(DataBaseHelper.DATABASE_TABLE_IMAGES, null, imagepath);
+            sSqLiteDatabase.insert(DataBaseHelper.DATABASE_TABLE_IMAGES, null, imagepath);
         } catch (Throwable t) {
             Log.e(LOG_TAG, "Ошибка при добавлении в базу");
         }
     }
 
-    public void onDeleteSelectedNote(String[] id) {
+    public static void onDeleteSelectedNote(String[] id) {
         sSqLiteDatabase.delete(DataBaseHelper.DATABASE_TABLE_NOTES,
                 DataBaseHelper.ID_COLUMN  + " = ?", id);
     }
 
-    public ModelNote getInsertedNote() {
+    public static ModelNote getInsertedNote() {
         ModelNote newNote = null;
 
         String query = "select " + DataBaseHelper.TITLE_NOTES_COLUMN + ", "
@@ -111,32 +112,38 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         //оставил именно rawQuery потому что не смог обычный db.query заставить работать с last_insert_rowid()
 
         Cursor cursor = sSqLiteDatabase.rawQuery(query, null);
-        cursor.moveToFirst();
-        int tempId = cursor.getInt(cursor.getColumnIndex(ID_COLUMN));
-        Cursor imageCursor = sSqLiteDatabase.query(DATABASE_TABLE_IMAGES, null, ID_NOTE_COLUMN+"= ?", new String[]{String.valueOf(tempId)}, null, null, null);
-        imageCursor.moveToFirst();
-        List<String> tempList = new ArrayList<String>();
 
-        if (imageCursor.moveToFirst()) {
+        if (cursor.moveToFirst()) {
+            int tempId = cursor.getInt(cursor.getColumnIndex(ID_COLUMN));
+
+            Cursor imageCursor = sSqLiteDatabase.query(DATABASE_TABLE_IMAGES, null, ID_NOTE_COLUMN + "= ?", new String[]{String.valueOf(tempId)}, null, null, null);
+            //imageCursor.moveToFirst();
+            List<String> tempList = new ArrayList<String>();
+
+            if (imageCursor.moveToFirst()) {
+                do {
+                    tempList.add(imageCursor.getString(imageCursor.getColumnIndex(DataBaseHelper.IMAGE_SOURCE_COLUMN)));
+                } while (imageCursor.moveToNext());
+            }
+
+            cursor.moveToFirst(); // здесь это нужно для того что бы вновь начать работу с данными
+            // с первого элемента, без условия - потому что гарантированно что до этого места кода
+            // программа дойдёт только при наличии данных в курсоре.
             do {
-                tempList.add(imageCursor.getString(imageCursor.getColumnIndex(DataBaseHelper.IMAGE_SOURCE_COLUMN)));
-            } while (imageCursor.moveToNext());
-        }
-        cursor.moveToFirst();
-        do {
-            newNote = new ModelNote(
-                    cursor.getString(cursor.getColumnIndex(DataBaseHelper.TITLE_NOTES_COLUMN)),
-                    cursor.getString(cursor.getColumnIndex(DataBaseHelper.CONTENT_COLUMN)),
-                    cursor.getString(cursor.getColumnIndex(DataBaseHelper.LAST_UPDATE_DATE_COLUMN)),
-                    tempList,
-                    cursor.getInt(cursor.getColumnIndex(DataBaseHelper.ID_COLUMN)));
-        } while (cursor.moveToNext());
-        cursor.close();
-        imageCursor.close();
+                newNote = new ModelNote(
+                        cursor.getString(cursor.getColumnIndex(DataBaseHelper.TITLE_NOTES_COLUMN)),
+                        cursor.getString(cursor.getColumnIndex(DataBaseHelper.CONTENT_COLUMN)),
+                        cursor.getString(cursor.getColumnIndex(DataBaseHelper.LAST_UPDATE_DATE_COLUMN)),
+                        tempList,
+                        cursor.getInt(cursor.getColumnIndex(DataBaseHelper.ID_COLUMN)));
+            } while (cursor.moveToNext());
+            cursor.close();
+            imageCursor.close();
+        } // блок else не нужен, поскольку newNote при создании инициализируется в null значение.
         return newNote;
     }
 
-    public List<ModelNote> getNotes() {
+    public static List<ModelNote> getNotes() {
         List<ModelNote> notesList = new ArrayList<ModelNote>();
 
         Cursor cursor = sSqLiteDatabase.query(DATABASE_TABLE_NOTES, null, null, null, null, null, null);
@@ -144,13 +151,16 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
         List<String> tempList = new ArrayList<String>();
 
-        if (imageCursor.moveToFirst()) {
-            while (imageCursor.moveToNext()) {
+        if (imageCursor.moveToFirst()) { // это условие нужно для проверки наличия изображений.
+        // Если его убрать, то будет попытка добавить несуществующий элемент в массив, что вызовет краш.
+            do {
                 tempList.add(imageCursor.getString(imageCursor.getColumnIndex(IMAGE_SOURCE_COLUMN)));
-            }
+            }while (imageCursor.moveToNext());
         }else
         {
-            tempList.add("image");
+            tempList.add("image"); //а тут добавляется заглушка в массив, для того что бы было что
+            // добавить в любом случае. Она не распарсится в моменты построения интерфейса, и получим
+            // пустое изображение, но не получим проблем при добавление.
         }
 
         while (cursor.moveToNext()) {
@@ -166,8 +176,8 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return notesList;
     }
 
-    public void editData(String column, String[] where, String value, String lastUpdateDate, int table) {
-        if (table==0) { //данные изменяются в 1-ой таблице, notes
+    public static void editData(String column, String[] where, String value, String lastUpdateDate, int table) {
+        if (table==EDIT_NOTES_TABLE_KEY) { //данные изменяются в 1-ой таблице, notes
             ContentValues values = new ContentValues();
 
             values.put(column, value);
@@ -188,12 +198,12 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void deleteImage(String id)
+    public static void deleteImage(String id)
     {
         sSqLiteDatabase.delete(DATABASE_TABLE_NOTES,ID_IMAGE+"= ?",new String[]{id});
     }
 
-    public void deleteAll() {
+    public static void deleteAll() {
         sSqLiteDatabase.delete(DataBaseHelper.DATABASE_TABLE_NOTES, null, null);
     }
 }
