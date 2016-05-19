@@ -2,6 +2,7 @@ package ru.Artem.meganotes.app.activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -41,6 +42,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private LinearLayout mView;
 
     private Uri mOutFilePath = null;
+    private ComponentName mCallingActivity;
 
     private final int GALLERY_REQUEST = 10;
     private final int CAMERA_REQUEST = 11;
@@ -63,12 +65,19 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         mView = (LinearLayout)findViewById(R.id.layoutCreate);
 
+        mCallingActivity = getCallingActivity();
+
         setSupportActionBar(toolbar);
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorTitleText));
 
-        if(getSupportActionBar() != null){
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(R.string.new_note);
+
+            if (mCallingActivity.getClassName().equals(MainActivity.class.getName())) {
+                getSupportActionBar().setTitle(R.string.new_note);
+            } else {
+                getSupportActionBar().setTitle(R.string.edit_note);//поменять на заголовок заметки
+            }
         }
         sSavePath =  this.getFilesDir().toString();
     }
@@ -76,7 +85,12 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.menu_activity_create, menu);
+        if (mCallingActivity.getClassName().equals(MainActivity.class.getName())){
+            getMenuInflater().inflate(R.menu.menu_create, menu);
+        }
+        else {
+            getMenuInflater().inflate(R.menu.menu_edit, menu);
+        }
         return true;
     }
 
@@ -84,22 +98,28 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.uploadImg) {
+        if (id == R.id.upload_img) {
 
             final AddImageDialog addImageDialog = new AddImageDialog();
 
             addImageDialog.setStyle(DialogFragment.STYLE_NORMAL, R.style.AddImageDialog);
             addImageDialog.show(getSupportFragmentManager(), AddImageDialog.DIALOG_KEY);
 
-        } else if (id == android.R.id.home)  {
+        } else if (id == android.R.id.home) {
 
             finish();
 
-        } else if (id == R.id.doneCreate) {
+        } else if (id == R.id.close_with_out_save) {
+            mContentNote.setText("");
 
-            if (!mTitleNote.getText().toString().isEmpty()
-                    || !mContentNote.getText().toString().isEmpty()
-                    || mImageView.getDrawable() != null) {
+            finish();
+        }
+        return true;
+    }
+
+    @Override
+    public void finish() {
+        if (!mContentNote.getText().toString().isEmpty()) {
 
                 String date = DateUtils.getDate();
                 String filePath = "null";
@@ -111,6 +131,8 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 else {
                     filePath = "default";
                 }
+
+            if (mCallingActivity.getClassName().equals(MainActivity.class.getName())) {
                 DataBaseHelper.addData(mTitleNote.getText().toString(), mContentNote.getText().toString(), filePath, date);
                 ModelNote newNote = DataBaseHelper.getInsertedNote();
                 if (DEBUG) {
@@ -121,16 +143,14 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                     Log.d(LOG_TAG, "In image newNote we have count: "+tmpList.size());
                     Log.d(LOG_TAG, "content image newNote is:"+tmpList.get(0));
                 }
+
                 Intent intent = new Intent();
                 intent.putExtra(CREATE_NOTE_KEY, newNote);
                 setResult(CREATE_NOTE_REQUEST, intent);
-
-                finish();
-            } else {
-                Snackbar.make(mView, getString(R.string.snackBarMessage), Snackbar.LENGTH_LONG).show();
-            }
+            } //иначе dataBaseHelper.edit(...);
         }
-        return true;
+
+        super.finish();
     }
 
     @Override

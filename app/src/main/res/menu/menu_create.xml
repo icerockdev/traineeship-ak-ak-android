@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity">
+
+    <item android:id="@+id/upload_img"
+          android:title="@string/upload_img"
+          app:showAsAction="never"/>
+
+    <item android:id="@+id/close_with_out_save"
+          android:title="@string/close_with_out_save"
+          app:showAsAction="never"/>
+</menu>
