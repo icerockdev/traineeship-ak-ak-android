@@ -36,4 +36,5 @@
 
     <string name="snackBarMessage">Не возможно добавить пустую заметку!</string>
     <string name="str_problems_message">Проблемы с отображением изображения</string>
+    <string name="str_problems_save">Поблемы при сохранение изображения</string>
 </resources>

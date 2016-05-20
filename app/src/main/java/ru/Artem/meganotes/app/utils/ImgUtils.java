@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,35 +30,30 @@ public class ImgUtils {
 
     private static SimpleDateFormat sDateFormat = new SimpleDateFormat("d.MM.yyyy k:m", Locale.ROOT);
 
+    private final static String LOG_TAG = ImgUtils.class.getName();
+
     private static final boolean DEBUG = true;
 
     public static File createImageFile(String folderToSave) throws IOException {
-        String timeStamp = DateUtils.getDateCreateFile();
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        return new File(folderToSave, imageFileName + ".jpg");
+        String timeStamp = sDateFormat.toString();
+        String imageFileName = String.format("JPEG_%s.jpg", timeStamp);
+        return new File(folderToSave, imageFileName);
     }
 
-    public static Uri cameraRequest(Context context, int requestCode, String LOG_TAG, String folderToSave) {
+    public static Uri cameraRequest(Context context, int requestCode, String folderToSave) throws IOException {
         Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
         if (captureIntent.resolveActivity(context.getPackageManager()) != null) {
 
-            File photoFile = null;
+            File photoFile;
+            photoFile = createImageFile(folderToSave);
+            if (DEBUG) Log.d(LOG_TAG, "we have in photoFile path: " + photoFile.getPath());
 
-            try {
-                photoFile = createImageFile(folderToSave);
-                if (DEBUG) Log.d(LOG_TAG,"we have in photoFile path: "+photoFile.getPath());
-            } catch (IOException ex) {
-                Log.e(LOG_TAG, "Не удалось создать файл изображения");
-            }
+            Uri mOutFilePath = Uri.fromFile(photoFile);
+            captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mOutFilePath);
+            ((Activity) context).startActivityForResult(captureIntent, requestCode);
 
-            if (photoFile != null) {
-                Uri mOutFilePath = Uri.fromFile(photoFile);
-                captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mOutFilePath);
-                ((Activity) context).startActivityForResult(captureIntent, requestCode);
-
-                return mOutFilePath;
-            }
+            return mOutFilePath;
         }
         return null;
     }
@@ -68,31 +64,16 @@ public class ImgUtils {
         ((Activity) context).startActivityForResult(photoPickerIntent, requestCode);
     }
 
-    public static String savePicture(ImageView iv, String folderToSave, LinearLayout mLayout, Context context)
-    {
-        OutputStream fOut = null;
+    public static String savePicture(Bitmap bitmap, String folderToSave) throws IOException {
         String timeStamp = sDateFormat.toString();
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        String newPath = null;
-        try {
-            File file = new File(folderToSave, imageFileName +".jpg");
-            fOut = new FileOutputStream(file);
+        String imageFileName = String.format("JPEG_%s.jpg", timeStamp);
 
-            iv.buildDrawingCache();
-            Bitmap bitmap = iv.getDrawingCache();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fOut);
-            fOut.flush();
-            fOut.close();
-            MediaStore.Images.Media.insertImage(context.getContentResolver(), file.getAbsolutePath(), file.getName(), file.getName());
-            newPath = file.getAbsolutePath();
-        }
-        catch (Exception e)
-        {
-            Snackbar snackbar = Snackbar
-                    .make(mLayout, "Not enough space in the internal memory", Snackbar.LENGTH_LONG);
-            snackbar.show();
-            return e.getMessage();
-        }
-        return "file://"+newPath; // возвращает новый путь, который необходимо передать в базу данных для сохранения
+        File file = new File(folderToSave, imageFileName);
+        FileOutputStream fOut = new FileOutputStream(file);
+
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fOut);
+        fOut.flush();
+        fOut.close();
+        return "file://" + file.getAbsolutePath();
     }
 }
