@@ -46,7 +46,6 @@ public class ImgUtils {
             ((Activity) context).startActivityForResult(captureIntent, requestCode);
 
             return mOutFilePath;
-
         }
         return null;
     }

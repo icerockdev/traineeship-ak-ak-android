@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
@@ -20,16 +21,17 @@ import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
 import ru.Artem.meganotes.app.dialogs.AddImageDialog;
 import ru.Artem.meganotes.app.dialogs.DeleteImageDialog;
 import ru.Artem.meganotes.app.R;
-import ru.Artem.meganotes.app.models.ModelNote;
+import ru.Artem.meganotes.app.models.Note;
 import ru.Artem.meganotes.app.utils.DateUtils;
 import ru.Artem.meganotes.app.utils.ImgUtils;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -42,9 +44,10 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
 
     private String[] mWhere;
     private ImageView mImageView;
+    private LinearLayout mLayout;
 
     private Uri mOutFilePath = null;
-    private ModelNote mSelectNote;
+    private Note mSelectNote;
 
     private final int GALLERY_REQUEST = 1;
     private final int CAMERA_REQUEST = 2;
@@ -81,6 +84,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
         final TextView textView = (TextView) findViewById(R.id.textView);
         final EditText titleEdit = (EditText) findViewById(R.id.editTitle);
         final EditText contentEdit = (EditText) findViewById(R.id.editContent);
+        mLayout = (LinearLayout) findViewById(R.id.layout);
 
         textView.setText(mSelectNote.getLastUpdateNote());
         contentEdit.setText(mSelectNote.getContent());
@@ -108,8 +112,8 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
 
                 mSelectNote.setNameNote(v.getText().toString());
                 mSelectNote.setLastUpdateNote(date);
-
-                DataBaseHelper.editData(DataBaseHelper.TITLE_NOTES_COLUMN, mWhere, v.getText().toString(), date, EDIT_NOTE_TABLE);
+                DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
+                helper.editData(DataBaseHelper.TITLE_NOTES_COLUMN, mWhere, v.getText().toString(), date, EDIT_NOTE_TABLE);
                 return true;
             }
         });
@@ -123,8 +127,8 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
 
                 mSelectNote.setLastUpdateNote(date);
                 mSelectNote.setContent(v.getText().toString());
-
-                DataBaseHelper.editData(DataBaseHelper.CONTENT_COLUMN, mWhere, v.getText().toString(), date, EDIT_NOTE_TABLE);
+                DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
+                helper.editData(DataBaseHelper.CONTENT_COLUMN, mWhere, v.getText().toString(), date, EDIT_NOTE_TABLE);
                 return true;
             }
         });
@@ -216,7 +220,8 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
             }
             setImg(mOutFilePath);
             mSelectNote.setPathImg(mOutFilePath.toString());
-            DataBaseHelper.editData(DataBaseHelper.IMAGE_SOURCE_COLUMN, mWhere, mOutFilePath.toString(), DateUtils.getDate(), EDIT_IMAGE_TABLE);
+            DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
+            helper.editData(DataBaseHelper.IMAGE_SOURCE_COLUMN, mWhere, mOutFilePath.toString(), DateUtils.getDate(), EDIT_IMAGE_TABLE);
         }
     }
 
@@ -231,7 +236,12 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                             new String[]{Manifest.permission.CAMERA}, 0);
 
                 } else {
-                    mOutFilePath = ImgUtils.cameraRequest(DetailedActivity.this, CAMERA_REQUEST, LOG_TAG,sSavePath);
+                    try {
+                        mOutFilePath = ImgUtils.cameraRequest(DetailedActivity.this, CAMERA_REQUEST,sSavePath);
+                    } catch (IOException e) {
+                        mOutFilePath = null;
+                        Snackbar.make(mLayout, getString(R.string.str_problems_message),Snackbar.LENGTH_LONG).show();
+                    }
                 }
                 break;
             case 1:
@@ -253,8 +263,8 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
             String date = DateUtils.getDate();
 
             mImageView.setImageBitmap(null);
-
-            DataBaseHelper.deleteImage(mWhere[0]);
+            DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
+            helper.deleteImage(mWhere[0]);
             mSelectNote.setPathImg(DELETE_IMG);
             mSelectNote.setLastUpdateNote(date);
 

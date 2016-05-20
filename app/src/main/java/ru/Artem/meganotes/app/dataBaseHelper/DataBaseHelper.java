@@ -4,11 +4,13 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
-import ru.Artem.meganotes.app.models.ModelNote;
+
+import ru.Artem.meganotes.app.models.Note;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -40,17 +42,15 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             + " (" + ID_IMAGE + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + ID_NOTE_COLUMN + " INTEGER, "
             + IMAGE_SOURCE_COLUMN + " TEXT, "
-            + "FOREIGN KEY ("+ID_NOTE_COLUMN+") REFERENCES "+DATABASE_TABLE_IMAGES+"("+ID_COLUMN+") ON DELETE CASCADE ON UPDATE CASCADE);";
+            + "FOREIGN KEY (" + ID_NOTE_COLUMN + ") REFERENCES " + DATABASE_TABLE_IMAGES + "(" + ID_COLUMN + ") ON DELETE CASCADE ON UPDATE CASCADE);";
 
     private static DataBaseHelper sInstance;
-    private static SQLiteDatabase sSqLiteDatabase;
     private static final String LOG_TAG = DataBaseHelper.class.getName();
     private static final int EDIT_NOTES_TABLE_KEY = 0;
 
     public static synchronized DataBaseHelper getInstance(Context context) {
         if (sInstance == null) {
             sInstance = new DataBaseHelper(context);
-            sSqLiteDatabase = sInstance.getWritableDatabase();
         }
         return sInstance;
     }
@@ -77,48 +77,47 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public static void addData(String titleNote, String contentNote, String imgPath, String lastUpdateDate) {
-        try {
-            ContentValues values = new ContentValues();
+    public Note addData(String name, String content, String date, List<String> imagePaths) throws SQLiteException {
+        ContentValues values = new ContentValues();
 
-            values.put(DataBaseHelper.TITLE_NOTES_COLUMN, titleNote);
-            values.put(DataBaseHelper.CONTENT_COLUMN, contentNote);
-            values.put(DataBaseHelper.LAST_UPDATE_DATE_COLUMN, lastUpdateDate);
+        values.put(DataBaseHelper.TITLE_NOTES_COLUMN, name);
+        values.put(DataBaseHelper.CONTENT_COLUMN, content);
+        values.put(DataBaseHelper.LAST_UPDATE_DATE_COLUMN, date);
 
-            long insertedNoteID = sSqLiteDatabase.insert(DataBaseHelper.DATABASE_TABLE_NOTES, null, values);
+        long insertedNoteID = sInstance.getWritableDatabase().insert(DataBaseHelper.DATABASE_TABLE_NOTES, null, values);
 
-            ContentValues imagepath = new ContentValues();
-            imagepath.put(DataBaseHelper.IMAGE_SOURCE_COLUMN, imgPath);
-            imagepath.put(DataBaseHelper.ID_NOTE_COLUMN, insertedNoteID);
-
-            sSqLiteDatabase.insert(DataBaseHelper.DATABASE_TABLE_IMAGES, null, imagepath);
-        } catch (Throwable t) {
-            Log.e(LOG_TAG, "Ошибка при добавлении в базу");
+        ContentValues imagePath = new ContentValues();
+        if (!imagePaths.isEmpty()) {
+            for (int i = 0; i <= imagePaths.size(); i++) {
+                //продумать, добавится ли действительно более 1 элемента
+                imagePath.put(DataBaseHelper.IMAGE_SOURCE_COLUMN, imagePaths.get(i));
+            }
         }
+        imagePath.put(DataBaseHelper.ID_NOTE_COLUMN, insertedNoteID);
+        sInstance.getWritableDatabase().insert(DataBaseHelper.DATABASE_TABLE_IMAGES, null, imagePath);
+        return new Note(name,content,date,imagePaths,insertedNoteID);
     }
 
-    public static void onDeleteSelectedNote(String[] id) {
-        sSqLiteDatabase.delete(DataBaseHelper.DATABASE_TABLE_NOTES,
-                DataBaseHelper.ID_COLUMN  + " = ?", id);
+    public void onDeleteSelectedNote(String[] id) {
+        sInstance.getWritableDatabase().delete(DataBaseHelper.DATABASE_TABLE_NOTES,
+                DataBaseHelper.ID_COLUMN + " = ?", id);
     }
 
-    public static ModelNote getInsertedNote() {
-        ModelNote newNote = null;
+    public Note getInsertedNote() { //TODO: поменять структуру бд так что бы эту функцию можно было редуцировать, чтоб последний id и так возвращался
+        Note newNote = null;
 
         String query = "select " + DataBaseHelper.TITLE_NOTES_COLUMN + ", "
                 + DataBaseHelper.CONTENT_COLUMN + ", " + DataBaseHelper.LAST_UPDATE_DATE_COLUMN + ", "
-                + DataBaseHelper.ID_COLUMN +  " from "
+                + DataBaseHelper.ID_COLUMN + " from "
                 + DataBaseHelper.DATABASE_TABLE_NOTES + " where " + DataBaseHelper.ID_COLUMN + " = (select last_insert_rowid())";
-        //оставил именно rawQuery потому что не смог обычный db.query заставить работать с last_insert_rowid()
 
-        Cursor cursor = sSqLiteDatabase.rawQuery(query, null);
+        Cursor cursor = sInstance.getWritableDatabase().rawQuery(query, null);
 
         if (cursor.moveToFirst()) {
             int tempId = cursor.getInt(cursor.getColumnIndex(ID_COLUMN));
 
-            Cursor imageCursor = sSqLiteDatabase.query(DATABASE_TABLE_IMAGES, null, ID_NOTE_COLUMN + "= ?", new String[]{String.valueOf(tempId)}, null, null, null);
-            //imageCursor.moveToFirst();
-            List<String> tempList = new ArrayList<String>();
+            Cursor imageCursor = sInstance.getWritableDatabase().query(DATABASE_TABLE_IMAGES, null, ID_NOTE_COLUMN + "= ?", new String[]{String.valueOf(tempId)}, null, null, null);
+            List<String> tempList = new ArrayList<>();
 
             if (imageCursor.moveToFirst()) {
                 do {
@@ -126,84 +125,63 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 } while (imageCursor.moveToNext());
             }
 
-            cursor.moveToFirst(); // здесь это нужно для того что бы вновь начать работу с данными
-            // с первого элемента, без условия - потому что гарантированно что до этого места кода
-            // программа дойдёт только при наличии данных в курсоре.
-            do {
-                newNote = new ModelNote(
+            while (cursor.moveToNext()) {
+                newNote = new Note(
                         cursor.getString(cursor.getColumnIndex(DataBaseHelper.TITLE_NOTES_COLUMN)),
                         cursor.getString(cursor.getColumnIndex(DataBaseHelper.CONTENT_COLUMN)),
                         cursor.getString(cursor.getColumnIndex(DataBaseHelper.LAST_UPDATE_DATE_COLUMN)),
                         tempList,
                         cursor.getInt(cursor.getColumnIndex(DataBaseHelper.ID_COLUMN)));
-            } while (cursor.moveToNext());
+            }
             cursor.close();
             imageCursor.close();
         } // блок else не нужен, поскольку newNote при создании инициализируется в null значение.
         return newNote;
     }
 
-    public static List<ModelNote> getNotes() {
-        List<ModelNote> notesList = new ArrayList<ModelNote>();
-
-        Cursor cursor = sSqLiteDatabase.query(DATABASE_TABLE_NOTES, null, null, null, null, null, null);
-        Cursor imageCursor = sSqLiteDatabase.query(DATABASE_TABLE_IMAGES, null, null, null, null, null, null);
-
-        List<String> tempList = new ArrayList<String>();
-
-        if (imageCursor.moveToFirst()) { // это условие нужно для проверки наличия изображений.
-        // Если его убрать, то будет попытка добавить несуществующий элемент в массив, что вызовет краш.
-            do {
-                tempList.add(imageCursor.getString(imageCursor.getColumnIndex(IMAGE_SOURCE_COLUMN)));
-            }while (imageCursor.moveToNext());
-        }else
-        {
-            tempList.add("image"); //а тут добавляется заглушка в массив, для того что бы было что
-            // добавить в любом случае. Она не распарсится в моменты построения интерфейса, и получим
-            // пустое изображение, но не получим проблем при добавление.
-        }
+    public List<Note> getAllNotesWithoutImages() {
+        List<Note> notesList = new ArrayList<>();
+        Cursor cursor = sInstance.getReadableDatabase().query(DATABASE_TABLE_NOTES, null, null, null, null, null, null);
 
         while (cursor.moveToNext()) {
-            notesList.add(new ModelNote(
-                    cursor.getString(cursor.getColumnIndex(DataBaseHelper.TITLE_NOTES_COLUMN)),
-                    cursor.getString(cursor.getColumnIndex(DataBaseHelper.CONTENT_COLUMN)),
-                    cursor.getString(cursor.getColumnIndex(DataBaseHelper.LAST_UPDATE_DATE_COLUMN)),
-                    tempList,
-                    cursor.getInt(cursor.getColumnIndex(DataBaseHelper.ID_COLUMN)))
+            notesList.add(new Note(
+                            cursor.getString(cursor.getColumnIndex(DataBaseHelper.TITLE_NOTES_COLUMN)),
+                            cursor.getString(cursor.getColumnIndex(DataBaseHelper.CONTENT_COLUMN)),
+                            cursor.getString(cursor.getColumnIndex(DataBaseHelper.LAST_UPDATE_DATE_COLUMN)),
+                            null,
+                            cursor.getInt(cursor.getColumnIndex(DataBaseHelper.ID_COLUMN)))
             );
         }
         cursor.close();
         return notesList;
     }
 
-    public static void editData(String column, String[] where, String value, String lastUpdateDate, int table) {
-        if (table==EDIT_NOTES_TABLE_KEY) { //данные изменяются в 1-ой таблице, notes
+    public void editData(String column, String[] where, String value, String lastUpdateDate, int table) {
+        if (table == EDIT_NOTES_TABLE_KEY) { //данные изменяются в 1-ой таблице, notes
             ContentValues values = new ContentValues();
 
             values.put(column, value);
             values.put(DataBaseHelper.LAST_UPDATE_DATE_COLUMN, lastUpdateDate);
 
-            sSqLiteDatabase.update(DataBaseHelper.DATABASE_TABLE_NOTES, values,
+            sInstance.getWritableDatabase().update(DataBaseHelper.DATABASE_TABLE_NOTES, values,
                     DataBaseHelper.ID_COLUMN + " = ?", where);
-        }
-        else
-        { //данные изменяются во второй таблице, в imagepaths
+        } else { //данные изменяются во второй таблице, в imagepaths
             ContentValues values = new ContentValues();
 
             values.put(column, value);
             values.put(DataBaseHelper.LAST_UPDATE_DATE_COLUMN, lastUpdateDate);
 
-            sSqLiteDatabase.update(DataBaseHelper.DATABASE_TABLE_IMAGES, values,
+            sInstance.getWritableDatabase().update(DataBaseHelper.DATABASE_TABLE_IMAGES, values,
                     DataBaseHelper.ID_NOTE_COLUMN + " = ?", where);
         }
     }
 
-    public static void deleteImage(String id)
-    {
-        sSqLiteDatabase.delete(DATABASE_TABLE_NOTES,ID_IMAGE+"= ?",new String[]{id});
+    public void deleteImage(String id) {
+        sInstance.getWritableDatabase().delete(DATABASE_TABLE_NOTES, ID_IMAGE + "= ?", new String[]{id});
     }
 
-    public static void deleteAll() {
-        sSqLiteDatabase.delete(DataBaseHelper.DATABASE_TABLE_NOTES, null, null);
+    public void deleteAll() {
+        sInstance.getWritableDatabase().delete(DataBaseHelper.DATABASE_TABLE_NOTES, null, null);
+        sInstance.getWritableDatabase().delete(DataBaseHelper.DATABASE_TABLE_IMAGES, null, null);
     }
 }
