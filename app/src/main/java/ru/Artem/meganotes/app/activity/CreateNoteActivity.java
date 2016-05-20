@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -61,16 +62,16 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         mContentNote = (EditText) findViewById(R.id.editContentNote);
         mImageView = (ImageView) findViewById(R.id.imageView);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        mView = (LinearLayout)findViewById(R.id.layoutCreate);
+        mView = (LinearLayout) findViewById(R.id.layoutCreate);
 
         setSupportActionBar(toolbar);
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorTitleText));
 
-        if(getSupportActionBar() != null){
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle(R.string.new_note);
         }
-        sSavePath =  this.getFilesDir().toString();
+        sSavePath = this.getFilesDir().toString();
     }
 
     @Override
@@ -91,7 +92,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             addImageDialog.setStyle(DialogFragment.STYLE_NORMAL, R.style.AddImageDialog);
             addImageDialog.show(getSupportFragmentManager(), AddImageDialog.DIALOG_KEY);
 
-        } else if (id == android.R.id.home)  {
+        } else if (id == android.R.id.home) {
 
             finish();
 
@@ -102,24 +103,28 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                     || mImageView.getDrawable() != null) {
 
                 String date = DateUtils.getDate();
-                String filePath = "null";
+                String filePath;
 
                 if (mImageView.getDrawable() != null) {
-                    filePath = ImgUtils.savePicture(mImageView,sSavePath,mView,getApplicationContext());
-                    if (DEBUG) Log.d(LOG_TAG, "we have in filepath is: " + filePath);
+                    Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
+                    try {
+                        filePath = ImgUtils.savePicture(bitmap, sSavePath);
+                    } catch (IOException e) {
+                        filePath = null;
+                        Snackbar.make(mView, R.string.str_problems_save,Snackbar.LENGTH_LONG).show();
+                    }
+                } else {
+                    filePath = null;
                 }
-                else {
-                    filePath = "default";
-                }
-                DataBaseHelper.addData(mTitleNote.getText().toString(), mContentNote.getText().toString(), filePath, date);
+                DataBaseHelper.addData(mTitleNote.getText().toString(), mContentNote.getText().toString(), filePath, date);//переделать на модель
                 ModelNote newNote = DataBaseHelper.getInsertedNote();
                 if (DEBUG) {
                     Log.d(LOG_TAG, "what we have in newNote?");
                     Log.d(LOG_TAG, "newNote name: " + newNote.getNameNote());
                     Log.d(LOG_TAG, "newNote content: " + newNote.getContent());
                     List<String> tmpList = newNote.getPathImg();
-                    Log.d(LOG_TAG, "In image newNote we have count: "+tmpList.size());
-                    Log.d(LOG_TAG, "content image newNote is:"+tmpList.get(0));
+                    Log.d(LOG_TAG, "In image newNote we have count: " + tmpList.size());
+                    Log.d(LOG_TAG, "content image newNote is:" + tmpList.get(0));
                 }
                 Intent intent = new Intent();
                 intent.putExtra(CREATE_NOTE_KEY, newNote);
@@ -137,17 +142,28 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Bitmap img = null;
         if ((resultCode == Activity.RESULT_OK) && (requestCode == GALLERY_REQUEST)) {
-                Uri selectedImage = data.getData();
-                try {
-                    img = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
-                } catch (IOException e) {
-                    Snackbar.make(mView, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
-                }
-                if (DEBUG)
-                {
-                    Log.d(LOG_TAG,"we have selectedImage is: "+selectedImage);
-                }
-                mImageView.setImageBitmap(img);
+            Uri selectedImage = data.getData();
+            try {
+                img = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+            } catch (IOException e) {
+                Snackbar.make(mView, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
+            }
+            if (DEBUG) {
+                Log.d(LOG_TAG, "we have selectedImage is: " + selectedImage);
+            }
+            mImageView.setImageBitmap(img);
+        }
+        if ((resultCode == Activity.RESULT_OK) && (requestCode == CAMERA_REQUEST)) {
+            Uri selectedImage = data.getData();
+            try {
+                img = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+            } catch (IOException e) {
+                Snackbar.make(mView, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
+            }
+            if (DEBUG) {
+                Log.d(LOG_TAG, "we have selectedImage is: " + selectedImage);
+            }
+            mImageView.setImageBitmap(img);
         }
 
         super.onActivityResult(requestCode, resultCode, data);
@@ -164,7 +180,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                             new String[]{Manifest.permission.CAMERA}, 0);
 
                 } else {
-                    mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, LOG_TAG, sSavePath);
+                    mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, sSavePath);
                 }
                 break;
             case 1:

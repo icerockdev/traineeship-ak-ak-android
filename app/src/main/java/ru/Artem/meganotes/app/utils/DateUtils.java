@@ -14,9 +14,4 @@ public class DateUtils {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd, yyyy h:mm a", Locale.ROOT);
         return simpleDateFormat.format(date);
     }
-
-    public static String getDateCreateFile() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.ROOT);
-        return simpleDateFormat.format(new Date());
-    }
 }
