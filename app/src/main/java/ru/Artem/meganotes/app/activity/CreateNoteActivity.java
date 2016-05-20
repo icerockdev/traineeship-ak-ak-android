@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteException;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -26,7 +27,7 @@ import java.util.List;
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
 import ru.Artem.meganotes.app.dialogs.AddImageDialog;
 import ru.Artem.meganotes.app.R;
-import ru.Artem.meganotes.app.models.ModelNote;
+import ru.Artem.meganotes.app.models.Note;
 import ru.Artem.meganotes.app.utils.DateUtils;
 import ru.Artem.meganotes.app.utils.ImgUtils;
 
@@ -39,6 +40,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private EditText mContentNote;
     private ImageView mImageView;
     private LinearLayout mView;
+    private List<String> imagePaths;
 
     private Uri mOutFilePath = null;
     private ComponentName mCallingActivity;
@@ -105,12 +107,10 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             addImageDialog.show(getSupportFragmentManager(), AddImageDialog.DIALOG_KEY);
 
         } else if (id == android.R.id.home) {
-
             finish();
 
         } else if (id == R.id.close_with_out_save) {
             mContentNote.setText("");
-
             finish();
         }
         return true;
@@ -120,36 +120,39 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     public void finish() {
         if (!mContentNote.getText().toString().isEmpty()) {
 
-                String date = DateUtils.getDate();
-                String filePath;
+            String date = DateUtils.getDate();
 
-                if (mImageView.getDrawable() != null) {
-                    Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
-                    try {
-                        filePath = ImgUtils.savePicture(bitmap, sSavePath);
-                    } catch (IOException e) {
-                        filePath = null;
-                        Snackbar.make(mView, R.string.str_problems_save,Snackbar.LENGTH_LONG).show();
-                    }
-                } else {
-                    filePath = null;
+            if (mImageView.getDrawable() != null) {
+                Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
+                try {
+                    imagePaths.add(ImgUtils.savePicture(bitmap, sSavePath));
+                } catch (IOException e) {
+                    Snackbar.make(mView, R.string.str_problems_save, Snackbar.LENGTH_LONG).show();
                 }
+            }
+            //TODO переписвать то что выше так, что бы в imagePaths попадали все пути, из множественного добавления
+            DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
+            Note newNote;
+            try{
+                newNote = helper.addData(mTitleNote.getText().toString(), mContentNote.getText().toString(), date, imagePaths);
+            }catch (SQLiteException e)
+            {
+                newNote=null;
+                Snackbar.make(mView, R.string.cant_add_note_message,Snackbar.LENGTH_LONG).show();
+            }
 
-                DataBaseHelper.addData(mTitleNote.getText().toString(), mContentNote.getText().toString(), filePath, date);//переделать на модель
-                ModelNote newNote = DataBaseHelper.getInsertedNote();
-                if (DEBUG) {
-                    Log.d(LOG_TAG, "what we have in newNote?");
-                    Log.d(LOG_TAG, "newNote name: " + newNote.getNameNote());
-                    Log.d(LOG_TAG, "newNote content: " + newNote.getContent());
-                    List<String> tmpList = newNote.getPathImg();
-                    Log.d(LOG_TAG, "In image newNote we have count: " + tmpList.size());
-                    Log.d(LOG_TAG, "content image newNote is:" + tmpList.get(0));
-                }
-
-                Intent intent = new Intent();
-                intent.putExtra(CREATE_NOTE_KEY, newNote);
-                setResult(CREATE_NOTE_REQUEST, intent);
-            } //иначе dataBaseHelper.edit(...);
+            if (DEBUG) {
+                Log.d(LOG_TAG, "what we have in newNote?");
+                Log.d(LOG_TAG, "newNote name: " + newNote.getNameNote());
+                Log.d(LOG_TAG, "newNote content: " + newNote.getContent());
+                List<String> tmpList = newNote.getPathImg();
+                Log.d(LOG_TAG, "In image newNote we have count: " + tmpList.size());
+                Log.d(LOG_TAG, "content image newNote is:" + tmpList.get(0));
+            }
+            Intent intent = new Intent();
+            intent.putExtra(CREATE_NOTE_KEY, newNote);
+            setResult(CREATE_NOTE_REQUEST, intent);
+        } //иначе dataBaseHelper.edit(...); ??????
         super.finish();
     }
 
@@ -180,7 +183,6 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             }
             mImageView.setImageBitmap(img);
         }
-
         super.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -190,15 +192,14 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             case 0:
                 if (ActivityCompat.checkSelfPermission(CreateNoteActivity.this, Manifest.permission.CAMERA)
                         != PackageManager.PERMISSION_GRANTED) {
-
                     ActivityCompat.requestPermissions(CreateNoteActivity.this,
                             new String[]{Manifest.permission.CAMERA}, 0);
-
                 } else {
                     try {
                         mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, sSavePath);
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        mOutFilePath = null;
+                        Snackbar.make(mView, getString(R.string.str_problems_save), Snackbar.LENGTH_LONG).show();
                     }
                 }
                 break;
