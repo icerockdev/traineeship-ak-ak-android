@@ -20,6 +20,7 @@ import java.util.List;
 public class FragmentDialogAdapter extends ArrayAdapter<ModelTypeApp> {
     private LayoutInflater mInflater;
     private Context mContext;
+    private final String LOG_TAG = FragmentDialogAdapter.class.getName();
 
     public FragmentDialogAdapter(Context context, List<ModelTypeApp> objects) {
         super(context, R.layout.item_fragment_dialog, objects);

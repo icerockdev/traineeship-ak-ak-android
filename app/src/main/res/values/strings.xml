@@ -1,13 +1,14 @@
 <resources>
     <string name="app_name">Заметки</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
+
     <string name="create_note">Создать</string>
-    <string name="delete_note">Удалить</string>
-    <string name="title_note">Заголовок</string>
-    <string name="note">Заметка</string>
+    <string name="delete_note">Удалить заметку</string>
+    <string name="edit_note">Редактировать</string>
     <string name="done_create">Готово</string>
+
     <string name="new_note">Новая заметка</string>
+    <string name="title_note">Заголовок заметки</string>
+    <string name="note">Заметка</string>
 
     <string name="drawer_item_all">Все</string>
     <string name="drawer_item_work">Работа</string>
@@ -18,7 +19,8 @@
     <string name="drawer_menu_manager">Управление</string>
     <string name="drawer_item_delete">Удалить</string>
 
-    <string name="uploadImg">Загрузить изображение</string>
+    <string name="upload_img">Прикрепить изображение</string>
+    <string name="close_with_out_save">Закрыть без сохранения</string>
     <string name="gallery">Галерея</string>
     <string name="camera">Камера</string>
     <string name="add_image">Добавить изображение</string>
@@ -35,4 +37,5 @@
     <string name="snackBarMessage">Не возможно добавить пустую заметку!</string>
     <string name="str_problems_message">Проблемы с отображением изображения</string>
     <string name="str_problems_save">Поблемы при сохранение изображения</string>
+
 </resources>

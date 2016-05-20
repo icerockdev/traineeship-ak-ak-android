@@ -5,23 +5,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.design.widget.Snackbar;
 import android.util.Log;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 
-import ru.Artem.meganotes.app.activity.CreateNoteActivity;
 
 /**
  * Created by Артем on 03.05.2016.
@@ -41,10 +33,10 @@ public class ImgUtils {
     }
 
     public static Uri cameraRequest(Context context, int requestCode, String folderToSave) throws IOException {
+
         Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
         if (captureIntent.resolveActivity(context.getPackageManager()) != null) {
-
             File photoFile;
             photoFile = createImageFile(folderToSave);
             if (DEBUG) Log.d(LOG_TAG, "we have in photoFile path: " + photoFile.getPath());
@@ -54,6 +46,7 @@ public class ImgUtils {
             ((Activity) context).startActivityForResult(captureIntent, requestCode);
 
             return mOutFilePath;
+
         }
         return null;
     }
