@@ -144,7 +144,7 @@ public class DetailedActivity extends AppCompatActivity implements AddImageDialo
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                onInitSaveIntent();
+                initSaveIntent();
 
                 finish();
                 return true;
@@ -156,7 +156,7 @@ public class DetailedActivity extends AppCompatActivity implements AddImageDialo
                 return true;
             case R.id.delete_note:
                 mSelectNote.setDeletedNote(true);
-                onInitSaveIntent();
+                initSaveIntent();
 
                 finish();
                 return true;
@@ -165,7 +165,7 @@ public class DetailedActivity extends AppCompatActivity implements AddImageDialo
         }
     }
 
-    private void onInitSaveIntent() {
+    private void initSaveIntent() {
         Intent intent = new Intent();
 
         intent.putExtra(INTENT_EXTRA_OPEN_NOTE, mSelectNote);
