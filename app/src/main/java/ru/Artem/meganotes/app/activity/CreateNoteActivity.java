@@ -59,9 +59,9 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
             if (mEditNote == null) {
-                getSupportActionBar().setTitle(R.string.new_note);
+                getSupportActionBar().setTitle(R.string.new_title_note);
             } else {
-                getSupportActionBar().setTitle(mEditNote.getNameNote());
+                getSupportActionBar().setTitle(R.string.edit_title_note);
                 mTitleNote.setText(mEditNote.getNameNote());
                 mContentNote.setText(mEditNote.getContent());
             }
@@ -87,7 +87,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             addImageDialog.setStyle(DialogFragment.STYLE_NORMAL, R.style.AddImageDialog);
             addImageDialog.show(getSupportFragmentManager(), AddImageDialog.DIALOG_KEY);
         } else if (id == android.R.id.home) {
-            onSaveNote();
+            saveNote();
         } else if (id == R.id.close_with_out_save) {
             finish();
         }
@@ -137,9 +137,8 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         dialogFragment.dismiss();
     }
 
-    private void onSaveNote() {
+    private void saveNote() {
         if (!mContentNote.getText().toString().isEmpty()) {
-
             DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(getApplicationContext());
             String date = DateUtils.getDate();
             String filePath = "null";
@@ -166,6 +165,12 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             }
             setResult(RESULT_OK, intent);
         }
+
         finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        saveNote();
     }
 }
