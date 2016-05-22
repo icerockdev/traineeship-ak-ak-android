@@ -6,7 +6,8 @@
     <string name="edit_note">Редактировать</string>
     <string name="done_create">Готово</string>
 
-    <string name="new_note">Новая заметка</string>
+    <string name="new_note_title">Новая заметка</string>
+    <string name="edit_note_title">Редактировать заметку</string>
     <string name="title_note">Заголовок заметки</string>
     <string name="note">Заметка</string>
 
