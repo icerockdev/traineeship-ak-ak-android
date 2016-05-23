@@ -10,7 +10,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import ru.Artem.meganotes.app.models.Note;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -23,7 +22,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_TABLE_NOTES = "notes";
     public static final String ID_COLUMN = "_id";
-    public static final String TITLE_NOTES_COLUMN = "note_title";
+    public static final String NAME_NOTES_COLUMN = "note_title";
     public static final String CONTENT_COLUMN = "content";
     public static final String LAST_UPDATE_DATE_COLUMN = "last_update_date";
 
@@ -34,7 +33,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     private static final String CREATE_TABLE_NOTES = "CREATE TABLE " + DATABASE_TABLE_NOTES
             + " (" + ID_COLUMN + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + TITLE_NOTES_COLUMN + " TEXT NOT NULL, "
+            + NAME_NOTES_COLUMN + " TEXT NOT NULL, "
             + CONTENT_COLUMN + " TEXT, "
             + LAST_UPDATE_DATE_COLUMN + " TEXT)";
 
@@ -80,7 +79,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public Note addNote(String name, String content, String date, List<String> imagePaths) throws SQLiteException {
         ContentValues values = new ContentValues();
 
-        values.put(DataBaseHelper.TITLE_NOTES_COLUMN, name);
+        values.put(DataBaseHelper.NAME_NOTES_COLUMN, name);
         values.put(DataBaseHelper.CONTENT_COLUMN, content);
         values.put(DataBaseHelper.LAST_UPDATE_DATE_COLUMN, date);
 
@@ -94,13 +93,13 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 sInstance.getWritableDatabase().insert(DataBaseHelper.DATABASE_TABLE_IMAGES, null, imagePath);
             }
         }
-        return new Note(name,content,date,imagePaths,insertedNoteID);
+        return new Note(name, content, date, imagePaths, insertedNoteID);
     }
 
     public void deleteSelectNote(Note note) {
         long id = note.getId();
         sInstance.getWritableDatabase().delete(DataBaseHelper.DATABASE_TABLE_NOTES,
-                DataBaseHelper.ID_COLUMN + " = ?", new String[] {String.valueOf(id)});
+                DataBaseHelper.ID_COLUMN + " = ?", new String[]{String.valueOf(id)});
     }
 
     public List<Note> getAllNotesWithoutImages() {
@@ -109,7 +108,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
         while (cursor.moveToNext()) {
             notesList.add(new Note(
-                            cursor.getString(cursor.getColumnIndex(DataBaseHelper.TITLE_NOTES_COLUMN)),
+                            cursor.getString(cursor.getColumnIndex(DataBaseHelper.NAME_NOTES_COLUMN)),
                             cursor.getString(cursor.getColumnIndex(DataBaseHelper.CONTENT_COLUMN)),
                             cursor.getString(cursor.getColumnIndex(DataBaseHelper.LAST_UPDATE_DATE_COLUMN)),
                             null,
@@ -120,28 +119,50 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return notesList;
     }
 
-    public void updateNote(String column, String[] where, String value, String lastUpdateDate, int table) {
-        if (table == EDIT_NOTES_TABLE_KEY) { //данные изменяются в 1-ой таблице, notes
-            ContentValues values = new ContentValues();
+    public void updateNote(Note note) {
+        long idUpdatedNote = note.getId();
+        String nameUpdatedNote = note.getNameNote();
+        String contentUpdatedNote = note.getContent();
+        String dateUpdatedNote = note.getDateLastUpdateNote();
+        List<String> imagesUpdatedNote = note.getPathImg();
 
-            values.put(column, value);
-            values.put(DataBaseHelper.LAST_UPDATE_DATE_COLUMN, lastUpdateDate);
+        ContentValues values = new ContentValues();
+        values.put(NAME_NOTES_COLUMN, nameUpdatedNote);
+        values.put(CONTENT_COLUMN, contentUpdatedNote);
+        values.put(LAST_UPDATE_DATE_COLUMN, dateUpdatedNote);
+        sInstance.getWritableDatabase().update(DATABASE_TABLE_NOTES, values,
+                DataBaseHelper.ID_COLUMN + " = ?", new String[]{String.valueOf(idUpdatedNote)});
 
-            sInstance.getWritableDatabase().update(DataBaseHelper.DATABASE_TABLE_NOTES, values,
-                    DataBaseHelper.ID_COLUMN + " = ?", where);
-        } else { //данные изменяются во второй таблице, в imagepaths
-            ContentValues values = new ContentValues();
+        List<String> oldImagesThisNote = new ArrayList<>();
+        Cursor cursor = sInstance.getReadableDatabase().query(DATABASE_TABLE_IMAGES,
+                null,
+                ID_NOTE_COLUMN + " = ?",
+                new String[]{String.valueOf(idUpdatedNote)},
+                null, null, null);
+        if (cursor.moveToNext()) {
+            oldImagesThisNote.add(cursor.getString(cursor.getColumnIndex(IMAGE_SOURCE_COLUMN)));
+        }
+        cursor.close();
 
-            values.put(column, value);
-            values.put(DataBaseHelper.LAST_UPDATE_DATE_COLUMN, lastUpdateDate);
-
-            sInstance.getWritableDatabase().update(DataBaseHelper.DATABASE_TABLE_IMAGES, values,
-                    DataBaseHelper.ID_NOTE_COLUMN + " = ?", where);
+        if (!oldImagesThisNote.equals(imagesUpdatedNote)) {
+            if (!imagesUpdatedNote.isEmpty()) {
+                ContentValues containerForImages = new ContentValues();
+                for (int i = 0; i < imagesUpdatedNote.size(); i++) {
+                    containerForImages.put(IMAGE_SOURCE_COLUMN, imagesUpdatedNote.get(i));
+                    containerForImages.put(ID_NOTE_COLUMN, idUpdatedNote);
+                    sInstance.getWritableDatabase().insert(DATABASE_TABLE_IMAGES, null, containerForImages);
+                }
+            } else {
+                for (int i = 0; i < oldImagesThisNote.size(); i++) {
+                    sInstance.getWritableDatabase().delete(DATABASE_TABLE_IMAGES, ID_NOTE_COLUMN + "= ?", new String[]{String.valueOf(idUpdatedNote)});
+                    //удаление всех картинок, надо сюда попробовать при тесте ввести переменную и посмотреть сколько удаляет.
+                }
+            }
         }
     }
 
     public void deleteImage(String id) {
-        sInstance.getWritableDatabase().delete(DATABASE_TABLE_NOTES, ID_IMAGE + "= ?", new String[]{id});
+        sInstance.getWritableDatabase().delete(DATABASE_TABLE_IMAGES, ID_IMAGE + "= ?", new String[]{id});
     }
 
     public void deleteAllNotesAndImages() {

@@ -3,7 +3,6 @@ package ru.Artem.meganotes.app.models;
 import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +13,7 @@ import java.util.List;
 public class Note implements Parcelable {
 
     private String mNameNote;
-    private String mLastUpdateNote;
+    private String mLastDateUpdateNote;
     private List<String> mPathImg;
     private String mContent;
     private long mId;
@@ -23,7 +22,7 @@ public class Note implements Parcelable {
 
     public Note(String nameNote, String noteContent, String lastUpdateNote, List<String> paths, long id) {
         this.mNameNote = nameNote;
-        this.mLastUpdateNote = lastUpdateNote;
+        this.mLastDateUpdateNote = lastUpdateNote;
         this.mContent = noteContent;
         this.mPathImg = paths;
         this.mId = id;
@@ -32,15 +31,15 @@ public class Note implements Parcelable {
     private Note(Parcel parcel) {
         this.mNameNote = parcel.readString();
         this.mContent = parcel.readString();
-        this.mLastUpdateNote = parcel.readString();
+        this.mLastDateUpdateNote = parcel.readString();
         this.mPathImg = new ArrayList<String>();
         parcel.readList(this.mPathImg, Note.class.getClassLoader());
         this.mPositionInAdapter = parcel.readInt();
         this.mId = parcel.readInt();
     }
 
-    public void setLastUpdateNote(String mLastUpdateNote) {
-        this.mLastUpdateNote = mLastUpdateNote;
+    public void setDateLastUpdateNote(String mLastUpdateNote) {
+        this.mLastDateUpdateNote = mLastUpdateNote;
     }
 
     public int getPositionInAdapter() {
@@ -67,8 +66,8 @@ public class Note implements Parcelable {
         this.mNameNote = nameNote;
     }
 
-    public String getLastUpdateNote() {
-        return mLastUpdateNote;
+    public String getDateLastUpdateNote() {
+        return mLastDateUpdateNote;
     }
 
     public List<String> getPathImg() {
@@ -114,7 +113,7 @@ public class Note implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mNameNote);
         dest.writeString(mContent);
-        dest.writeString(mLastUpdateNote);
+        dest.writeString(mLastDateUpdateNote);
         dest.writeList(mPathImg);
         dest.writeInt(mPositionInAdapter);
         dest.writeLong(mId);

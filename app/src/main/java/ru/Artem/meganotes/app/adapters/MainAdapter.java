@@ -102,6 +102,6 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.NoteViewHolder
             }
         }
         noteViewHolder.nameNote.setText(note.getNameNote());
-        noteViewHolder.lastUpdateNote.setText(note.getLastUpdateNote());
+        noteViewHolder.lastUpdateNote.setText(note.getDateLastUpdateNote());
     }
 }
