@@ -113,7 +113,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                 mSelectNote.setNameNote(v.getText().toString());
                 mSelectNote.setLastUpdateNote(date);
                 DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
-                helper.editData(DataBaseHelper.TITLE_NOTES_COLUMN, mWhere, v.getText().toString(), date, EDIT_NOTE_TABLE);
+                helper.updateNote(DataBaseHelper.TITLE_NOTES_COLUMN, mWhere, v.getText().toString(), date, EDIT_NOTE_TABLE);
                 return true;
             }
         });
@@ -128,11 +128,10 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                 mSelectNote.setLastUpdateNote(date);
                 mSelectNote.setContent(v.getText().toString());
                 DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
-                helper.editData(DataBaseHelper.CONTENT_COLUMN, mWhere, v.getText().toString(), date, EDIT_NOTE_TABLE);
+                helper.updateNote(DataBaseHelper.CONTENT_COLUMN, mWhere, v.getText().toString(), date, EDIT_NOTE_TABLE);
                 return true;
             }
         });
-
 
         mImageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -221,7 +220,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
             setImg(mOutFilePath);
             mSelectNote.setPathImg(mOutFilePath.toString());
             DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
-            helper.editData(DataBaseHelper.IMAGE_SOURCE_COLUMN, mWhere, mOutFilePath.toString(), DateUtils.getDate(), EDIT_IMAGE_TABLE);
+            helper.updateNote(DataBaseHelper.IMAGE_SOURCE_COLUMN, mWhere, mOutFilePath.toString(), DateUtils.getDate(), EDIT_IMAGE_TABLE);
         }
     }
 

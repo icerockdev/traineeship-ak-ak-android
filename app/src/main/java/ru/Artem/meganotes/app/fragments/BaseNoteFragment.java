@@ -127,8 +127,7 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
 
         if (mDeleteNote != null) {
             if (which == DialogInterface.BUTTON_POSITIVE) {
-                dataBaseHelper.onDeleteSelectedNote(new String[]
-                        {String.valueOf(mDeleteNote.getId())});
+                dataBaseHelper.deleteSelectNote(mDeleteNote);
 
                 mNotesList.remove(mDeleteNote.getPositionInAdapter());
                 mAdapter.notifyItemRemoved(mDeleteNote.getPositionInAdapter());
