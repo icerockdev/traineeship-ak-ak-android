@@ -77,7 +77,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public Note addData(String name, String content, String date, List<String> imagePaths) throws SQLiteException {
+    public Note addNote(String name, String content, String date, List<String> imagePaths) throws SQLiteException {
         ContentValues values = new ContentValues();
 
         values.put(DataBaseHelper.TITLE_NOTES_COLUMN, name);
@@ -88,55 +88,19 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
         ContentValues imagePath = new ContentValues();
         if (!imagePaths.isEmpty()) {
-            for (int i = 0; i <= imagePaths.size(); i++) {
-                //продумать, добавится ли действительно более 1 элемента
+            for (int i = 0; i < imagePaths.size(); i++) {
                 imagePath.put(DataBaseHelper.IMAGE_SOURCE_COLUMN, imagePaths.get(i));
+                imagePath.put(DataBaseHelper.ID_NOTE_COLUMN, insertedNoteID);
+                sInstance.getWritableDatabase().insert(DataBaseHelper.DATABASE_TABLE_IMAGES, null, imagePath);
             }
         }
-        imagePath.put(DataBaseHelper.ID_NOTE_COLUMN, insertedNoteID);
-        sInstance.getWritableDatabase().insert(DataBaseHelper.DATABASE_TABLE_IMAGES, null, imagePath);
         return new Note(name,content,date,imagePaths,insertedNoteID);
     }
 
-    public void onDeleteSelectedNote(String[] id) {
+    public void deleteSelectNote(Note note) {
+        long id = note.getId();
         sInstance.getWritableDatabase().delete(DataBaseHelper.DATABASE_TABLE_NOTES,
-                DataBaseHelper.ID_COLUMN + " = ?", id);
-    }
-
-    public Note getInsertedNote() { //TODO: поменять структуру бд так что бы эту функцию можно было редуцировать, чтоб последний id и так возвращался
-        Note newNote = null;
-
-        String query = "select " + DataBaseHelper.TITLE_NOTES_COLUMN + ", "
-                + DataBaseHelper.CONTENT_COLUMN + ", " + DataBaseHelper.LAST_UPDATE_DATE_COLUMN + ", "
-                + DataBaseHelper.ID_COLUMN + " from "
-                + DataBaseHelper.DATABASE_TABLE_NOTES + " where " + DataBaseHelper.ID_COLUMN + " = (select last_insert_rowid())";
-
-        Cursor cursor = sInstance.getWritableDatabase().rawQuery(query, null);
-
-        if (cursor.moveToFirst()) {
-            int tempId = cursor.getInt(cursor.getColumnIndex(ID_COLUMN));
-
-            Cursor imageCursor = sInstance.getWritableDatabase().query(DATABASE_TABLE_IMAGES, null, ID_NOTE_COLUMN + "= ?", new String[]{String.valueOf(tempId)}, null, null, null);
-            List<String> tempList = new ArrayList<>();
-
-            if (imageCursor.moveToFirst()) {
-                do {
-                    tempList.add(imageCursor.getString(imageCursor.getColumnIndex(DataBaseHelper.IMAGE_SOURCE_COLUMN)));
-                } while (imageCursor.moveToNext());
-            }
-
-            while (cursor.moveToNext()) {
-                newNote = new Note(
-                        cursor.getString(cursor.getColumnIndex(DataBaseHelper.TITLE_NOTES_COLUMN)),
-                        cursor.getString(cursor.getColumnIndex(DataBaseHelper.CONTENT_COLUMN)),
-                        cursor.getString(cursor.getColumnIndex(DataBaseHelper.LAST_UPDATE_DATE_COLUMN)),
-                        tempList,
-                        cursor.getInt(cursor.getColumnIndex(DataBaseHelper.ID_COLUMN)));
-            }
-            cursor.close();
-            imageCursor.close();
-        } // блок else не нужен, поскольку newNote при создании инициализируется в null значение.
-        return newNote;
+                DataBaseHelper.ID_COLUMN + " = ?", new String[] {String.valueOf(id)});
     }
 
     public List<Note> getAllNotesWithoutImages() {
@@ -156,7 +120,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return notesList;
     }
 
-    public void editData(String column, String[] where, String value, String lastUpdateDate, int table) {
+    public void updateNote(String column, String[] where, String value, String lastUpdateDate, int table) {
         if (table == EDIT_NOTES_TABLE_KEY) { //данные изменяются в 1-ой таблице, notes
             ContentValues values = new ContentValues();
 
@@ -180,7 +144,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         sInstance.getWritableDatabase().delete(DATABASE_TABLE_NOTES, ID_IMAGE + "= ?", new String[]{id});
     }
 
-    public void deleteAll() {
+    public void deleteAllNotesAndImages() {
         sInstance.getWritableDatabase().delete(DataBaseHelper.DATABASE_TABLE_NOTES, null, null);
         sInstance.getWritableDatabase().delete(DataBaseHelper.DATABASE_TABLE_IMAGES, null, null);
     }

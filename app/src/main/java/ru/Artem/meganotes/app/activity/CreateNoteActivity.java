@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.widget.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
@@ -52,7 +53,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     public final static String CREATE_NOTE_KEY = "noteCreate";
     public static final int CREATE_NOTE_REQUEST = 1001;
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +82,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             }
         }
         sSavePath = this.getFilesDir().toString();
+        imagePaths = new ArrayList<>();
     }
 
     @Override
@@ -134,7 +136,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
             Note newNote;
             try{
-                newNote = helper.addData(mTitleNote.getText().toString(), mContentNote.getText().toString(), date, imagePaths);
+                newNote = helper.addNote(mTitleNote.getText().toString(), mContentNote.getText().toString(), date, imagePaths);
             }catch (SQLiteException e)
             {
                 newNote=null;
