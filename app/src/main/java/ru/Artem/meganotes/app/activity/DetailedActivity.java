@@ -23,6 +23,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
 import ru.Artem.meganotes.app.dialogs.AddImageDialog;
 import ru.Artem.meganotes.app.dialogs.DeleteImageDialog;
@@ -69,7 +70,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
         final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
         mSelectNote = getIntent().getParcelableExtra(EDIT_NOTE_KEY);
-        mWhere = new String[] {String.valueOf(mSelectNote.getId())};
+        mWhere = new String[]{String.valueOf(mSelectNote.getId())};
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarDetailed);
 
@@ -86,7 +87,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
         final EditText contentEdit = (EditText) findViewById(R.id.editContent);
         mLayout = (LinearLayout) findViewById(R.id.layout);
 
-        textView.setText(mSelectNote.getLastUpdateNote());
+        textView.setText(mSelectNote.getDateLastUpdateNote());
         contentEdit.setText(mSelectNote.getContent());
         titleEdit.setText(mSelectNote.getNameNote());
 
@@ -111,9 +112,9 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                 imm.hideSoftInputFromWindow(titleEdit.getWindowToken(), 0);
 
                 mSelectNote.setNameNote(v.getText().toString());
-                mSelectNote.setLastUpdateNote(date);
+                mSelectNote.setDateLastUpdateNote(date);
                 DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
-                helper.updateNote(DataBaseHelper.TITLE_NOTES_COLUMN, mWhere, v.getText().toString(), date, EDIT_NOTE_TABLE);
+                helper.updateNote(mSelectNote);
                 return true;
             }
         });
@@ -125,10 +126,10 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
 
                 imm.hideSoftInputFromWindow(titleEdit.getWindowToken(), 0);
 
-                mSelectNote.setLastUpdateNote(date);
+                mSelectNote.setDateLastUpdateNote(date);
                 mSelectNote.setContent(v.getText().toString());
                 DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
-                helper.updateNote(DataBaseHelper.CONTENT_COLUMN, mWhere, v.getText().toString(), date, EDIT_NOTE_TABLE);
+                helper.updateNote(mSelectNote);
                 return true;
             }
         });
@@ -151,7 +152,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                 return true;
             }
         });
-        sSavePath =  this.getFilesDir().toString();
+        sSavePath = this.getFilesDir().toString();
     }
 
     private void setImg(final Uri pathImg) {
@@ -159,9 +160,8 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
             @Override
             public void run() {
                 InputStream inputStream;
-                if (DEBUG)
-                {
-                    Log.d(LOG_TAG,"we in setIMg, and have in path is: "+pathImg.toString());
+                if (DEBUG) {
+                    Log.d(LOG_TAG, "we in setIMg, and have in path is: " + pathImg.toString());
                 }
                 try {
                     inputStream = getContentResolver().openInputStream(pathImg);
@@ -220,7 +220,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
             setImg(mOutFilePath);
             mSelectNote.setPathImg(mOutFilePath.toString());
             DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
-            helper.updateNote(DataBaseHelper.IMAGE_SOURCE_COLUMN, mWhere, mOutFilePath.toString(), DateUtils.getDate(), EDIT_IMAGE_TABLE);
+            helper.updateNote(mSelectNote);
         }
     }
 
@@ -236,10 +236,10 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
 
                 } else {
                     try {
-                        mOutFilePath = ImgUtils.cameraRequest(DetailedActivity.this, CAMERA_REQUEST,sSavePath);
+                        mOutFilePath = ImgUtils.cameraRequest(DetailedActivity.this, CAMERA_REQUEST, sSavePath);
                     } catch (IOException e) {
                         mOutFilePath = null;
-                        Snackbar.make(mLayout, getString(R.string.str_problems_message),Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(mLayout, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
                     }
                 }
                 break;
@@ -265,7 +265,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
             DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
             helper.deleteImage(mWhere[0]);
             mSelectNote.setPathImg(DELETE_IMG);
-            mSelectNote.setLastUpdateNote(date);
+            mSelectNote.setDateLastUpdateNote(date);
 
             dialog.dismiss();
         }
