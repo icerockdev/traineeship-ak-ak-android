@@ -59,9 +59,9 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
             if (mEditNote == null) {
-                getSupportActionBar().setTitle(R.string.new_title_note);
+                getSupportActionBar().setTitle(R.string.new_note_title);
             } else {
-                getSupportActionBar().setTitle(R.string.edit_title_note);
+                getSupportActionBar().setTitle(R.string.edit_note_title);
                 mTitleNote.setText(mEditNote.getNameNote());
                 mContentNote.setText(mEditNote.getContent());
             }
