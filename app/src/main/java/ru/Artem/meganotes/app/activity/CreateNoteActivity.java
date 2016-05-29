@@ -17,8 +17,10 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.*;
 
 import java.io.IOException;
@@ -29,6 +31,7 @@ import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
 import ru.Artem.meganotes.app.dialogs.AddImageDialog;
 import ru.Artem.meganotes.app.R;
 import ru.Artem.meganotes.app.models.Note;
+import ru.Artem.meganotes.app.utils.CustomImageMaker;
 import ru.Artem.meganotes.app.utils.DateUtils;
 import ru.Artem.meganotes.app.utils.ImgUtils;
 
@@ -41,6 +44,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private EditText mContentNote;
     private ImageView mImageView;
     private LinearLayout mView;
+    private RelativeLayout mLayoutForImages;
     private List<String> imagePaths;
 
     private Uri mOutFilePath = null;
@@ -53,7 +57,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     public final static String CREATE_NOTE_KEY = "noteCreate";
     public static final int CREATE_NOTE_REQUEST = 1001;
 
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +71,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
         mView = (LinearLayout) findViewById(R.id.layoutCreate);
+        mLayoutForImages = (RelativeLayout) findViewById(R.id.LayoutForImages);
 
         mCallingActivity = getCallingActivity();
 
@@ -84,6 +89,14 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         }
         sSavePath = this.getFilesDir().toString();
         imagePaths = new ArrayList<>();
+
+        Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+        if (DEBUG) {
+            Log.d(LOG_TAG, "our screen width is: " + display.getWidth());
+            Log.d(LOG_TAG, "our screen height is: " + display.getHeight());
+            int placeForImages = display.getWidth() - 32; //32 = dimen x2
+            Log.d(LOG_TAG, "we have placeForImages value: " + placeForImages);
+        }
     }
 
     @Override
@@ -171,7 +184,9 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             if (DEBUG) {
                 Log.d(LOG_TAG, "we have selectedImage is: " + selectedImage);
             }
-            mImageView.setImageBitmap(img);
+            CustomImageMaker image = new CustomImageMaker(getBaseContext(),"имя файла",selectedImage.toString(),true);
+            mLayoutForImages.addView(image);
+            //mImageView.setImageBitmap(img);
         }
         if ((resultCode == Activity.RESULT_OK) && (requestCode == CAMERA_REQUEST)) {
             Uri selectedImage = data.getData();

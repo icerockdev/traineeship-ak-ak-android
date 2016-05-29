@@ -45,7 +45,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     private static DataBaseHelper sInstance;
     private static final String LOG_TAG = DataBaseHelper.class.getName();
-    private static final int EDIT_NOTES_TABLE_KEY = 0;
 
     public static synchronized DataBaseHelper getInstance(Context context) {
         if (sInstance == null) {
@@ -155,7 +154,9 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             } else {
                 for (int i = 0; i < oldImagesThisNote.size(); i++) {
                     sInstance.getWritableDatabase().delete(DATABASE_TABLE_IMAGES, ID_NOTE_COLUMN + "= ?", new String[]{String.valueOf(idUpdatedNote)});
-                    //удаление всех картинок, надо сюда попробовать при тесте ввести переменную и посмотреть сколько удаляет.
+                    //удаление всех картинок, может быть неактуально, если при удаление каждой одной вызвается функция ниже описанная
+                    // надо сюда попробовать при тесте после добавления множества изображений в интерфейс
+                    // ввести переменную и посмотреть сколько удалит.
                 }
             }
         }
