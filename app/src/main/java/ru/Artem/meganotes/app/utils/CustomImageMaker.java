@@ -1,9 +1,14 @@
 package ru.Artem.meganotes.app.utils;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -22,29 +27,28 @@ public class CustomImageMaker extends RelativeLayout {
     private String mImagePath;
     private boolean mReadMode;
 
-    public CustomImageMaker(Context context, String text, String imagePath, boolean mode) {
+    public CustomImageMaker(Context context, String text, String imagePath, boolean mode, int width, int height) {
         super(context);
 
+        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(width, height);
+        this.setLayoutParams(params);
         mImagePath = imagePath;
         mReadMode = mode;
-        initElements();
+        initElements(context);
         mImage.setImageURI(Uri.parse(mImagePath));
         mText.setText(text);
-        if (mReadMode)
-        {
+        if (mReadMode) {
             //TODO кнопка с изображенем инфо и соотв.функционалом
             mButton.setImageResource(R.drawable.ic_info_white_24dp);
-        }
-        else //если режим редактирования
+        } else //если режим редактирования
         {
             //TODO кнопка с изображением удалить и соотв.функционалом
             mButton.setImageResource(R.drawable.ic_delete);
         }
     }
 
-    private void initElements()
-    {
-        LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    private void initElements(final Context context) {
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.custom_imageview_style, this);
         mImage = (ImageView) findViewById(R.id.imageInCustomIV);
         mText = (TextView) findViewById(R.id.textInCustomIV);
@@ -54,34 +58,48 @@ public class CustomImageMaker extends RelativeLayout {
             public void onClick(View v) {
                 // TODO реализацию обработчика сюда
                 if (mReadMode) {
-                    //TODO алертдиалог с одной кнопкой ОК, показывающий инфу о изображение
-                }
-                else {
-                    //TODO фрагментдиалог, спрашивающий желаю ли я удалить файл изображения
+                    //Log.d("CreateNoteActivity", "we in click listener imageButton");
+                    AlertDialog.Builder adb = new AlertDialog.Builder(context.getApplicationContext()); // сюда надо передать какой-то контекст для того что бы билдер знал где показываться
+                    adb.setTitle(R.string.drawer_menu_info);
+                    adb.setMessage("инфа о изображение");
+                    adb.setIcon(android.R.drawable.ic_dialog_info);
+                    adb.setNeutralButton(context.getString(R.string.string_ok), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                                case Dialog.BUTTON_NEUTRAL:
+                                    break;
+                            }
+                        }
+                    });
+                    adb.create();
+                    adb.show();
+                } else {
+                    Log.d("CreateNoteActivity", "we in click listener imageButton");
+                    //TODO снекбар с кнопкой ундо, который сообщает что удалена картинка, но позволяет вернуть её обратно
                 }
             }
         });
     }
 
-    public void setTextForLabel(String text)
-    {
+    public void setTextForLabel(String text) {
         mText.setText(text);
     }
-    public void setImage(String path)
-    {
+
+    public void setImage(String path) {
         mImage.setImageURI(Uri.parse(path));
         mImagePath = path;
     }
-    public String getImagePath()
-    {
+
+    public String getImagePath() {
         return mImagePath;
     }
-    public void setObserveMode(boolean mode)
-    {
+
+    public void setObserveMode(boolean mode) {
         mReadMode = mode;
     }
-    public boolean getObserveMode()
-    {
+
+    public boolean getObserveMode() {
         return mReadMode;
     }
 }

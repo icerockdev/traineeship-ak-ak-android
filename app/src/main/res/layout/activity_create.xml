@@ -59,8 +59,10 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/LayoutForImages">
-
+                android:id="@+id/LayoutForImages"
+                android:layout_below="@id/editContentNote"
+                android:padding="16dp"
+                >
             </RelativeLayout>
         </RelativeLayout>
 

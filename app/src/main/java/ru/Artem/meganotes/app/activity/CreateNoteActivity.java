@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.*;
 
@@ -46,6 +47,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private LinearLayout mView;
     private RelativeLayout mLayoutForImages;
     private List<String> imagePaths;
+    private int imageWidth;
 
     private Uri mOutFilePath = null;
     private ComponentName mCallingActivity;
@@ -91,11 +93,13 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         imagePaths = new ArrayList<>();
 
         Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+        int placeForImages = display.getWidth() - 32; //32 = padding x2
+        imageWidth = (placeForImages / 2) - 10;
         if (DEBUG) {
             Log.d(LOG_TAG, "our screen width is: " + display.getWidth());
             Log.d(LOG_TAG, "our screen height is: " + display.getHeight());
-            int placeForImages = display.getWidth() - 32; //32 = dimen x2
             Log.d(LOG_TAG, "we have placeForImages value: " + placeForImages);
+            Log.d(LOG_TAG, "our imageWidth is " + imageWidth);
         }
     }
 
@@ -137,23 +141,30 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
             String date = DateUtils.getDate();
 
-            if (mImageView.getDrawable() != null) {
-                Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
+            int imagesCount = mLayoutForImages.getChildCount();
+            for (int i=0; i<imagesCount; i++){
+                RelativeLayout customImageMaker = (RelativeLayout) mLayoutForImages.getChildAt(i);
+                RelativeLayout layoutInCustomView = (RelativeLayout) customImageMaker.getChildAt(0);
+                ImageView imageViewInCustomView = (ImageView) layoutInCustomView.getChildAt(0);
+                if (DEBUG)
+                {
+                    Log.d(LOG_TAG,"we have in 1st child of CustomImageMaker"+layoutInCustomView.getClass());
+                    Log.d(LOG_TAG,"we have in 2nd child of CustomImageMaker"+imageViewInCustomView.getClass());
+                }
+                Bitmap bitmap = ((BitmapDrawable) imageViewInCustomView.getDrawable()).getBitmap();
                 try {
                     imagePaths.add(ImgUtils.savePicture(bitmap, sSavePath));
                 } catch (IOException e) {
                     Snackbar.make(mView, R.string.str_problems_save, Snackbar.LENGTH_LONG).show();
                 }
             }
-            //TODO переписвать то что выше так, что бы в imagePaths попадали все пути, из множественного добавления
             DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
             Note newNote;
-            try{
+            try {
                 newNote = helper.addNote(mTitleNote.getText().toString(), mContentNote.getText().toString(), date, imagePaths);
-            }catch (SQLiteException e)
-            {
-                newNote=null;
-                Snackbar.make(mView, R.string.cant_add_note_message,Snackbar.LENGTH_LONG).show();
+            } catch (SQLiteException e) {
+                newNote = null;
+                Snackbar.make(mView, R.string.cant_add_note_message, Snackbar.LENGTH_LONG).show();
             }
 
             if (DEBUG) {
@@ -167,13 +178,13 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             Intent intent = new Intent();
             intent.putExtra(CREATE_NOTE_KEY, newNote);
             setResult(CREATE_NOTE_REQUEST, intent);
-        } //иначе dataBaseHelper.edit(...); ??????
+        } //иначе выдвавать ошибку снекбаром о том что нельзя создать пустую заметку
         super.finish();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Bitmap img = null;
+        Bitmap img = null; // убрать ее?
         if ((resultCode == Activity.RESULT_OK) && (requestCode == GALLERY_REQUEST)) {
             Uri selectedImage = data.getData();
             try {
@@ -184,7 +195,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             if (DEBUG) {
                 Log.d(LOG_TAG, "we have selectedImage is: " + selectedImage);
             }
-            CustomImageMaker image = new CustomImageMaker(getBaseContext(),"имя файла",selectedImage.toString(),true);
+            CustomImageMaker image = new CustomImageMaker(getApplicationContext(), "fileName?", selectedImage.toString(), true, imageWidth, imageWidth);
             mLayoutForImages.addView(image);
             //mImageView.setImageBitmap(img);
         }
@@ -198,7 +209,8 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             if (DEBUG) {
                 Log.d(LOG_TAG, "we have selectedImage is: " + selectedImage);
             }
-            mImageView.setImageBitmap(img);
+            CustomImageMaker image = new CustomImageMaker(getBaseContext(), "fileName?", selectedImage.toString(), true, imageWidth, imageWidth);
+            mLayoutForImages.addView(image);
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
