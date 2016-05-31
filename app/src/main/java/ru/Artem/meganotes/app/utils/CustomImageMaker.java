@@ -1,5 +1,6 @@
 package ru.Artem.meganotes.app.utils;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -27,47 +28,33 @@ public class CustomImageMaker extends RelativeLayout {
     private String mImagePath;
     private boolean mReadMode;
 
-    public CustomImageMaker(Context context, String text, String imagePath, boolean mode, int width, int height) {
+    public CustomImageMaker(final Context context, String text, String imagePath, boolean mode, int width, int height) {
         super(context);
-
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(width, height);
         this.setLayoutParams(params);
         mImagePath = imagePath;
         mReadMode = mode;
-        initElements(context);
-        mImage.setImageURI(Uri.parse(mImagePath));
-        mText.setText(text);
-        if (mReadMode) {
-            //TODO кнопка с изображенем инфо и соотв.функционалом
-            mButton.setImageResource(R.drawable.ic_info_white_24dp);
-        } else //если режим редактирования
-        {
-            //TODO кнопка с изображением удалить и соотв.функционалом
-            mButton.setImageResource(R.drawable.ic_delete);
-        }
-    }
-
-    private void initElements(final Context context) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.custom_imageview_style, this);
         mImage = (ImageView) findViewById(R.id.imageInCustomIV);
         mText = (TextView) findViewById(R.id.textInCustomIV);
+        mImage.setImageURI(Uri.parse(mImagePath));
+        mText.setText(text);
         mButton = (ImageButton) findViewById(R.id.imageButtonInCustomIV);
         mButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO реализацию обработчика сюда
                 if (mReadMode) {
-                    //Log.d("CreateNoteActivity", "we in click listener imageButton");
-                    AlertDialog.Builder adb = new AlertDialog.Builder(context.getApplicationContext()); // сюда надо передать какой-то контекст для того что бы билдер знал где показываться
+                    AlertDialog.Builder adb = new AlertDialog.Builder(context);
                     adb.setTitle(R.string.drawer_menu_info);
                     adb.setMessage("инфа о изображение");
-                    adb.setIcon(android.R.drawable.ic_dialog_info);
+                    adb.setIcon(android.R.drawable.ic_dialog_alert);
                     adb.setNeutralButton(context.getString(R.string.string_ok), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             switch (which) {
                                 case Dialog.BUTTON_NEUTRAL:
+                                    dialog.cancel();
                                     break;
                             }
                         }
@@ -80,6 +67,8 @@ public class CustomImageMaker extends RelativeLayout {
                 }
             }
         });
+
+
     }
 
     public void setTextForLabel(String text) {

@@ -195,7 +195,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             if (DEBUG) {
                 Log.d(LOG_TAG, "we have selectedImage is: " + selectedImage);
             }
-            CustomImageMaker image = new CustomImageMaker(getApplicationContext(), "fileName?", selectedImage.toString(), true, imageWidth, imageWidth);
+            CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this, "fileName?", selectedImage.toString(), true, imageWidth, imageWidth);
             mLayoutForImages.addView(image);
             //mImageView.setImageBitmap(img);
         }
@@ -209,7 +209,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             if (DEBUG) {
                 Log.d(LOG_TAG, "we have selectedImage is: " + selectedImage);
             }
-            CustomImageMaker image = new CustomImageMaker(getBaseContext(), "fileName?", selectedImage.toString(), true, imageWidth, imageWidth);
+            CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this, "fileName?", selectedImage.toString(), true, imageWidth, imageWidth);
             mLayoutForImages.addView(image);
         }
         super.onActivityResult(requestCode, resultCode, data);
