@@ -1,6 +1,8 @@
 package ru.Artem.meganotes.app.activity;
 
 import android.Manifest;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -15,6 +17,7 @@ import android.widget.*;
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
 import ru.Artem.meganotes.app.dialogs.AddImageDialog;
 import ru.Artem.meganotes.app.R;
+import ru.Artem.meganotes.app.dialogs.IncorrectDataDialog;
 import ru.Artem.meganotes.app.models.ModelNote;
 import ru.Artem.meganotes.app.utils.DateUtils;
 import ru.Artem.meganotes.app.utils.ImgUtils;
@@ -22,7 +25,8 @@ import ru.Artem.meganotes.app.utils.ImgUtils;
 /**
  * Created by Артем on 22.04.2016.
  */
-public class CreateNoteActivity extends AppCompatActivity implements AddImageDialog.OnItemListClickListener {
+public class CreateNoteActivity extends AppCompatActivity implements AddImageDialog.OnItemListClickListener,
+        IncorrectDataDialog.OnInteractionActivity {
 
     private EditText mTitleNote;
     private EditText mContentNote;
@@ -87,7 +91,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             addImageDialog.setStyle(DialogFragment.STYLE_NORMAL, R.style.AddImageDialog);
             addImageDialog.show(getSupportFragmentManager(), AddImageDialog.DIALOG_KEY);
         } else if (id == android.R.id.home) {
-            saveNote();
+            saveNoteAndExit();
         } else if (id == R.id.close_with_out_save) {
             finish();
         }
@@ -118,7 +122,8 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                     ActivityCompat.requestPermissions(CreateNoteActivity.this,
                             new String[]{Manifest.permission.CAMERA}, 0);
                 } else {
-                    mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST);
+                    int cameraRequest = 11;
+                    mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, cameraRequest);
                 }
 
                 break;
@@ -137,7 +142,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         dialogFragment.dismiss();
     }
 
-    private void saveNote() {
+    private void saveNoteAndExit() {
         if (!mContentNote.getText().toString().isEmpty()) {
             DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(getApplicationContext());
             String date = DateUtils.getDate();
@@ -164,13 +169,27 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 intent.putExtra(INTENT_EXTRA_EDIT_NOTE, mEditNote);
             }
             setResult(RESULT_OK, intent);
-        }
 
-        finish();
+            finish();
+        } else {
+            IncorrectDataDialog incorrectDataDialog = new IncorrectDataDialog();
+            incorrectDataDialog.show(getSupportFragmentManager().beginTransaction(), IncorrectDataDialog.DIALOG_KEY);
+        }
     }
 
     @Override
     public void onBackPressed() {
-        saveNote();
+        saveNoteAndExit();
+    }
+
+    @Override
+    public void callBack(DialogInterface dialog, int which) {
+        switch (which) {
+            case Dialog.BUTTON_POSITIVE:
+                finish();
+                break;
+            case Dialog.BUTTON_NEGATIVE:
+                break;
+        }
     }
 }
