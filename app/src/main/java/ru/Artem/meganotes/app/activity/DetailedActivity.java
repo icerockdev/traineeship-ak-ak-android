@@ -208,7 +208,7 @@ public class DetailedActivity extends AppCompatActivity implements AddImageDialo
                             new String[]{Manifest.permission.CAMERA}, 0);
 
                 } else {
-                    mOutFilePath = ImgUtils.cameraRequest(DetailedActivity.this, CAMERA_REQUEST, LOG_TAG);
+                    mOutFilePath = ImgUtils.cameraRequest(DetailedActivity.this, CAMERA_REQUEST);
                 }
                 break;
             case 1:
