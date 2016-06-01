@@ -9,9 +9,10 @@ import java.util.Locale;
  */
 public class DateUtils {
 
+    private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("d.MM.yyyy  k:mm", Locale.ROOT);
+
     public static String getDate() {
         long date = System.currentTimeMillis();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("d.MM.yyyy  k:mm", Locale.ROOT);
         return simpleDateFormat.format(date);
     }
 }
