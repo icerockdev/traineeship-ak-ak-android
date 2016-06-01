@@ -24,7 +24,7 @@ public class DeleteAllNotesDialog extends DialogFragment {
         if (mOnClickListener == null)
             mOnClickListener = (DialogInterface.OnClickListener) getTargetFragment();
         return new AlertDialog.Builder(getActivity())
-                .setTitle(R.string.titleDeleteDialog)
+                .setTitle(R.string.attention)
                 .setPositiveButton(R.string.buttonDel, mOnClickListener)
                 .setNegativeButton(R.string.buttonCancel, mOnClickListener)
                 .setMessage(getString(R.string.messageDeleteAllNotesDialog))

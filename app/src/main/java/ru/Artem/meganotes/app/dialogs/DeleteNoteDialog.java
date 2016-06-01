@@ -30,7 +30,7 @@ public class DeleteNoteDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(final Bundle savedInstanceState) {
         return new AlertDialog.Builder(getActivity())
-                .setTitle(R.string.titleDeleteDialog)
+                .setTitle(R.string.attention)
                 .setPositiveButton(R.string.buttonDel, mOnClick)
                 .setNegativeButton(R.string.buttonCancel, mOnClick)
                 .setMessage(getString(R.string.messageDeleteDialog) + " " + getArguments().getString(ARGS_KEY) + "?")
