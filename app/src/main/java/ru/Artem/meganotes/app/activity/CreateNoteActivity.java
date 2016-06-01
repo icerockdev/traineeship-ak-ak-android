@@ -118,7 +118,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                     ActivityCompat.requestPermissions(CreateNoteActivity.this,
                             new String[]{Manifest.permission.CAMERA}, 0);
                 } else {
-                    mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, LOG_TAG);
+                    mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST);
                 }
 
                 break;

@@ -15,6 +15,8 @@ import java.io.IOException;
  * Created by Артем on 03.05.2016.
  */
 public class ImgUtils {
+    private static final String LOG_TAG = ImgUtils.class.getName();
+
     public static File createImageFile() throws IOException {
         String timeStamp = DateUtils.getDateCreateFile();
 
@@ -24,10 +26,10 @@ public class ImgUtils {
         return new File(storageDir, imageFileName + ".jpg");
     }
 
-    public static Uri cameraRequest(Context context, int requestCode, String LOG_TAG) {
+    public static Uri cameraRequest(Activity activity, int requestCode) {
         Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-        if (captureIntent.resolveActivity(context.getPackageManager()) != null) {
+        if (captureIntent.resolveActivity(activity.getPackageManager()) != null) {
 
             File photoFile = null;
 
@@ -41,7 +43,7 @@ public class ImgUtils {
 
                 Uri mOutFilePath = Uri.fromFile(photoFile);
                 captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mOutFilePath);
-                ((Activity) context).startActivityForResult(captureIntent, requestCode);
+                activity.startActivityForResult(captureIntent, requestCode);
 
                 return mOutFilePath;
             }
@@ -49,9 +51,9 @@ public class ImgUtils {
         return null;
     }
 
-    public static void galleryRequest(Context context, int requestCode) {
+    public static void galleryRequest(Activity activity, int requestCode) {
         Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
         photoPickerIntent.setType("image/*");
-        ((Activity) context).startActivityForResult(photoPickerIntent, requestCode);
+        activity.startActivityForResult(photoPickerIntent, requestCode);
     }
 }
