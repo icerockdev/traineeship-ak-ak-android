@@ -20,7 +20,6 @@ import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.*;
 
@@ -39,7 +38,7 @@ import ru.Artem.meganotes.app.utils.ImgUtils;
 /**
  * Created by Артем on 22.04.2016.
  */
-public class CreateNoteActivity extends AppCompatActivity implements AddImageDialog.OnItemListClickListener {
+public class CreateNoteActivity extends AppCompatActivity implements AddImageDialog.OnItemListClickListener, CustomImageMaker.OnDeleteImageListener {
 
     private EditText mTitleNote;
     private EditText mContentNote;
@@ -184,32 +183,41 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Bitmap img = null; // убрать ее?
         if ((resultCode == Activity.RESULT_OK) && (requestCode == GALLERY_REQUEST)) {
             Uri selectedImage = data.getData();
             try {
-                img = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+                MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
             } catch (IOException e) {
                 Snackbar.make(mView, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
             }
             if (DEBUG) {
                 Log.d(LOG_TAG, "we have selectedImage is: " + selectedImage);
             }
-            CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this, "fileName?", selectedImage.toString(), true, imageWidth, imageWidth);
+            CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this,
+                    "fileName?",
+                    selectedImage.toString(),
+                    false,
+                    imageWidth,
+                    imageWidth,
+                    0); // пока что так, затем сделаю систему раздачи id для картинок
             mLayoutForImages.addView(image);
-            //mImageView.setImageBitmap(img);
         }
         if ((resultCode == Activity.RESULT_OK) && (requestCode == CAMERA_REQUEST)) {
             Uri selectedImage = data.getData();
             try {
-                img = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+                MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
             } catch (IOException e) {
                 Snackbar.make(mView, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
             }
             if (DEBUG) {
                 Log.d(LOG_TAG, "we have selectedImage is: " + selectedImage);
             }
-            CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this, "fileName?", selectedImage.toString(), true, imageWidth, imageWidth);
+            CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this,
+                    "fileName?",
+                    selectedImage.toString(),
+                    false, imageWidth,
+                    imageWidth,
+                    0); // аналогично тому что выше
             mLayoutForImages.addView(image);
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -243,5 +251,15 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 break;
         }
         dialogFragment.dismiss();
+    }
+
+    @Override
+    public void removeElementFromRootView(int id) {
+        RelativeLayout customImageMaker = (RelativeLayout) mLayoutForImages.getChildAt(id);
+        mLayoutForImages.removeView(customImageMaker);
+        if (DEBUG) {
+            Log.d(LOG_TAG,"we in interface method in another activity");
+            Log.d(LOG_TAG,"we remover "+customImageMaker.getClass().getName()+" with index "+id);
+        }
     }
 }

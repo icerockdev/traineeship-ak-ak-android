@@ -1,12 +1,11 @@
 package ru.Artem.meganotes.app.utils;
 
-import android.app.Activity;
+import android.support.design.widget.Snackbar;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,7 +27,9 @@ public class CustomImageMaker extends RelativeLayout {
     private String mImagePath;
     private boolean mReadMode;
 
-    public CustomImageMaker(final Context context, String text, String imagePath, boolean mode, int width, int height) {
+    private OnDeleteImageListener onDeleteImageListener;
+
+    public CustomImageMaker(final Context context, String text, String imagePath, boolean mode, int width, int height, final int tempID) {
         super(context);
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(width, height);
         this.setLayoutParams(params);
@@ -62,13 +63,29 @@ public class CustomImageMaker extends RelativeLayout {
                     adb.create();
                     adb.show();
                 } else {
-                    Log.d("CreateNoteActivity", "we in click listener imageButton");
-                    //TODO снекбар с кнопкой ундо, который сообщает что удалена картинка, но позволяет вернуть её обратно
+                    //TODO сообщить вызывающему коду что нужно удалить элемент из RelaTiveLayout
+                    onDeleteImageListener.removeElementFromRootView(tempID);
+                    final Snackbar snackbar = Snackbar
+                            .make(getRootView(), "Изображение Удалено", Snackbar.LENGTH_LONG)
+                            .setAction("Восстановить", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    Snackbar.make(getRootView(),"Восстановим потом :)",Snackbar.LENGTH_SHORT).show();
+                                    //TODO сообщить коду что нужно восстановить элемент в Relative
+                                }
+                            });
+
+                    snackbar.show();
                 }
             }
         });
 
 
+    }
+
+    public interface OnDeleteImageListener
+    {
+        void removeElementFromRootView(int id);
     }
 
     public void setTextForLabel(String text) {
