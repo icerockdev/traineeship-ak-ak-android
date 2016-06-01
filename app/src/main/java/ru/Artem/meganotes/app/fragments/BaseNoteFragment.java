@@ -30,7 +30,6 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
     private MainAdapter mAdapter;
     private FloatingActionButton mCreateNoteFAB;
     private ModelNote mDeleteNote;
-    private View mView;
 
     private final String LOG_TAG = BaseNoteFragment.class.getName();
 
@@ -55,7 +54,6 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
         mAdapter = new MainAdapter(mNotesList);
 
         mCreateNoteFAB = (FloatingActionButton)  rootView.findViewById(R.id.createNote);
-        mView = rootView.findViewById(R.id.fragment_layout);
         RecyclerViewUtils.initRecyclerView(new LinearLayoutManager(getActivity()),
                 (RecyclerView) rootView.findViewById(R.id.recyclerView), mAdapter);
 
@@ -94,8 +92,7 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
                 mDeleteNote = mNotesList.get(position);
                 mDeleteNote.setPositionInAdapter(position);
 
-                deleteNoteDialog.setTargetFragment(BaseNoteFragment.this, 1);
-                deleteNoteDialog.show(getFragmentManager().beginTransaction(), AddImageDialog.DIALOG_KEY);
+                deleteNoteDialog.show(getChildFragmentManager().beginTransaction(), AddImageDialog.DIALOG_KEY);
             }
         });
     }
@@ -117,18 +114,21 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
                                 mNotesList.remove(editNote.getPositionInAdapter());//прикрутить удаление с БД
                                 mAdapter.notifyItemRemoved(editNote.getPositionInAdapter());
 
-                                Snackbar.make(mView, R.string.snack_bar_message_delete, Snackbar.LENGTH_INDEFINITE)
-                                        .setAction(R.string.snack_bar_button_undo, new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View view) {
-                                                mNotesList.add(editNote.getPositionInAdapter(), editNote);//прикрутить добавление в БД
-                                                mAdapter.notifyItemInserted(editNote.getPositionInAdapter());
-                                            }
-                                        })
-                                        .setActionTextColor(getResources().getColor(R.color.colorAccent))
-                                        .show();
+                                if (getView() != null) {
+                                    Snackbar.make(getView(), R.string.snack_bar_message_delete, Snackbar.LENGTH_INDEFINITE)
+                                            .setAction(R.string.snack_bar_button_undo, new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View view) {
+                                                    mNotesList.add(editNote.getPositionInAdapter(), editNote);//прикрутить добавление в БД
+                                                    mAdapter.notifyItemInserted(editNote.getPositionInAdapter());
+                                                }
+                                            })
+                                            .setActionTextColor(getResources().getColor(R.color.colorAccent))
+                                            .show();
+                                }
                             }
                         }, 500);
+
 
                         editNote.setDeletedNote(false);
                     } else {
@@ -150,7 +150,6 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
     @Override
     public void onDestroyView() {
         mCreateNoteFAB = null;
-        mView = null;
 
         super.onDestroyView();
     }

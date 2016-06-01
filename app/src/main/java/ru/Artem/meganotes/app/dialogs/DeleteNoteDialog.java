@@ -40,7 +40,7 @@ public class DeleteNoteDialog extends DialogFragment {
     private DialogInterface.OnClickListener mOnClick = new DialogInterface.OnClickListener() {
         @Override
         public void onClick(DialogInterface dialog, int which) {
-            OnInteractionFragment callBack = (OnInteractionFragment) getTargetFragment();
+            OnInteractionFragment callBack = (OnInteractionFragment) getParentFragment();
             if (callBack != null)
                 callBack.callBack(dialog, which);
         }
