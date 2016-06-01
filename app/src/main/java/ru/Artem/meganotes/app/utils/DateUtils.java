@@ -8,15 +8,14 @@ import java.util.Locale;
  * Created by Артем on 25.04.2016.
  */
 public class DateUtils {
+    private static SimpleDateFormat sFormatCreateNote = new SimpleDateFormat("dd.MM.yyyy  k:mm", Locale.ROOT);
+    private static SimpleDateFormat sFormatCreateFile = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.ROOT);
 
     public static String getDate() {
-        long date = System.currentTimeMillis();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy  k:mm", Locale.ROOT);
-        return simpleDateFormat.format(date);
+        return sFormatCreateNote.format(System.currentTimeMillis());
     }
 
     public static String getDateCreateFile() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.ROOT);
-        return simpleDateFormat.format(new Date());
+        return sFormatCreateFile.format(new Date());
     }
 }
