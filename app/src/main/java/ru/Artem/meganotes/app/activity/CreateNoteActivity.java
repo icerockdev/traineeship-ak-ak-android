@@ -184,6 +184,11 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (DEBUG)
+        {
+            Log.d(LOG_TAG,"we have requestCode = "+requestCode);
+            Log.d(LOG_TAG,"we have resultCode = "+resultCode);
+        }
         if ((resultCode == Activity.RESULT_OK) && (requestCode == GALLERY_REQUEST)) {
             Uri selectedImage = data.getData();
             try {
@@ -204,14 +209,13 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             mLayoutForImages.addView(image);
         }
         if ((resultCode == Activity.RESULT_OK) && (requestCode == CAMERA_REQUEST)) {
-            Uri selectedImage = data.getData();
+            Uri selectedImage = mOutFilePath;
+            Log.d(LOG_TAG,"we in ActivityResult, CameraRequest");
+            Log.d(LOG_TAG,"what we have in resultPath? "+mOutFilePath.toString());
             try {
                 MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
             } catch (IOException e) {
                 Snackbar.make(mView, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
-            }
-            if (DEBUG) {
-                Log.d(LOG_TAG, "we have selectedImage is: " + selectedImage);
             }
             CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this,
                     "fileName?",
@@ -237,6 +241,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                         mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, sSavePath);
                     } catch (IOException e) {
                         mOutFilePath = null;
+                        Log.d(LOG_TAG,e.getMessage());
                         Snackbar.make(mView, getString(R.string.str_problems_save), Snackbar.LENGTH_LONG).show();
                     }
                 }

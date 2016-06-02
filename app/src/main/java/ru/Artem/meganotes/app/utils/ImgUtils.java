@@ -20,28 +20,25 @@ import java.util.Locale;
  */
 public class ImgUtils {
 
-    private static SimpleDateFormat sDateFormat = new SimpleDateFormat("d.MM.yyyy k:m", Locale.ROOT);
+    private static SimpleDateFormat sDateFormat = new SimpleDateFormat("d.MM.yyyy k:mm", Locale.ROOT);
 
     private final static String LOG_TAG = ImgUtils.class.getName();
 
     private static final boolean DEBUG = true;
 
-    public static File createImageFile(String folderToSave) throws IOException {
-        String timeStamp = sDateFormat.toString();
-        String imageFileName = String.format("JPEG_%s.jpg", timeStamp);
-        return new File(folderToSave, imageFileName);
-    }
 
     public static Uri cameraRequest(Context context, int requestCode, String folderToSave) throws IOException {
 
         Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
         if (captureIntent.resolveActivity(context.getPackageManager()) != null) {
-            File photoFile;
-            photoFile = createImageFile(folderToSave);
-            if (DEBUG) Log.d(LOG_TAG, "we have in photoFile path: " + photoFile.getPath());
+            String timeStamp = sDateFormat.toString();
+            String imageFileName = String.format("JPEG_%s.jpg", timeStamp);
 
-            Uri mOutFilePath = Uri.fromFile(photoFile);
+            File file = new File(folderToSave, imageFileName);
+            if (DEBUG) Log.d(LOG_TAG, "we have in photoFile path: " + file.getPath());
+
+            Uri mOutFilePath = Uri.fromFile(file);
             captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mOutFilePath);
             ((Activity) context).startActivityForResult(captureIntent, requestCode);
 
