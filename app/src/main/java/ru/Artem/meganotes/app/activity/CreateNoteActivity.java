@@ -45,6 +45,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private ImageView mImageView;
     private LinearLayout mView;
     private RelativeLayout mLayoutForImages;
+    private RelativeLayout lastDeletedElement;
     private List<String> imagePaths;
     private int imageWidth;
 
@@ -255,11 +256,16 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
     @Override
     public void removeElementFromRootView(int id) {
-        RelativeLayout customImageMaker = (RelativeLayout) mLayoutForImages.getChildAt(id);
-        mLayoutForImages.removeView(customImageMaker);
+        lastDeletedElement = (RelativeLayout) mLayoutForImages.getChildAt(id);
+        mLayoutForImages.removeView(lastDeletedElement);
         if (DEBUG) {
             Log.d(LOG_TAG,"we in interface method in another activity");
-            Log.d(LOG_TAG,"we remover "+customImageMaker.getClass().getName()+" with index "+id);
+            Log.d(LOG_TAG,"we remover "+lastDeletedElement.getClass().getName()+" with index "+id);
         }
+    }
+
+    @Override
+    public void returnLastDeletedElement() {
+        mLayoutForImages.addView(lastDeletedElement);
     }
 }

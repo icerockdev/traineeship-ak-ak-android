@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,9 +29,18 @@ public class CustomImageMaker extends RelativeLayout {
     private boolean mReadMode;
 
     private OnDeleteImageListener onDeleteImageListener;
+    private final String LOG_TAG = CustomImageMaker.class.getName();
 
     public CustomImageMaker(final Context context, String text, String imagePath, boolean mode, int width, int height, final int tempID) {
         super(context);
+
+        try {
+                onDeleteImageListener = (OnDeleteImageListener) context;
+            }
+        catch (Exception e)
+        {
+            Log.d(LOG_TAG, "Класс должен реализовывать интерфейс" +OnDeleteImageListener.class.getName());
+        }
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(width, height);
         this.setLayoutParams(params);
         mImagePath = imagePath;
@@ -63,18 +73,17 @@ public class CustomImageMaker extends RelativeLayout {
                     adb.create();
                     adb.show();
                 } else {
-                    //TODO сообщить вызывающему коду что нужно удалить элемент из RelaTiveLayout
+                    final View rootView = getRootView();
                     onDeleteImageListener.removeElementFromRootView(tempID);
-                    final Snackbar snackbar = Snackbar
-                            .make(getRootView(), "Изображение Удалено", Snackbar.LENGTH_LONG)
+                    final Snackbar snackbar = Snackbar.make(rootView, "Изображение Удалено", Snackbar.LENGTH_LONG)
                             .setAction("Восстановить", new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
-                                    Snackbar.make(getRootView(),"Восстановим потом :)",Snackbar.LENGTH_SHORT).show();
-                                    //TODO сообщить коду что нужно восстановить элемент в Relative
+                                    onDeleteImageListener.returnLastDeletedElement();
+                                    Snackbar snackbar1 = Snackbar.make(rootView, "Восстановлено", Snackbar.LENGTH_SHORT);
+                                    snackbar1.show();
                                 }
                             });
-
                     snackbar.show();
                 }
             }
@@ -86,6 +95,7 @@ public class CustomImageMaker extends RelativeLayout {
     public interface OnDeleteImageListener
     {
         void removeElementFromRootView(int id);
+        void returnLastDeletedElement();
     }
 
     public void setTextForLabel(String text) {
