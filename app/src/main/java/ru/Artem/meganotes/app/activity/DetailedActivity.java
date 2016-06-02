@@ -236,7 +236,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
 
                 } else {
                     try {
-                        mOutFilePath = ImgUtils.cameraRequest(DetailedActivity.this, CAMERA_REQUEST, sSavePath);
+                        ImgUtils.cameraRequest(DetailedActivity.this, CAMERA_REQUEST, sSavePath);
                     } catch (IOException e) {
                         mOutFilePath = null;
                         Snackbar.make(mLayout, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();

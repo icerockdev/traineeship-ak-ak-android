@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 
@@ -12,7 +13,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
+
+import ru.Artem.meganotes.app.activity.CreateNoteActivity;
 
 
 /**
@@ -25,26 +29,33 @@ public class ImgUtils {
     private final static String LOG_TAG = ImgUtils.class.getName();
 
     private static final boolean DEBUG = true;
+    private static String mCurrentPhotoPath;
 
+    private static File createImageFile(String folderToSave) throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_"+timeStamp;
+        File image = new File(folderToSave, imageFileName);
 
-    public static Uri cameraRequest(Context context, int requestCode, String folderToSave) throws IOException {
+        return image;
+    }
 
+    public static void cameraRequest(Context context, int requestCode, String folderToSave) throws IOException {
         Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
         if (captureIntent.resolveActivity(context.getPackageManager()) != null) {
-            String timeStamp = sDateFormat.toString();
-            String imageFileName = String.format("JPEG_%s.jpg", timeStamp);
-
-            File file = new File(folderToSave, imageFileName);
-            if (DEBUG) Log.d(LOG_TAG, "we have in photoFile path: " + file.getPath());
-
-            Uri mOutFilePath = Uri.fromFile(file);
-            captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mOutFilePath);
-            ((Activity) context).startActivityForResult(captureIntent, requestCode);
-
-            return mOutFilePath;
+            File photoFile = null;
+            try {
+                photoFile = createImageFile(folderToSave);
+            } catch (IOException ex) {
+                // TODO обработчик
+            }
+            if (photoFile != null) {
+                Log.d(LOG_TAG, "PhotoFile is not null");
+                Log.d(LOG_TAG, "we have in URI: " + Uri.fromFile(photoFile).toString());
+                captureIntent.putExtra(CreateNoteActivity.CREATE_NOTE_KEY, Uri.fromFile(photoFile).toString());
+                Log.d(LOG_TAG, "what type we add in this extra?" + captureIntent.getStringExtra(MediaStore.EXTRA_OUTPUT));
+                        ((Activity) context).startActivityForResult(captureIntent, requestCode);
+            }
         }
-        return null;
     }
 
     public static void galleryRequest(Context context, int requestCode) {

@@ -142,14 +142,13 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             String date = DateUtils.getDate();
 
             int imagesCount = mLayoutForImages.getChildCount();
-            for (int i=0; i<imagesCount; i++){
+            for (int i = 0; i < imagesCount; i++) {
                 RelativeLayout customImageMaker = (RelativeLayout) mLayoutForImages.getChildAt(i);
                 RelativeLayout layoutInCustomView = (RelativeLayout) customImageMaker.getChildAt(0);
                 ImageView imageViewInCustomView = (ImageView) layoutInCustomView.getChildAt(0);
-                if (DEBUG)
-                {
-                    Log.d(LOG_TAG,"we have in 1st child of CustomImageMaker"+layoutInCustomView.getClass());
-                    Log.d(LOG_TAG,"we have in 2nd child of CustomImageMaker"+imageViewInCustomView.getClass());
+                if (DEBUG) {
+                    Log.d(LOG_TAG, "we have in 1st child of CustomImageMaker" + layoutInCustomView.getClass());
+                    Log.d(LOG_TAG, "we have in 2nd child of CustomImageMaker" + imageViewInCustomView.getClass());
                 }
                 Bitmap bitmap = ((BitmapDrawable) imageViewInCustomView.getDrawable()).getBitmap();
                 try {
@@ -184,12 +183,11 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (DEBUG)
-        {
-            Log.d(LOG_TAG,"we have requestCode = "+requestCode);
-            Log.d(LOG_TAG,"we have resultCode = "+resultCode);
+        if (DEBUG) {
+            Log.d(LOG_TAG, "we have requestCode = " + requestCode);
+            Log.d(LOG_TAG, "we have resultCode = " + resultCode);
         }
-        if ((resultCode == Activity.RESULT_OK) && (requestCode == GALLERY_REQUEST)) {
+        if ((resultCode == RESULT_OK) && (requestCode == GALLERY_REQUEST)) {
             Uri selectedImage = data.getData();
             try {
                 MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
@@ -208,23 +206,23 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                     0); // пока что так, затем сделаю систему раздачи id для картинок
             mLayoutForImages.addView(image);
         }
-        if ((resultCode == Activity.RESULT_OK) && (requestCode == CAMERA_REQUEST)) {
-            Uri selectedImage = mOutFilePath;
-            Log.d(LOG_TAG,"we in ActivityResult, CameraRequest");
-            Log.d(LOG_TAG,"what we have in resultPath? "+mOutFilePath.toString());
-            try {
-                MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
-            } catch (IOException e) {
-                Snackbar.make(mView, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
-            }
+        if ((resultCode == RESULT_OK) && (requestCode == CAMERA_REQUEST)) {
+            Bundle extraDataFromIntentInBundle = data.getExtras();
+//            Bundle tmp = extraDataFromIntentInBundle.getParcelable(CreateNoteActivity.CREATE_NOTE_KEY);
+            Log.d(LOG_TAG, "getString from bundle return is: " + extraDataFromIntentInBundle.describeContents());
+            String filePath = data.getStringExtra(MediaStore.EXTRA_OUTPUT);
+            Log.d(LOG_TAG, "we take from extras is: " + filePath);
+            //String filePath = (String) extras.get(MediaStore.EXTRA_OUTPUT);
             CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this,
                     "fileName?",
-                    selectedImage.toString(),
-                    false, imageWidth,
+                    filePath.toString(),
+                    false,
+                    imageWidth,
                     imageWidth,
                     0); // аналогично тому что выше
             mLayoutForImages.addView(image);
         }
+
         super.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -238,10 +236,10 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                             new String[]{Manifest.permission.CAMERA}, 0);
                 } else {
                     try {
-                        mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, sSavePath);
+                        ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, sSavePath);
                     } catch (IOException e) {
                         mOutFilePath = null;
-                        Log.d(LOG_TAG,e.getMessage());
+                        Log.d(LOG_TAG, e.getMessage());
                         Snackbar.make(mView, getString(R.string.str_problems_save), Snackbar.LENGTH_LONG).show();
                     }
                 }
@@ -264,8 +262,8 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         lastDeletedElement = (RelativeLayout) mLayoutForImages.getChildAt(id);
         mLayoutForImages.removeView(lastDeletedElement);
         if (DEBUG) {
-            Log.d(LOG_TAG,"we in interface method in another activity");
-            Log.d(LOG_TAG,"we remover "+lastDeletedElement.getClass().getName()+" with index "+id);
+            Log.d(LOG_TAG, "we in interface method in another activity");
+            Log.d(LOG_TAG, "we remover " + lastDeletedElement.getClass().getName() + " with index " + id);
         }
     }
 
