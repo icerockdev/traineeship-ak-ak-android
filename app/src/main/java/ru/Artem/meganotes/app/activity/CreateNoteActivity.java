@@ -1,7 +1,6 @@
 package ru.Artem.meganotes.app.activity;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -49,7 +48,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private List<String> imagePaths;
     private int imageWidth;
 
-    private Uri mOutFilePath = null;
+    private String mOutFilePath = null;
     private ComponentName mCallingActivity;
 
     private final int GALLERY_REQUEST = 10;
@@ -185,6 +184,8 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
         if (DEBUG) {
             Log.d(LOG_TAG, "we have requestCode = " + requestCode);
             Log.d(LOG_TAG, "we have resultCode = " + resultCode);
@@ -209,16 +210,18 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             mLayoutForImages.addView(image);
         }
         if ((resultCode == RESULT_OK) && (requestCode == CAMERA_REQUEST)) {
-//            Bundle extraDataFromIntentInBundle = data.getExtras();
-//            Bundle tmp = extraDataFromIntentInBundle.getParcelable(CreateNoteActivity.CREATE_NOTE_KEY);
-           // Log.d("myLog", "getString from bundle return is: " + extraDataFromIntentInBundle.describeContents());
-            //String filePath = data.getStringExtra("media");
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            try {
+                mOutFilePath = ImgUtils.savePicture(imageBitmap, sSavePath);
+            } catch (IOException e) {
+                //TODO
+            }
             Log.d(LOG_TAG, "we take from extras is: " + mOutFilePath);
-            //String filePath = (String) extras.get(MediaStore.EXTRA_OUTPUT);
             if (mOutFilePath != null) {
                 CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this,
                         "fileName?",
-                        mOutFilePath.toString(),
+                        mOutFilePath,
                         false,
                         imageWidth,
                         imageWidth,
@@ -226,8 +229,6 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 mLayoutForImages.addView(image);
             }
         }
-
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -240,7 +241,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                             new String[]{Manifest.permission.CAMERA}, 0);
                 } else {
                     try {
-                        mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, sSavePath);
+                        ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST);
                     } catch (IOException e) {
                         mOutFilePath = null;
                         Log.d(LOG_TAG, e.getMessage());
