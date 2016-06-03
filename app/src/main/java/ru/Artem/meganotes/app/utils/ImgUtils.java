@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 
@@ -33,13 +34,12 @@ public class ImgUtils {
 
     private static File createImageFile(String folderToSave) throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_"+timeStamp;
-        File image = new File(folderToSave, imageFileName);
+        String imageFileName = "JPEG_" + timeStamp + ".jpg";
 
-        return image;
+        return new File(folderToSave, imageFileName);
     }
 
-    public static void cameraRequest(Context context, int requestCode, String folderToSave) throws IOException {
+    public static Uri cameraRequest(Context context, int requestCode, String folderToSave) throws IOException {
         Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (captureIntent.resolveActivity(context.getPackageManager()) != null) {
             File photoFile = null;
@@ -51,11 +51,13 @@ public class ImgUtils {
             if (photoFile != null) {
                 Log.d(LOG_TAG, "PhotoFile is not null");
                 Log.d(LOG_TAG, "we have in URI: " + Uri.fromFile(photoFile).toString());
-                captureIntent.putExtra(CreateNoteActivity.CREATE_NOTE_KEY, Uri.fromFile(photoFile).toString());
-                Log.d(LOG_TAG, "what type we add in this extra?" + captureIntent.getStringExtra(MediaStore.EXTRA_OUTPUT));
+                captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+                //Log.d(LOG_TAG, "what type we add in this extra?" + Uri.fromFile(photoFile).toString());
                         ((Activity) context).startActivityForResult(captureIntent, requestCode);
+                return Uri.fromFile(photoFile);
             }
         }
+        return null;
     }
 
     public static void galleryRequest(Context context, int requestCode) {

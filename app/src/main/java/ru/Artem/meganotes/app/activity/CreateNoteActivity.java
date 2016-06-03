@@ -89,7 +89,9 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 getSupportActionBar().setTitle(R.string.edit_note);//поменять на заголовок заметки
             }
         }
-        sSavePath = this.getFilesDir().toString();
+        sSavePath = getFilesDir().getAbsolutePath();
+
+        Log.d(LOG_TAG, "save path: " + sSavePath);
         imagePaths = new ArrayList<>();
 
         Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
@@ -207,20 +209,22 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             mLayoutForImages.addView(image);
         }
         if ((resultCode == RESULT_OK) && (requestCode == CAMERA_REQUEST)) {
-            Bundle extraDataFromIntentInBundle = data.getExtras();
+//            Bundle extraDataFromIntentInBundle = data.getExtras();
 //            Bundle tmp = extraDataFromIntentInBundle.getParcelable(CreateNoteActivity.CREATE_NOTE_KEY);
-            Log.d(LOG_TAG, "getString from bundle return is: " + extraDataFromIntentInBundle.describeContents());
-            String filePath = data.getStringExtra(MediaStore.EXTRA_OUTPUT);
-            Log.d(LOG_TAG, "we take from extras is: " + filePath);
+           // Log.d("myLog", "getString from bundle return is: " + extraDataFromIntentInBundle.describeContents());
+            //String filePath = data.getStringExtra("media");
+            Log.d(LOG_TAG, "we take from extras is: " + mOutFilePath);
             //String filePath = (String) extras.get(MediaStore.EXTRA_OUTPUT);
-            CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this,
-                    "fileName?",
-                    filePath.toString(),
-                    false,
-                    imageWidth,
-                    imageWidth,
-                    0); // аналогично тому что выше
-            mLayoutForImages.addView(image);
+            if (mOutFilePath != null) {
+                CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this,
+                        "fileName?",
+                        mOutFilePath.toString(),
+                        false,
+                        imageWidth,
+                        imageWidth,
+                        0); // аналогично тому что выше
+                mLayoutForImages.addView(image);
+            }
         }
 
         super.onActivityResult(requestCode, resultCode, data);
@@ -236,7 +240,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                             new String[]{Manifest.permission.CAMERA}, 0);
                 } else {
                     try {
-                        ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, sSavePath);
+                        mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, sSavePath);
                     } catch (IOException e) {
                         mOutFilePath = null;
                         Log.d(LOG_TAG, e.getMessage());
