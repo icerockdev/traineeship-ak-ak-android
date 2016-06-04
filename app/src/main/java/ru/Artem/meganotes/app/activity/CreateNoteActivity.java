@@ -48,7 +48,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private List<String> imagePaths;
     private int imageWidth;
 
-    private String mOutFilePath = null;
+    private Uri mOutFilePath = null;
     private ComponentName mCallingActivity;
 
     private final int GALLERY_REQUEST = 10;
@@ -88,7 +88,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 getSupportActionBar().setTitle(R.string.edit_note);//поменять на заголовок заметки
             }
         }
-        sSavePath = getFilesDir().getAbsolutePath();
+        sSavePath = getExternalFilesDir(null).getAbsolutePath();
 
         Log.d(LOG_TAG, "save path: " + sSavePath);
         imagePaths = new ArrayList<>();
@@ -210,18 +210,11 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             mLayoutForImages.addView(image);
         }
         if ((resultCode == RESULT_OK) && (requestCode == CAMERA_REQUEST)) {
-            Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
-            try {
-                mOutFilePath = ImgUtils.savePicture(imageBitmap, sSavePath);
-            } catch (IOException e) {
-                //TODO
-            }
             Log.d(LOG_TAG, "we take from extras is: " + mOutFilePath);
             if (mOutFilePath != null) {
                 CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this,
                         "fileName?",
-                        mOutFilePath,
+                        mOutFilePath.toString(),
                         false,
                         imageWidth,
                         imageWidth,
@@ -241,7 +234,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                             new String[]{Manifest.permission.CAMERA}, 0);
                 } else {
                     try {
-                        ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST);
+                        mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, sSavePath);
                     } catch (IOException e) {
                         mOutFilePath = null;
                         Log.d(LOG_TAG, e.getMessage());

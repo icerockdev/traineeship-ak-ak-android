@@ -39,11 +39,18 @@ public class ImgUtils {
         return new File(folderToSave, imageFileName);
     }
 
-    public static void cameraRequest(Context context, int requestCode) throws IOException {
+    public static Uri cameraRequest(Context context, int requestCode, String folderToSave) throws IOException {
         Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (captureIntent.resolveActivity(context.getPackageManager()) != null) {
+            File photoFile = createImageFile(folderToSave);
+            if (photoFile != null) {
+                captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
                 ((Activity) context).startActivityForResult(captureIntent, requestCode);
+
+                return Uri.fromFile(photoFile);
             }
+        }
+        return null;
     }
 
     public static void galleryRequest(Context context, int requestCode) {
