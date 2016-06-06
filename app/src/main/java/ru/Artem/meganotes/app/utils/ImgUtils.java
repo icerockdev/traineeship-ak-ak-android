@@ -39,6 +39,17 @@ public class ImgUtils {
         return new File(folderToSave, imageFileName);
     }
 
+    public static String getFileNameByUri(Uri uri)
+    {
+        String tmp = uri.toString();
+        int index = tmp.lastIndexOf('/');
+        byte[] massive = new byte[70];
+        tmp.getBytes(index, tmp.length(), massive, 0);
+        Log.d(LOG_TAG, "tmp string: " + tmp);
+        Log.d(LOG_TAG, "massive: "+massive);
+        return massive.toString();
+    }
+
     public static Uri cameraRequest(Context context, int requestCode, String folderToSave) throws IOException {
         Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (captureIntent.resolveActivity(context.getPackageManager()) != null) {

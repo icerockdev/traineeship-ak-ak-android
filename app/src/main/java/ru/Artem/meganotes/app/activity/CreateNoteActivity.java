@@ -26,8 +26,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.Artem.meganotes.app.CustomGridView;
-import ru.Artem.meganotes.app.adapters.GridViewAdapter;
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
 import ru.Artem.meganotes.app.dialogs.AddImageDialog;
 import ru.Artem.meganotes.app.R;
@@ -49,7 +47,6 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private RelativeLayout lastDeletedElement;
     private List<String> imagePaths = new ArrayList<>();
     private int imageWidth;
-    private GridViewAdapter mGridViewAdapter;
 
     private Uri mOutFilePath = null;
     private ComponentName mCallingActivity;
@@ -76,18 +73,10 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         mTitleNote = (EditText) findViewById(R.id.editTitleNote);
         mContentNote = (EditText) findViewById(R.id.editContentNote);
         mImageView = (ImageView) findViewById(R.id.imageView);
-        CustomGridView customGridView = (CustomGridView) findViewById(R.id.gridView);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
         mView = (LinearLayout) findViewById(R.id.layoutCreate);
         mLayoutForImages = (RelativeLayout) findViewById(R.id.LayoutForImages);
-
-        mGridViewAdapter = new GridViewAdapter(this, imagePaths, R.drawable.ic_delete, imageWidth);
-
-        customGridView.setExpanded(true);
-        customGridView.setColumnWidth(imageWidth);
-        customGridView.setAdapter(mGridViewAdapter);
-
 
         mCallingActivity = getCallingActivity();
 
@@ -213,32 +202,29 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             }
 
             imagePaths.add(selectedImage.toString());
-            mGridViewAdapter.notifyDataSetChanged();
-
-            /*CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this,
-                    "fileName?",
+            String name = ImgUtils.getFileNameByUri(selectedImage);
+            CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this,
+                    name,
                     selectedImage.toString(),
                     false,
                     imageWidth,
                     imageWidth,
                     0); // пока что так, затем сделаю систему раздачи id для картинок
-            mLayoutForImages.addView(image);*/
+            mLayoutForImages.addView(image);
         }
         if ((resultCode == RESULT_OK) && (requestCode == CAMERA_REQUEST)) {
-            Log.d(LOG_TAG, "we take from extras is: " + mOutFilePath);
             imagePaths.add(mOutFilePath.toString());
-            mGridViewAdapter.notifyDataSetChanged();
-
-            /*if (mOutFilePath != null) {
+            String name = ImgUtils.getFileNameByUri(mOutFilePath);
+            if (mOutFilePath != null) {
                 CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this,
-                        "fileName?",
+                        name,
                         mOutFilePath.toString(),
                         false,
                         imageWidth,
                         imageWidth,
                         0); // аналогично тому что выше
                 mLayoutForImages.addView(image);
-            }*/
+            }
         }
     }
 
@@ -253,6 +239,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 } else {
                     try {
                         mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, sSavePath);
+                        Log.d(LOG_TAG,"wtf, mPutFilePath = "+mOutFilePath.toString());
                     } catch (IOException e) {
                         mOutFilePath = null;
                         Log.d(LOG_TAG, e.getMessage());
