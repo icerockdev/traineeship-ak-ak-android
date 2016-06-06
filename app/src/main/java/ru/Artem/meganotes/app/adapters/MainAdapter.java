@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import ru.Artem.meganotes.app.activity.DetailedActivity;
 import ru.Artem.meganotes.app.models.ModelNote;
@@ -35,13 +36,14 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.NoteViewHolder
 
         private TextView nameNote;
         private TextView lastUpdateNote;
-
+        private TextView contentNote;
         public NoteViewHolder(View itemView) {
 
             super(itemView);
 
-            nameNote = (TextView)itemView.findViewById(R.id.nameNote);
-            lastUpdateNote = (TextView)itemView.findViewById(R.id.lastUpdateNote);
+            nameNote = (TextView) itemView.findViewById(R.id.nameNote);
+            lastUpdateNote = (TextView) itemView.findViewById(R.id.lastUpdateNote);
+            contentNote = (TextView) itemView.findViewById(R.id.content_note);
 
             itemView.setOnClickListener(this);
             itemView.setOnLongClickListener(this);
@@ -99,7 +101,20 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.NoteViewHolder
 
     @Override
     public void onBindViewHolder(NoteViewHolder noteViewHolder, int i) {
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) noteViewHolder.contentNote.getLayoutParams();
+
+        if (!mNotesList.get(i).getNameNote().isEmpty()) {
+            noteViewHolder.contentNote.setMaxLines(2);
+            layoutParams.addRule(RelativeLayout.BELOW, noteViewHolder.nameNote.getId());
+        } else {
+            layoutParams.addRule(RelativeLayout.BELOW, 0);
+            noteViewHolder.contentNote.setMaxLines(3);
+        }
+
+        noteViewHolder.contentNote.setLayoutParams(layoutParams);
+
         noteViewHolder.nameNote.setText(mNotesList.get(i).getNameNote());
+        noteViewHolder.contentNote.setText(mNotesList.get(i).getContent());
         noteViewHolder.lastUpdateNote.setText(mNotesList.get(i).getLastUpdateNote());
     }
 }
