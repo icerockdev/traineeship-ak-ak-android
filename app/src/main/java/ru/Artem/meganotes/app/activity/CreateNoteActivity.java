@@ -202,7 +202,8 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             }
 
             imagePaths.add(selectedImage.toString());
-            String name = ImgUtils.getFileNameByUri(selectedImage);
+            String name = ImgUtils.getFileNameByUri(selectedImage, this);
+
             CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this,
                     name,
                     selectedImage.toString(),
@@ -214,7 +215,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         }
         if ((resultCode == RESULT_OK) && (requestCode == CAMERA_REQUEST)) {
             imagePaths.add(mOutFilePath.toString());
-            String name = ImgUtils.getFileNameByUri(mOutFilePath);
+            String name = ImgUtils.getFileNameByUri(mOutFilePath, this);
             if (mOutFilePath != null) {
                 CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this,
                         name,

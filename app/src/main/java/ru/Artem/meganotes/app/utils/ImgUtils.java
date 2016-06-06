@@ -3,10 +3,9 @@ package ru.Artem.meganotes.app.utils;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 
@@ -17,7 +16,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import ru.Artem.meganotes.app.activity.CreateNoteActivity;
 
 
 /**
@@ -39,15 +37,21 @@ public class ImgUtils {
         return new File(folderToSave, imageFileName);
     }
 
-    public static String getFileNameByUri(Uri uri)
-    {
+    public static String getFileNameByUri(Uri uri, Context context) {
         String tmp = uri.toString();
-        int index = tmp.lastIndexOf('/');
-        byte[] massive = new byte[70];
-        tmp.getBytes(index, tmp.length(), massive, 0);
-        Log.d(LOG_TAG, "tmp string: " + tmp);
-        Log.d(LOG_TAG, "massive: "+massive);
-        return massive.toString();
+        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+
+        if (cursor != null) {
+            cursor.moveToFirst();
+            tmp = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
+            cursor.close();
+        }
+
+        int index = tmp.lastIndexOf('/') + 1;
+        char[] massive = new char[tmp.length() - index];
+        tmp.getChars(index, tmp.length(), massive, 0);
+
+        return new String(massive);
     }
 
     public static Uri cameraRequest(Context context, int requestCode, String folderToSave) throws IOException {
