@@ -1,11 +1,14 @@
 package ru.Artem.meganotes.app.utils;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.design.widget.Snackbar;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
+import android.support.v7.widget.GridLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +19,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import ru.Artem.meganotes.app.R;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by Александр on 29.05.2016.
@@ -41,17 +47,29 @@ public class CustomImageMaker extends RelativeLayout {
         {
             Log.d(LOG_TAG, "Класс должен реализовывать интерфейс" +OnDeleteImageListener.class.getName());
         }
+
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(width, height);
-        this.setLayoutParams(params);
-        mImagePath = imagePath;
-        mReadMode = mode;
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.custom_imageview_style, this);
+
+        this.setLayoutParams(params);
+
+        mImagePath = imagePath;
+        mReadMode = mode;
+
         mImage = (ImageView) findViewById(R.id.imageInCustomIV);
         mText = (TextView) findViewById(R.id.textInCustomIV);
-        mImage.setImageURI(Uri.parse(mImagePath));
-        mText.setText(text);
         mButton = (ImageButton) findViewById(R.id.imageButtonInCustomIV);
+
+        try {
+            mImage.setImageBitmap(ImgUtils.scaleImg(Uri.parse(imagePath), context, width, height));
+        } catch (IOException ex) {
+            //TODO
+        }
+
+
+        mText.setText(text);
+
         mButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -88,8 +106,6 @@ public class CustomImageMaker extends RelativeLayout {
                 }
             }
         });
-
-
     }
 
     public interface OnDeleteImageListener

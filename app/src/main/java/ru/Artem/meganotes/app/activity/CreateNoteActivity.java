@@ -32,6 +32,7 @@ import ru.Artem.meganotes.app.R;
 import ru.Artem.meganotes.app.models.Note;
 import ru.Artem.meganotes.app.utils.CustomImageMaker;
 import ru.Artem.meganotes.app.utils.DateUtils;
+import ru.Artem.meganotes.app.utils.GridLayoutUtils;
 import ru.Artem.meganotes.app.utils.ImgUtils;
 
 /**
@@ -43,7 +44,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private EditText mContentNote;
     private ImageView mImageView;
     private LinearLayout mView;
-    private RelativeLayout mLayoutForImages;
+    private android.support.v7.widget.GridLayout mLayoutForImages;
     private RelativeLayout lastDeletedElement;
     private List<String> imagePaths = new ArrayList<>();
     private int imageWidth;
@@ -76,7 +77,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
         mView = (LinearLayout) findViewById(R.id.layoutCreate);
-        mLayoutForImages = (RelativeLayout) findViewById(R.id.LayoutForImages);
+        mLayoutForImages = (android.support.v7.widget.GridLayout) findViewById(R.id.LayoutForImages);
 
         mCallingActivity = getCallingActivity();
 
@@ -211,7 +212,9 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                     imageWidth,
                     imageWidth,
                     0); // пока что так, затем сделаю систему раздачи id для картинок
-            mLayoutForImages.addView(image);
+
+            GridLayoutUtils.addViewToGrid(mLayoutForImages, image, imageWidth);
+           // mLayoutForImages.addView(image);
         }
         if ((resultCode == RESULT_OK) && (requestCode == CAMERA_REQUEST)) {
             imagePaths.add(mOutFilePath.toString());
@@ -224,7 +227,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                         imageWidth,
                         imageWidth,
                         0); // аналогично тому что выше
-                mLayoutForImages.addView(image);
+                GridLayoutUtils.addViewToGrid(mLayoutForImages, image, imageWidth);
             }
         }
     }
@@ -240,7 +243,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 } else {
                     try {
                         mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, sSavePath);
-                        Log.d(LOG_TAG,"wtf, mPutFilePath = "+mOutFilePath.toString());
+                        //Log.d(LOG_TAG,"wtf, mPutFilePath = "+mOutFilePath.toString());
                     } catch (IOException e) {
                         mOutFilePath = null;
                         Log.d(LOG_TAG, e.getMessage());

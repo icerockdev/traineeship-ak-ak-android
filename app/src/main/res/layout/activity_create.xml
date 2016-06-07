@@ -1,7 +1,7 @@
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="match_parent" xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical"
         android:id="@+id/layoutCreate">
 
@@ -56,14 +56,14 @@
                     android:background="#00000000"
                     android:layout_below="@+id/editTitleNote"/>
 
-            <RelativeLayout
+            <android.support.v7.widget.GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/LayoutForImages"
                 android:layout_below="@id/editContentNote"
-                android:padding="16dp"
-                >
-            </RelativeLayout>
+                android:layout_gravity="center"
+                app:columnCount="10">
+            </android.support.v7.widget.GridLayout>
         </RelativeLayout>
 
     </ScrollView>
