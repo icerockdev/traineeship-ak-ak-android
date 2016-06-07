@@ -122,8 +122,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                     ActivityCompat.requestPermissions(CreateNoteActivity.this,
                             new String[]{Manifest.permission.CAMERA}, 0);
                 } else {
-                    int cameraRequest = 11;
-                    mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, cameraRequest);
+                    mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST);
                 }
 
                 break;
@@ -171,9 +170,12 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             setResult(RESULT_OK, intent);
 
             finish();
-        } else {
+        } else if (mContentNote.getText().toString().isEmpty()
+                && (mImageView.getDrawable() != null || !mTitleNote.getText().toString().isEmpty())) {
             IncorrectDataDialog incorrectDataDialog = new IncorrectDataDialog();
             incorrectDataDialog.show(getSupportFragmentManager().beginTransaction(), IncorrectDataDialog.DIALOG_KEY);
+        } else {
+            finish();
         }
     }
 
