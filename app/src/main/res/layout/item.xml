@@ -5,16 +5,16 @@
         android:id="@+id/cardView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="8dp"
         android:focusable="true"
         android:foreground="?android:attr/selectableItemBackground"
-        card_view:contentPadding="10dp"
-        card_view:cardElevation="10dp">
+        card_view:contentPadding="8dp"
+        card_view:cardElevation="8dp">
 
         <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp">
+                android:layout_margin="8dp">
 
         <TextView
                 android:id="@+id/nameNote"
@@ -28,7 +28,6 @@
                 android:id="@+id/content_note"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:maxLines="3"
                 android:layout_alignParentLeft="true"
                 android:textAppearance="?android:attr/textAppearanceMedium"/>
 

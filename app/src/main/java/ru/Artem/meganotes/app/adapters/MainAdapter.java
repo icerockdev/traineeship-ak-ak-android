@@ -34,16 +34,16 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.NoteViewHolder
     public class NoteViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,
             View.OnLongClickListener {
 
-        private TextView nameNote;
-        private TextView lastUpdateNote;
-        private TextView contentNote;
+        private TextView mNameNote;
+        private TextView mLastUpdateNote;
+        private TextView mContentNote;
         public NoteViewHolder(View itemView) {
 
             super(itemView);
 
-            nameNote = (TextView) itemView.findViewById(R.id.nameNote);
-            lastUpdateNote = (TextView) itemView.findViewById(R.id.lastUpdateNote);
-            contentNote = (TextView) itemView.findViewById(R.id.content_note);
+            mNameNote = (TextView) itemView.findViewById(R.id.nameNote);
+            mLastUpdateNote = (TextView) itemView.findViewById(R.id.lastUpdateNote);
+            mContentNote = (TextView) itemView.findViewById(R.id.content_note);
 
             itemView.setOnClickListener(this);
             itemView.setOnLongClickListener(this);
@@ -101,20 +101,20 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.NoteViewHolder
 
     @Override
     public void onBindViewHolder(NoteViewHolder noteViewHolder, int i) {
-        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) noteViewHolder.contentNote.getLayoutParams();
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) noteViewHolder.mContentNote.getLayoutParams();
 
         if (!mNotesList.get(i).getNameNote().isEmpty()) {
-            noteViewHolder.contentNote.setMaxLines(2);
-            layoutParams.addRule(RelativeLayout.BELOW, noteViewHolder.nameNote.getId());
+            noteViewHolder.mContentNote.setMaxLines(2);
+            layoutParams.addRule(RelativeLayout.BELOW, noteViewHolder.mNameNote.getId());
         } else {
             layoutParams.addRule(RelativeLayout.BELOW, 0);
-            noteViewHolder.contentNote.setMaxLines(3);
+            noteViewHolder.mContentNote.setMaxLines(3);
         }
 
-        noteViewHolder.contentNote.setLayoutParams(layoutParams);
+        noteViewHolder.mContentNote.setLayoutParams(layoutParams);
 
-        noteViewHolder.nameNote.setText(mNotesList.get(i).getNameNote());
-        noteViewHolder.contentNote.setText(mNotesList.get(i).getContent());
-        noteViewHolder.lastUpdateNote.setText(mNotesList.get(i).getLastUpdateNote());
+        noteViewHolder.mNameNote.setText(mNotesList.get(i).getNameNote());
+        noteViewHolder.mContentNote.setText(mNotesList.get(i).getContent());
+        noteViewHolder.mLastUpdateNote.setText(mNotesList.get(i).getLastUpdateNote());
     }
 }
