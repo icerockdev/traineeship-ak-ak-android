@@ -33,11 +33,12 @@ public class CustomImageMaker extends RelativeLayout {
     private ImageButton mButton;
     private String mImagePath;
     private boolean mReadMode;
+    private int mId;
 
     private OnDeleteImageListener onDeleteImageListener;
     private final String LOG_TAG = CustomImageMaker.class.getName();
 
-    public CustomImageMaker(final Context context, String text, String imagePath, boolean mode, int width, int height, final int tempID) {
+    public CustomImageMaker(final Context context, String text, String imagePath, boolean mode, int width, int height, final int id) {
         super(context);
 
         try {
@@ -56,7 +57,7 @@ public class CustomImageMaker extends RelativeLayout {
 
         mImagePath = imagePath;
         mReadMode = mode;
-
+        mId = id;
         mImage = (ImageView) findViewById(R.id.imageInCustomIV);
         mText = (TextView) findViewById(R.id.textInCustomIV);
         mButton = (ImageButton) findViewById(R.id.imageButtonInCustomIV);
@@ -92,14 +93,13 @@ public class CustomImageMaker extends RelativeLayout {
                     adb.show();
                 } else {
                     final View rootView = getRootView();
-                    onDeleteImageListener.removeElementFromRootView(tempID);
+                    onDeleteImageListener.removeElementFromRootView(mId);
                     final Snackbar snackbar = Snackbar.make(rootView, "Изображение Удалено", Snackbar.LENGTH_LONG)
                             .setAction("Восстановить", new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
                                     onDeleteImageListener.returnLastDeletedElement();
-                                    Snackbar snackbar1 = Snackbar.make(rootView, "Восстановлено", Snackbar.LENGTH_SHORT);
-                                    snackbar1.show();
+                                    Snackbar.make(rootView, "Восстановлено", Snackbar.LENGTH_SHORT).show();
                                 }
                             });
                     snackbar.show();

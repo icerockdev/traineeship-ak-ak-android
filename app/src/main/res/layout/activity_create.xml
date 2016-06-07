@@ -62,7 +62,7 @@
                 android:id="@+id/LayoutForImages"
                 android:layout_below="@id/editContentNote"
                 android:layout_gravity="center"
-                app:columnCount="10">
+                app:columnCount="2">
             </android.support.v7.widget.GridLayout>
         </RelativeLayout>
 

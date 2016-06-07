@@ -179,7 +179,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
     final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            final Bitmap image = (Bitmap) msg.obj; // на данный момент этот хендлер вставляет в одно ImageView, в другой задаче сделаем интерфейс и тогда добавление множества кастомных imageView в LinearLayout.
+            final Bitmap image = (Bitmap) msg.obj;
             mImageView.setImageBitmap(image);
         }
     };

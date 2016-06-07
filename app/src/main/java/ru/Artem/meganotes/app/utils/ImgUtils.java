@@ -53,13 +53,13 @@ public class ImgUtils {
         return new String(massive);
     }
 
-    public static Uri cameraRequest(Context context, int requestCode, String folderToSave) throws IOException {
+    public static Uri cameraRequest(Activity activity, int requestCode, String folderToSave) throws IOException {
         Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (captureIntent.resolveActivity(context.getPackageManager()) != null) {
+        if (captureIntent.resolveActivity(activity.getPackageManager()) != null) {
             File photoFile = createImageFile(folderToSave);
             if (photoFile != null) {
                 captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
-                ((Activity) context).startActivityForResult(captureIntent, requestCode);
+                ((Activity) activity).startActivityForResult(captureIntent, requestCode);
 
                 return Uri.fromFile(photoFile);
             }

@@ -43,11 +43,12 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private EditText mTitleNote;
     private EditText mContentNote;
     private ImageView mImageView;
-    private LinearLayout mView;
+    private LinearLayout mRootLayoutActivity;
     private android.support.v7.widget.GridLayout mLayoutForImages;
     private RelativeLayout lastDeletedElement;
-    private List<String> imagePaths = new ArrayList<>();
-    private int imageWidth;
+    private List<String> mImagePaths = new ArrayList<>();
+    private int mImageWidth;
+    private int mTempIdForImages;
 
     private Uri mOutFilePath = null;
     private ComponentName mCallingActivity;
@@ -55,7 +56,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private final int GALLERY_REQUEST = 10;
     private final int CAMERA_REQUEST = 11;
     private final String LOG_TAG = CreateNoteActivity.class.getName();
-    private String sSavePath;
+    private String mSavePath;
     public final static String CREATE_NOTE_KEY = "noteCreate";
     public static final int CREATE_NOTE_REQUEST = 1001;
 
@@ -69,14 +70,14 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
         Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
         int placeForImages = display.getWidth() - 32; //32 = padding x2
-        imageWidth = (placeForImages / 2) - 10;
+        mImageWidth = (placeForImages / 2) - 10;
 
         mTitleNote = (EditText) findViewById(R.id.editTitleNote);
         mContentNote = (EditText) findViewById(R.id.editContentNote);
         mImageView = (ImageView) findViewById(R.id.imageView);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
-        mView = (LinearLayout) findViewById(R.id.layoutCreate);
+        mRootLayoutActivity = (LinearLayout) findViewById(R.id.layoutCreate);
         mLayoutForImages = (android.support.v7.widget.GridLayout) findViewById(R.id.LayoutForImages);
 
         mCallingActivity = getCallingActivity();
@@ -93,15 +94,13 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 getSupportActionBar().setTitle(R.string.edit_note);//поменять на заголовок заметки
             }
         }
-        sSavePath = getExternalFilesDir(null).getAbsolutePath();
-
-        Log.d(LOG_TAG, "save path: " + sSavePath);
-
+        mSavePath = getExternalFilesDir(null).getAbsolutePath();
+        mTempIdForImages = 0;
         if (DEBUG) {
             Log.d(LOG_TAG, "our screen width is: " + display.getWidth());
             Log.d(LOG_TAG, "our screen height is: " + display.getHeight());
             Log.d(LOG_TAG, "we have placeForImages value: " + placeForImages);
-            Log.d(LOG_TAG, "our imageWidth is " + imageWidth);
+            Log.d(LOG_TAG, "our mImageWidth is " + mImageWidth);
         }
     }
 
@@ -154,18 +153,18 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 }
                 Bitmap bitmap = ((BitmapDrawable) imageViewInCustomView.getDrawable()).getBitmap();
                 try {
-                    imagePaths.add(ImgUtils.savePicture(bitmap, sSavePath));
+                    mImagePaths.add(ImgUtils.savePicture(bitmap, mSavePath));
                 } catch (IOException e) {
-                    Snackbar.make(mView, R.string.str_problems_save, Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(mRootLayoutActivity, R.string.str_problems_save, Snackbar.LENGTH_LONG).show();
                 }
             }
             DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
             Note newNote;
             try {
-                newNote = helper.addNote(mTitleNote.getText().toString(), mContentNote.getText().toString(), date, imagePaths);
+                newNote = helper.addNote(mTitleNote.getText().toString(), mContentNote.getText().toString(), date, mImagePaths);
             } catch (SQLiteException e) {
                 newNote = null;
-                Snackbar.make(mView, R.string.cant_add_note_message, Snackbar.LENGTH_LONG).show();
+                Snackbar.make(mRootLayoutActivity, R.string.cant_add_note_message, Snackbar.LENGTH_LONG).show();
             }
 
             if (DEBUG) {
@@ -179,7 +178,9 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             Intent intent = new Intent();
             intent.putExtra(CREATE_NOTE_KEY, newNote);
             setResult(CREATE_NOTE_REQUEST, intent);
-        } //иначе выдвавать ошибку снекбаром о том что нельзя создать пустую заметку
+        } else {
+            Snackbar.make(mRootLayoutActivity,"Пожалуйста, введите текст",Snackbar.LENGTH_LONG).show();
+        }
         super.finish();
     }
 
@@ -187,47 +188,40 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (DEBUG) {
-            Log.d(LOG_TAG, "we have requestCode = " + requestCode);
-            Log.d(LOG_TAG, "we have resultCode = " + resultCode);
-        }
         if ((resultCode == RESULT_OK) && (requestCode == GALLERY_REQUEST)) {
             Uri selectedImage = data.getData();
             try {
                 MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
             } catch (IOException e) {
-                Snackbar.make(mView, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
-            }
-            if (DEBUG) {
-                Log.d(LOG_TAG, "we have selectedImage is: " + selectedImage);
+                Snackbar.make(mRootLayoutActivity, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
             }
 
-            imagePaths.add(selectedImage.toString());
+            mImagePaths.add(selectedImage.toString());
             String name = ImgUtils.getFileNameByUri(selectedImage, this);
 
             CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this,
                     name,
                     selectedImage.toString(),
                     false,
-                    imageWidth,
-                    imageWidth,
-                    0); // пока что так, затем сделаю систему раздачи id для картинок
-
-            GridLayoutUtils.addViewToGrid(mLayoutForImages, image, imageWidth);
-           // mLayoutForImages.addView(image);
+                    mImageWidth,
+                    mImageWidth,
+                    mTempIdForImages);
+            GridLayoutUtils.addViewToGrid(mLayoutForImages, image, mImageWidth);
+            mTempIdForImages++;
         }
         if ((resultCode == RESULT_OK) && (requestCode == CAMERA_REQUEST)) {
-            imagePaths.add(mOutFilePath.toString());
+            mImagePaths.add(mOutFilePath.toString());
             String name = ImgUtils.getFileNameByUri(mOutFilePath, this);
             if (mOutFilePath != null) {
                 CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this,
                         name,
                         mOutFilePath.toString(),
                         false,
-                        imageWidth,
-                        imageWidth,
-                        0); // аналогично тому что выше
-                GridLayoutUtils.addViewToGrid(mLayoutForImages, image, imageWidth);
+                        mImageWidth,
+                        mImageWidth,
+                        mTempIdForImages);
+                GridLayoutUtils.addViewToGrid(mLayoutForImages, image, mImageWidth);
+                mTempIdForImages++;
             }
         }
     }
@@ -242,12 +236,11 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                             new String[]{Manifest.permission.CAMERA}, 0);
                 } else {
                     try {
-                        mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, sSavePath);
-                        //Log.d(LOG_TAG,"wtf, mPutFilePath = "+mOutFilePath.toString());
+                        mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, mSavePath);
                     } catch (IOException e) {
                         mOutFilePath = null;
                         Log.d(LOG_TAG, e.getMessage());
-                        Snackbar.make(mView, getString(R.string.str_problems_save), Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(mRootLayoutActivity, getString(R.string.str_problems_save), Snackbar.LENGTH_LONG).show();
                     }
                 }
                 break;
@@ -268,14 +261,12 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     public void removeElementFromRootView(int id) {
         lastDeletedElement = (RelativeLayout) mLayoutForImages.getChildAt(id);
         mLayoutForImages.removeView(lastDeletedElement);
-        if (DEBUG) {
-            Log.d(LOG_TAG, "we in interface method in another activity");
-            Log.d(LOG_TAG, "we remover " + lastDeletedElement.getClass().getName() + " with index " + id);
-        }
+        mTempIdForImages--;
     }
 
     @Override
     public void returnLastDeletedElement() {
         mLayoutForImages.addView(lastDeletedElement);
+        mTempIdForImages++;
     }
 }
