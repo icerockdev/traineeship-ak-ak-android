@@ -101,6 +101,22 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 DataBaseHelper.ID_COLUMN + " = ?", new String[]{String.valueOf(id)});
     }
 
+    public List<String> getImagesOfItNote(Note note) {
+        Cursor cursor = sInstance.getReadableDatabase().query(DATABASE_TABLE_IMAGES,
+                new String[]{IMAGE_SOURCE_COLUMN},
+                ID_NOTE_COLUMN, new String[]{String.valueOf(note.getId())},
+                null, null, null);
+        if (cursor != null) {
+            List<String> paths = new ArrayList<>();
+            while (cursor.moveToNext()) {
+                paths.add(cursor.getString(cursor.getColumnIndex(IMAGE_SOURCE_COLUMN)));
+            }
+            return paths;
+        } else {
+            return null;
+        }
+    }
+
     public List<Note> getAllNotesWithoutImages() {
         List<Note> notesList = new ArrayList<>();
         Cursor cursor = sInstance.getReadableDatabase().query(DATABASE_TABLE_NOTES, null, null, null, null, null, null);
