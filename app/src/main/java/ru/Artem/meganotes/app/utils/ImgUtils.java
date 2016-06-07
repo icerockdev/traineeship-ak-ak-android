@@ -5,13 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -32,7 +31,7 @@ public class ImgUtils {
 
     private static File createImageFile(String folderToSave) throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + ".jpg";
+        String imageFileName = String.format("JPEG_%s.jpg", timeStamp);
 
         return new File(folderToSave, imageFileName);
     }
@@ -85,5 +84,54 @@ public class ImgUtils {
         fOut.flush();
         fOut.close();
         return "file://" + file.getAbsolutePath();
+    }
+
+    public static Bitmap scaleImg(Uri uri, Context context, int width, int height) throws IOException {
+
+        InputStream inputStream;
+        InputStream inputStreamScale;
+        inputStream = context.getContentResolver()
+                .openInputStream(uri);
+
+        BitmapFactory.Options onlyBoundsOptions = new BitmapFactory.Options();
+        onlyBoundsOptions.inJustDecodeBounds = true;
+
+        BitmapFactory.decodeStream(inputStream, null, onlyBoundsOptions);
+
+        onlyBoundsOptions.inSampleSize = calculateInSampleSize(onlyBoundsOptions, width, height);
+        onlyBoundsOptions.inJustDecodeBounds = false;
+
+        inputStreamScale = context.getContentResolver()
+                .openInputStream(uri);
+
+        return BitmapFactory.decodeStream(inputStreamScale, null, onlyBoundsOptions);
+    }
+
+    public static int calculateInSampleSize(
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+
+        int height = options.outHeight;
+        int width = options.outWidth;
+        int inSampleSize = 1;
+        int tmp;
+
+        if (width > height){
+            tmp = height;
+            height = width;
+            width = tmp;
+        }
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            while ((halfHeight / inSampleSize) > reqHeight
+                    && (halfWidth / inSampleSize) > reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
     }
 }
