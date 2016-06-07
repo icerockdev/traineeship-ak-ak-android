@@ -40,10 +40,10 @@ public class ImgUtils {
         return new File(folderToSave, imageFileName);
     }
 
-    public static Uri cameraRequest(Context context, int requestCode, String folderToSave) throws IOException {
+    public static Uri cameraRequest(Activity activity, int requestCode, String folderToSave) throws IOException {
         Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-        if (captureIntent.resolveActivity(context.getPackageManager()) != null) {
+        if (captureIntent.resolveActivity(activity.getPackageManager()) != null) {
 
             File photoFile;
             photoFile = createImageFile(folderToSave);
@@ -51,7 +51,7 @@ public class ImgUtils {
 
             Uri mOutFilePath = Uri.fromFile(photoFile);
             captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mOutFilePath);
-            ((Activity) context).startActivityForResult(captureIntent, requestCode);
+            activity.startActivityForResult(captureIntent, requestCode);
 
             return mOutFilePath;
         }

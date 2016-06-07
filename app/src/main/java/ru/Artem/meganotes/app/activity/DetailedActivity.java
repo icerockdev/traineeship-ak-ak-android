@@ -55,7 +55,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
     private final int EDIT_NOTE_TABLE = 0;
     private final int EDIT_IMAGE_TABLE = 1;
     public static final String DELETE_IMG = "null";
-    private String sSavePath;
+    private String mSavePath;
     private final String LOG_TAG = DetailedActivity.class.getName();
     public final static String EDIT_NOTE_KEY = "noteEdit";
     public static final int EDIT_NOTE_REQUEST = 1000;
@@ -152,7 +152,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                 return true;
             }
         });
-        sSavePath = this.getFilesDir().toString();
+        mSavePath = this.getFilesDir().toString();
     }
 
     private void setImg(final Uri pathImg) {
@@ -179,7 +179,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
     final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            final Bitmap image = (Bitmap) msg.obj; // на данный момент этот хендлер вставляет в одно ImageView, в другой задаче сделаем интерфейс и тогда добавление множества кастомных imageView в LinearLayout.
+            final Bitmap image = (Bitmap) msg.obj;
             mImageView.setImageBitmap(image);
         }
     };
@@ -236,7 +236,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
 
                 } else {
                     try {
-                        mOutFilePath = ImgUtils.cameraRequest(DetailedActivity.this, CAMERA_REQUEST, sSavePath);
+                        mOutFilePath = ImgUtils.cameraRequest(DetailedActivity.this, CAMERA_REQUEST, mSavePath);
                     } catch (IOException e) {
                         mOutFilePath = null;
                         Snackbar.make(mLayout, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
