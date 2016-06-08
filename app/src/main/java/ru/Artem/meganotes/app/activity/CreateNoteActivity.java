@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -14,6 +15,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.*;
+import android.support.v7.widget.GridLayout;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Display;
@@ -42,7 +45,6 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
     private EditText mTitleNote;
     private EditText mContentNote;
-    private ImageView mImageView;
     private LinearLayout mRootLayoutActivity;
     private android.support.v7.widget.GridLayout mLayoutForImages;
     private RelativeLayout lastDeletedElement;
@@ -74,11 +76,10 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
         mTitleNote = (EditText) findViewById(R.id.editTitleNote);
         mContentNote = (EditText) findViewById(R.id.editContentNote);
-        mImageView = (ImageView) findViewById(R.id.imageView);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
         mRootLayoutActivity = (LinearLayout) findViewById(R.id.layoutCreate);
-        mLayoutForImages = (android.support.v7.widget.GridLayout) findViewById(R.id.LayoutForImages);
+        mLayoutForImages = (GridLayout) findViewById(R.id.LayoutForImages);
 
         mCallingActivity = getCallingActivity();
 
@@ -91,7 +92,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             if (mCallingActivity.getClassName().equals(MainActivity.class.getName())) {
                 getSupportActionBar().setTitle(R.string.new_note);
             } else {
-                getSupportActionBar().setTitle(R.string.edit_note);//поменять на заголовок заметки
+                getSupportActionBar().setTitle(R.string.edit_note);
             }
         }
         mSavePath = getExternalFilesDir(null).getAbsolutePath();
@@ -206,7 +207,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                     mImageWidth,
                     mImageWidth,
                     mTempIdForImages);
-            GridLayoutUtils.addViewToGrid(mLayoutForImages, image, mImageWidth);
+            GridLayoutUtils.addViewToGrid(mLayoutForImages,image, mImageWidth);
             mTempIdForImages++;
         }
         if ((resultCode == RESULT_OK) && (requestCode == CAMERA_REQUEST)) {
@@ -262,11 +263,23 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         lastDeletedElement = (RelativeLayout) mLayoutForImages.getChildAt(id);
         mLayoutForImages.removeView(lastDeletedElement);
         mTempIdForImages--;
+
+        int imagesCount = mLayoutForImages.getChildCount();
+        for (int i = 0; i < imagesCount; i++) {
+            CustomImageMaker customImageMaker = (CustomImageMaker) mLayoutForImages.getChildAt(i);
+            customImageMaker.setIndex(i);
+        }
     }
 
     @Override
     public void returnLastDeletedElement() {
         mLayoutForImages.addView(lastDeletedElement);
         mTempIdForImages++;
+
+        int imagesCount = mLayoutForImages.getChildCount();
+        for (int i = 0; i < imagesCount; i++) {
+            CustomImageMaker customImageMaker = (CustomImageMaker) mLayoutForImages.getChildAt(i);
+            customImageMaker.setIndex(i);
+        }
     }
 }

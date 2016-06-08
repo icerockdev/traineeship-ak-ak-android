@@ -33,12 +33,12 @@ public class CustomImageMaker extends RelativeLayout {
     private ImageButton mButton;
     private String mImagePath;
     private boolean mReadMode;
-    private int mId;
+    private int mIndex;
 
     private OnDeleteImageListener onDeleteImageListener;
     private final String LOG_TAG = CustomImageMaker.class.getName();
 
-    public CustomImageMaker(final Context context, String text, String imagePath, boolean mode, int width, int height, final int id) {
+    public CustomImageMaker(final Context context, String text, String imagePath, boolean mode, int width, int height, int index) {
         super(context);
 
         try {
@@ -57,7 +57,7 @@ public class CustomImageMaker extends RelativeLayout {
 
         mImagePath = imagePath;
         mReadMode = mode;
-        mId = id;
+        mIndex = index;
         mImage = (ImageView) findViewById(R.id.imageInCustomIV);
         mText = (TextView) findViewById(R.id.textInCustomIV);
         mButton = (ImageButton) findViewById(R.id.imageButtonInCustomIV);
@@ -93,7 +93,7 @@ public class CustomImageMaker extends RelativeLayout {
                     adb.show();
                 } else {
                     final View rootView = getRootView();
-                    onDeleteImageListener.removeElementFromRootView(mId);
+                    onDeleteImageListener.removeElementFromRootView(mIndex);
                     final Snackbar snackbar = Snackbar.make(rootView, "Изображение Удалено", Snackbar.LENGTH_LONG)
                             .setAction("Восстановить", new View.OnClickListener() {
                                 @Override
@@ -112,6 +112,11 @@ public class CustomImageMaker extends RelativeLayout {
     {
         void removeElementFromRootView(int id);
         void returnLastDeletedElement();
+    }
+
+    public void setIndex(int index)
+    {
+        mIndex = index;
     }
 
     public void setTextForLabel(String text) {

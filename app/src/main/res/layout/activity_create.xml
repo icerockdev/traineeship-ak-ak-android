@@ -21,15 +21,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-            <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/imageView"
-                    android:adjustViewBounds="true"
-                    android:layout_alignParentTop="true"
-                    android:layout_centerHorizontal="true"
-                    android:contentDescription="@string/add_image" />
-
             <EditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -37,8 +28,7 @@
                     android:id="@+id/editTitleNote"
                     android:padding="16dp"
                     android:background="#00000000"
-                    android:inputType="textCapSentences"
-                    android:layout_below="@+id/imageView"/>
+                    android:inputType="textCapSentences" />
 
             <View
                     android:layout_width="match_parent"
@@ -61,7 +51,6 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/LayoutForImages"
                 android:layout_below="@id/editContentNote"
-                android:layout_gravity="center"
                 app:columnCount="2">
             </android.support.v7.widget.GridLayout>
         </RelativeLayout>
