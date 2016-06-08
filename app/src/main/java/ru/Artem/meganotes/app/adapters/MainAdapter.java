@@ -1,22 +1,15 @@
 package ru.Artem.meganotes.app.adapters;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.Message;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
-import ru.Artem.meganotes.app.activity.DetailedActivity;
-import ru.Artem.meganotes.app.models.ModelNote;
+
+import ru.Artem.meganotes.app.models.Note;
 import ru.Artem.meganotes.app.R;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -26,9 +19,10 @@ import java.util.List;
 
 public class MainAdapter extends RecyclerView.Adapter<MainAdapter.NoteViewHolder> {
 
+    private static final boolean DEBUG = false;
     private OnItemClickListener mOnItemClickListener;
     private OnLongItemClickListener mOnLongItemClickListener;
-    private List<ModelNote> mNotesList;
+    private List<Note> mNotesList;
 
     public class NoteViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,
             View.OnLongClickListener {
@@ -66,8 +60,8 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.NoteViewHolder
         }
     }
 
-    public MainAdapter(List<ModelNote> modelNotes){
-        this.mNotesList = modelNotes;
+    public MainAdapter(List<Note> notes){
+        this.mNotesList = notes;
     }
 
     public interface OnItemClickListener {
@@ -99,7 +93,15 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.NoteViewHolder
 
     @Override
     public void onBindViewHolder(NoteViewHolder noteViewHolder, int i) {
-        noteViewHolder.nameNote.setText(mNotesList.get(i).getNameNote());
-        noteViewHolder.lastUpdateNote.setText(mNotesList.get(i).getLastUpdateNote());
+        Note note = mNotesList.get(i);
+        if (DEBUG){
+            Log.d("LOG", "we have in i is: " + i);
+            Log.d("LOG", "we have in NoteList: " + mNotesList.size() + " elements");
+            if (i>0) {
+                Log.d("LOG", "we can access to i-1 elem? " + mNotesList.get(i - 1).getNameNote() + " its her name");
+            }
+        }
+        noteViewHolder.nameNote.setText(note.getNameNote());
+        noteViewHolder.lastUpdateNote.setText(note.getDateLastUpdateNote());
     }
 }

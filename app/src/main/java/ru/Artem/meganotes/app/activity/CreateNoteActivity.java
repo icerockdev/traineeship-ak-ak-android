@@ -5,8 +5,13 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteException;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
@@ -14,12 +19,16 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.*;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
 import ru.Artem.meganotes.app.dialogs.AddImageDialog;
 import ru.Artem.meganotes.app.R;
-import ru.Artem.meganotes.app.models.ModelNote;
+import ru.Artem.meganotes.app.models.Note;
 import ru.Artem.meganotes.app.utils.DateUtils;
 import ru.Artem.meganotes.app.utils.ImgUtils;
 
@@ -31,7 +40,8 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private EditText mTitleNote;
     private EditText mContentNote;
     private ImageView mImageView;
-    private View mView;
+    private LinearLayout mRootLayoutActivity;
+    private List<String> mImagePaths;
 
     private Uri mOutFilePath = null;
     private ComponentName mCallingActivity;
@@ -39,9 +49,11 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private final int GALLERY_REQUEST = 10;
     private final int CAMERA_REQUEST = 11;
     private final String LOG_TAG = CreateNoteActivity.class.getName();
+    private String mSavePath;
     public final static String CREATE_NOTE_KEY = "noteCreate";
     public static final int CREATE_NOTE_REQUEST = 1001;
 
+    private static final boolean DEBUG = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +65,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         mContentNote = (EditText) findViewById(R.id.editContentNote);
         mImageView = (ImageView) findViewById(R.id.imageView);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        mView = findViewById(R.id.layoutCreate);
+        mRootLayoutActivity = (LinearLayout) findViewById(R.id.layoutCreate);
 
         mCallingActivity = getCallingActivity();
 
@@ -66,9 +78,11 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             if (mCallingActivity.getClassName().equals(MainActivity.class.getName())) {
                 getSupportActionBar().setTitle(R.string.new_note);
             } else {
-                getSupportActionBar().setTitle(R.string.edit_note);//поменять на заголовок заметки
+                getSupportActionBar().setTitle(R.string.edit_note);
             }
         }
+        mSavePath = this.getFilesDir().toString();
+        mImagePaths = new ArrayList<>();
     }
 
     @Override
@@ -95,12 +109,10 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             addImageDialog.show(getSupportFragmentManager(), AddImageDialog.DIALOG_KEY);
 
         } else if (id == android.R.id.home) {
-
             finish();
 
         } else if (id == R.id.close_with_out_save) {
             mContentNote.setText("");
-
             finish();
         }
         return true;
@@ -110,40 +122,57 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     public void finish() {
         if (!mContentNote.getText().toString().isEmpty()) {
 
-            DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(getApplicationContext());
             String date = DateUtils.getDate();
-            String filePath = "null";
 
             if (mImageView.getDrawable() != null) {
-                filePath = mOutFilePath.toString();
+                Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
+                try {
+                    mImagePaths.add(ImgUtils.savePicture(bitmap, mSavePath));
+                } catch (IOException e) {
+                    Snackbar.make(mRootLayoutActivity, R.string.str_problems_save, Snackbar.LENGTH_LONG).show();
+                }
+            }
+            DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
+            Note newNote;
+            try{
+                newNote = helper.addNote(mTitleNote.getText().toString(), mContentNote.getText().toString(), date, mImagePaths);
+            }catch (SQLiteException e)
+            {
+                newNote=null;
+                Snackbar.make(mRootLayoutActivity, R.string.cant_add_note_message,Snackbar.LENGTH_LONG).show();
             }
 
-            if (mCallingActivity.getClassName().equals(MainActivity.class.getName())) {
-                dataBaseHelper.addData(mTitleNote.getText().toString(),
-                        mContentNote.getText().toString(), filePath,
-                        date, date);
-                ModelNote newNote = dataBaseHelper.getInsertedNote();
-
-                Intent intent = new Intent();
-                intent.putExtra(CREATE_NOTE_KEY, newNote);
-                setResult(CREATE_NOTE_REQUEST, intent);
-            } //иначе dataBaseHelper.edit(...);
+            if (DEBUG) {
+                Log.d(LOG_TAG, "what we have in newNote?");
+                Log.d(LOG_TAG, "newNote name: " + newNote.getNameNote());
+                Log.d(LOG_TAG, "newNote content: " + newNote.getContent());
+                List<String> tmpList = newNote.getPathImg();
+                Log.d(LOG_TAG, "In image newNote we have count: " + tmpList.size());
+                Log.d(LOG_TAG, "content image newNote is:" + tmpList.get(0));
+            }
+            Intent intent = new Intent();
+            intent.putExtra(CREATE_NOTE_KEY, newNote);
+            setResult(CREATE_NOTE_REQUEST, intent);
+        } else
+        {
+            Snackbar.make(mRootLayoutActivity, "Пожалуйста, введите текст заметки", Snackbar.LENGTH_LONG).show();
         }
-
         super.finish();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == GALLERY_REQUEST) {
-                mOutFilePath = data.getData();
+        Bitmap img = null;
+        if ((resultCode == Activity.RESULT_OK) && ((requestCode == GALLERY_REQUEST) || (requestCode == CAMERA_REQUEST))) {
+            Uri selectedImage = data.getData();
+            try {
+                img = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+            } catch (IOException e) {
+                Snackbar.make(mRootLayoutActivity, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
             }
-
-            mImageView.setImageURI(mOutFilePath);
+            mImageView.setImageBitmap(img);
         }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -152,12 +181,15 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             case 0:
                 if (ActivityCompat.checkSelfPermission(CreateNoteActivity.this, Manifest.permission.CAMERA)
                         != PackageManager.PERMISSION_GRANTED) {
-
                     ActivityCompat.requestPermissions(CreateNoteActivity.this,
                             new String[]{Manifest.permission.CAMERA}, 0);
-
                 } else {
-                    mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, LOG_TAG);
+                    try {
+                        mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, mSavePath);
+                    } catch (IOException e) {
+                        mOutFilePath = null;
+                        Snackbar.make(mRootLayoutActivity, getString(R.string.str_problems_save), Snackbar.LENGTH_LONG).show();
+                    }
                 }
                 break;
             case 1:
@@ -170,7 +202,6 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 }
                 break;
         }
-
         dialogFragment.dismiss();
     }
 }
