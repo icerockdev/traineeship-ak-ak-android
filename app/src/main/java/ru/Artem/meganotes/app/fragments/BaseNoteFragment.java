@@ -137,7 +137,7 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
                     }
                     break;
                 case CREATE_NOTE_REQUEST:
-                    ModelNote createNote = data.getParcelableExtra(CreateNoteActivity.INTENT_EXTRA_CREATE_NOTE);
+                    ModelNote createNote = data.getParcelableExtra(CreateNoteActivity.INTENT_RESULT_EXTRA_CREATE_NOTE);
 
                     mNotesList.add(createNote);
                     mAdapter.notifyItemInserted(mAdapter.getItemCount() - 1);

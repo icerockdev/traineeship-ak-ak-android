@@ -173,6 +173,12 @@ public class DetailedActivity extends AppCompatActivity implements AddImageDialo
     }
 
     @Override
+    public void onBackPressed() {
+        initSaveIntent();
+        finish();
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 

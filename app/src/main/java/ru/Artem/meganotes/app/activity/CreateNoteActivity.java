@@ -39,7 +39,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
     private final int GALLERY_REQUEST = 10;
     private final int CAMERA_REQUEST = 11;
-    public final static String INTENT_EXTRA_CREATE_NOTE = "noteCreate";
+    public final static String INTENT_RESULT_EXTRA_CREATE_NOTE = "noteCreate";
     public final static String INTENT_EXTRA_EDIT_NOTE = "noteEdit";
 
 
@@ -159,7 +159,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                         date, date);
                 ModelNote newNote = dataBaseHelper.getInsertedNote();
 
-                intent.putExtra(INTENT_EXTRA_CREATE_NOTE, newNote);
+                intent.putExtra(INTENT_RESULT_EXTRA_CREATE_NOTE, newNote);
             } else {//добавить изменение в БД
                 mEditNote.setNameNote(mTitleNote.getText().toString());
                 mEditNote.setContent(mContentNote.getText().toString());
