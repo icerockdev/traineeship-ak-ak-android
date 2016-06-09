@@ -6,7 +6,8 @@
     <string name="edit_note">Редактировать</string>
     <string name="done_create">Готово</string>
 
-    <string name="new_note">Новая заметка</string>
+    <string name="new_note_title">Новая заметка</string>
+    <string name="edit_note_title">Редактировать заметку</string>
     <string name="title_note">Заголовок заметки</string>
     <string name="note">Заметка</string>
 
@@ -30,14 +31,21 @@
 
     <string name="buttonDel">Удалить</string>
     <string name="buttonCancel">Отмена</string>
-    <string name="titleDeleteDialog">Внимание!</string>
+    <string name="attention">Внимание!</string>
     <string name="messageDeleteDialog">Вы действительно хотите удалить заметку</string>
     <string name="messageDeleteAllNotesDialog">Вы действительно хотите удалить все заметки?</string>
+    <string name="incorrect_data_dialog_message">
+        Текс заметки не заполнен!
+        Нажав на кнопку Продолжить, вся введенная вами информация будет удалена.
+    </string>
 
+    <string name="button_continue">Продолжить</string>
+    <string name="snack_bar_message_delete">Заметка удалена</string>
+    <string name="snack_bar_button_undo">Отменить</string>
     <string name="snackBarMessage">Не возможно добавить пустую заметку!</string>
+
     <string name="str_problems_message">Проблемы с отображением изображения</string>
     <string name="str_problems_save">Поблемы при сохранение изображения</string>
-
     <string name="cant_add_note_message">Невозможно добавить заметку</string>
 
 </resources>

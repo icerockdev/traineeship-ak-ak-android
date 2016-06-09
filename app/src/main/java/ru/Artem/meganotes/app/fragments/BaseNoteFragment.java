@@ -1,10 +1,13 @@
 package ru.Artem.meganotes.app.fragments;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.*;
 import android.view.*;
@@ -29,6 +32,9 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
     private Note mDeleteNote;
 
     private final String LOG_TAG = BaseNoteFragment.class.getName();
+
+    private final int CREATE_NOTE_REQUEST = 1003;
+    private final int OPEN_NOTE_REQUEST = 1001;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -61,7 +67,7 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
         mCreateNoteFAB.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(), CreateNoteActivity.class);
-                startActivityForResult(intent, CreateNoteActivity.CREATE_NOTE_REQUEST);
+                startActivityForResult(intent, CREATE_NOTE_REQUEST);
             }
         });
 
@@ -72,8 +78,8 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
 
                 mNotesList.get(position).setPositionInAdapter(position);
 
-                intent.putExtra(DetailedActivity.EDIT_NOTE_KEY, mNotesList.get(position));
-                startActivityForResult(intent, DetailedActivity.EDIT_NOTE_REQUEST);
+                intent.putExtra(DetailedActivity.INTENT_EXTRA_OPEN_NOTE, mNotesList.get(position));
+                startActivityForResult(intent, OPEN_NOTE_REQUEST);
             }
         });
 
@@ -86,25 +92,53 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
                 mDeleteNote = mNotesList.get(position);
                 mDeleteNote.setPositionInAdapter(position);
 
-                deleteNoteDialog.setTargetFragment(BaseNoteFragment.this, 1);
-                deleteNoteDialog.show(getFragmentManager().beginTransaction(), AddImageDialog.DIALOG_KEY);
+                deleteNoteDialog.show(getChildFragmentManager().beginTransaction(), AddImageDialog.DIALOG_KEY);
             }
         });
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (data != null) {
+        if (data != null && resultCode == Activity.RESULT_OK) {
             switch (requestCode) {
-                case DetailedActivity.EDIT_NOTE_REQUEST:
-                    Note editNote = data.getParcelableExtra(DetailedActivity.EDIT_NOTE_KEY);
+                case OPEN_NOTE_REQUEST:
+                    final Note editNote = data.getParcelableExtra(DetailedActivity.INTENT_EXTRA_OPEN_NOTE);
 
-                    mNotesList.set(editNote.getPositionInAdapter(), editNote);
-                    mAdapter.notifyItemChanged(editNote.getPositionInAdapter(), editNote);
+                    if (editNote.isDeletedNote()) {
+                        final DataBaseHelper helper = DataBaseHelper.getInstance(getActivity().getApplicationContext());
+                        final Handler handler = new Handler();
 
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                mNotesList.remove(editNote.getPositionInAdapter());
+                                mAdapter.notifyItemRemoved(editNote.getPositionInAdapter());
+                                helper.deleteSelectNote(editNote);
+                                if (getView() != null) {
+                                    Snackbar.make(getView(), R.string.snack_bar_message_delete, Snackbar.LENGTH_INDEFINITE)
+                                            .setAction(R.string.snack_bar_button_undo, new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View view) {
+                                                    mNotesList.add(editNote.getPositionInAdapter(), editNote);
+                                                    mAdapter.notifyItemInserted(editNote.getPositionInAdapter());
+                                                    helper.addNote(editNote.getNameNote(), editNote.getContent(),
+                                                            editNote.getDateLastUpdateNote(), editNote.getPathImg());
+                                                }
+                                            })
+                                            .setActionTextColor(getResources().getColor(R.color.colorAccent))
+                                            .show();
+                                }
+                            }
+                        }, 500);
+
+                        editNote.setDeletedNote(false);
+                    } else {
+                        mNotesList.set(editNote.getPositionInAdapter(), editNote);
+                        mAdapter.notifyItemChanged(editNote.getPositionInAdapter(), editNote);
+                    }
                     break;
-                case CreateNoteActivity.CREATE_NOTE_REQUEST:
-                    Note createNote = data.getParcelableExtra(CreateNoteActivity.CREATE_NOTE_KEY);
+                case CREATE_NOTE_REQUEST:
+                    Note createNote = data.getParcelableExtra(CreateNoteActivity.INTENT_RESULT_EXTRA_CREATE_NOTE);
 
                     mNotesList.add(createNote);
                     mAdapter.notifyItemInserted(mAdapter.getItemCount() - 1);

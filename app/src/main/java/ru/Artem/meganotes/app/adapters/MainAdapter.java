@@ -31,7 +31,6 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.NoteViewHolder
         private TextView lastUpdateNote;
 
         public NoteViewHolder(View itemView) {
-
             super(itemView);
 
             nameNote = (TextView)itemView.findViewById(R.id.nameNote);
