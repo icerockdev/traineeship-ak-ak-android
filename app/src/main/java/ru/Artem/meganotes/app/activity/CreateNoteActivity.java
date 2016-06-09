@@ -4,7 +4,7 @@ import android.Manifest;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
+import android.content.res.Configuration;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -15,7 +15,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.*;
 import android.support.v7.widget.GridLayout;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -71,8 +70,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         setContentView(R.layout.activity_create);
 
         Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
-        int placeForImages = display.getWidth() - 32; //32 = padding x2
-        mImageWidth = (placeForImages / 2) - 10;
+        mImageWidth = display.getWidth() / 2;
 
         mTitleNote = (EditText) findViewById(R.id.editTitleNote);
         mContentNote = (EditText) findViewById(R.id.editContentNote);
@@ -100,7 +98,6 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         if (DEBUG) {
             Log.d(LOG_TAG, "our screen width is: " + display.getWidth());
             Log.d(LOG_TAG, "our screen height is: " + display.getHeight());
-            Log.d(LOG_TAG, "we have placeForImages value: " + placeForImages);
             Log.d(LOG_TAG, "our mImageWidth is " + mImageWidth);
         }
     }
@@ -189,6 +186,11 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        int columnCount = 2;
+
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) columnCount = 3;
+
+
         if ((resultCode == RESULT_OK) && (requestCode == GALLERY_REQUEST)) {
             Uri selectedImage = data.getData();
             try {
@@ -207,7 +209,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                     mImageWidth,
                     mImageWidth,
                     mTempIdForImages);
-            GridLayoutUtils.addViewToGrid(mLayoutForImages,image, mImageWidth);
+            GridLayoutUtils.addViewToGrid(mLayoutForImages,image, mImageWidth, columnCount);
             mTempIdForImages++;
         }
         if ((resultCode == RESULT_OK) && (requestCode == CAMERA_REQUEST)) {
@@ -221,7 +223,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                         mImageWidth,
                         mImageWidth,
                         mTempIdForImages);
-                GridLayoutUtils.addViewToGrid(mLayoutForImages, image, mImageWidth);
+                GridLayoutUtils.addViewToGrid(mLayoutForImages, image, mImageWidth, columnCount);
                 mTempIdForImages++;
             }
         }
