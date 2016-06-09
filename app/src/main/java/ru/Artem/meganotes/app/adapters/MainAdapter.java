@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import ru.Artem.meganotes.app.models.Note;
@@ -27,14 +28,15 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.NoteViewHolder
     public class NoteViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,
             View.OnLongClickListener {
 
-        private TextView nameNote;
-        private TextView lastUpdateNote;
-
+        private TextView mNameNote;
+        private TextView mLastUpdateNote;
+        private TextView mContentNote;
         public NoteViewHolder(View itemView) {
             super(itemView);
 
-            nameNote = (TextView)itemView.findViewById(R.id.nameNote);
-            lastUpdateNote = (TextView)itemView.findViewById(R.id.lastUpdateNote);
+            mNameNote = (TextView) itemView.findViewById(R.id.nameNote);
+            mLastUpdateNote = (TextView) itemView.findViewById(R.id.lastUpdateNote);
+            mContentNote = (TextView) itemView.findViewById(R.id.content_note);
 
             itemView.setOnClickListener(this);
             itemView.setOnLongClickListener(this);
@@ -92,15 +94,29 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.NoteViewHolder
 
     @Override
     public void onBindViewHolder(NoteViewHolder noteViewHolder, int i) {
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) noteViewHolder.mContentNote.getLayoutParams();
         Note note = mNotesList.get(i);
-        if (DEBUG){
+
+        if (DEBUG) {
             Log.d("LOG", "we have in i is: " + i);
             Log.d("LOG", "we have in NoteList: " + mNotesList.size() + " elements");
-            if (i>0) {
+            if (i > 0) {
                 Log.d("LOG", "we can access to i-1 elem? " + mNotesList.get(i - 1).getNameNote() + " its her name");
             }
         }
-        noteViewHolder.nameNote.setText(note.getNameNote());
-        noteViewHolder.lastUpdateNote.setText(note.getDateLastUpdateNote());
+
+        if (!note.getNameNote().isEmpty()) {
+            noteViewHolder.mContentNote.setMaxLines(2);
+            layoutParams.addRule(RelativeLayout.BELOW, noteViewHolder.mNameNote.getId());
+        } else {
+            layoutParams.addRule(RelativeLayout.BELOW, 0);
+            noteViewHolder.mContentNote.setMaxLines(3);
+        }
+
+        noteViewHolder.mContentNote.setLayoutParams(layoutParams);
+
+        noteViewHolder.mNameNote.setText(note.getNameNote());
+        noteViewHolder.mContentNote.setText(note.getContent());
+        noteViewHolder.mLastUpdateNote.setText(note.getDateLastUpdateNote());
     }
 }

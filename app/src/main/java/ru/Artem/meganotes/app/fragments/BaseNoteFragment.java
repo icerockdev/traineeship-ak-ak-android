@@ -149,6 +149,27 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
+        inflater.inflate(R.menu.menu_main, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.delete_all_notes) {
+            mAdapter.notifyItemRangeRemoved(0, mNotesList.size());
+            mNotesList.clear();
+
+            DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(getActivity().getApplicationContext());
+            dataBaseHelper.deleteAllNotesAndImages();
+
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public void onDestroyView() {
         mCreateNoteFAB = null;
 

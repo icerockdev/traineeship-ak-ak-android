@@ -44,8 +44,11 @@
     <string name="snack_bar_button_undo">Отменить</string>
     <string name="snackBarMessage">Не возможно добавить пустую заметку!</string>
 
+    <string name="delete_all_notes">Удалить все заметки</string>
+
     <string name="str_problems_message">Проблемы с отображением изображения</string>
     <string name="str_problems_save">Поблемы при сохранение изображения</string>
     <string name="cant_add_note_message">Невозможно добавить заметку</string>
+
 
 </resources>

@@ -3,8 +3,8 @@
       xmlns:tools="http://schemas.android.com/tools"
       tools:context=".MainActivity">
 
-    <item android:id="@+id/goToDeleteFrag"
+    <item android:id="@+id/delete_all_notes"
           android:icon="@drawable/ic_delete"
-          android:title="@string/done_create"
-          app:showAsAction="always"/>
+          android:title="@string/delete_all_notes"
+          app:showAsAction="never"/>
 </menu>
