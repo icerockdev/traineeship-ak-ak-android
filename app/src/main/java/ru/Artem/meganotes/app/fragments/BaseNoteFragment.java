@@ -17,7 +17,7 @@ import ru.Artem.meganotes.app.activity.DetailedActivity;
 import ru.Artem.meganotes.app.adapters.MainAdapter;
 import ru.Artem.meganotes.app.dialogs.AddImageDialog;
 import ru.Artem.meganotes.app.dialogs.DeleteNoteDialog;
-import ru.Artem.meganotes.app.models.ModelNote;
+import ru.Artem.meganotes.app.models.Note;
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
 import ru.Artem.meganotes.app.R;
 import ru.Artem.meganotes.app.utils.RecyclerViewUtils;
@@ -26,10 +26,10 @@ import java.util.List;
 
 public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInteractionFragment {
 
-    private List<ModelNote> mNotesList;
+    private List<Note> mNotesList;
     private MainAdapter mAdapter;
     private FloatingActionButton mCreateNoteFAB;
-    private ModelNote mDeleteNote;
+    private Note mDeleteNote;
 
     private final String LOG_TAG = BaseNoteFragment.class.getName();
 
@@ -43,7 +43,7 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
 
         DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(getActivity().getApplicationContext());
 
-        mNotesList = dataBaseHelper.getNotes();
+        mNotesList = dataBaseHelper.getAllNotesWithoutImages();
     }
 
     @Override
@@ -100,27 +100,29 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (data != null && resultCode == Activity.RESULT_OK) {
-
             switch (requestCode) {
                 case OPEN_NOTE_REQUEST:
-                    final ModelNote editNote = data.getParcelableExtra(DetailedActivity.INTENT_EXTRA_OPEN_NOTE);
+                    final Note editNote = data.getParcelableExtra(DetailedActivity.INTENT_EXTRA_OPEN_NOTE);
 
                     if (editNote.isDeletedNote()) {
-
+                        final DataBaseHelper helper = DataBaseHelper.getInstance(getActivity().getApplicationContext());
                         final Handler handler = new Handler();
+
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                mNotesList.remove(editNote.getPositionInAdapter());//прикрутить удаление с БД
+                                mNotesList.remove(editNote.getPositionInAdapter());
                                 mAdapter.notifyItemRemoved(editNote.getPositionInAdapter());
-
+                                helper.deleteSelectNote(editNote);
                                 if (getView() != null) {
                                     Snackbar.make(getView(), R.string.snack_bar_message_delete, Snackbar.LENGTH_INDEFINITE)
                                             .setAction(R.string.snack_bar_button_undo, new View.OnClickListener() {
                                                 @Override
                                                 public void onClick(View view) {
-                                                    mNotesList.add(editNote.getPositionInAdapter(), editNote);//прикрутить добавление в БД
+                                                    mNotesList.add(editNote.getPositionInAdapter(), editNote);
                                                     mAdapter.notifyItemInserted(editNote.getPositionInAdapter());
+                                                    helper.addNote(editNote.getNameNote(), editNote.getContent(),
+                                                            editNote.getDateLastUpdateNote(), editNote.getPathImg());
                                                 }
                                             })
                                             .setActionTextColor(getResources().getColor(R.color.colorAccent))
@@ -129,7 +131,6 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
                             }
                         }, 500);
 
-
                         editNote.setDeletedNote(false);
                     } else {
                         mNotesList.set(editNote.getPositionInAdapter(), editNote);
@@ -137,7 +138,7 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
                     }
                     break;
                 case CREATE_NOTE_REQUEST:
-                    ModelNote createNote = data.getParcelableExtra(CreateNoteActivity.INTENT_RESULT_EXTRA_CREATE_NOTE);
+                    Note createNote = data.getParcelableExtra(CreateNoteActivity.INTENT_RESULT_EXTRA_CREATE_NOTE);
 
                     mNotesList.add(createNote);
                     mAdapter.notifyItemInserted(mAdapter.getItemCount() - 1);
@@ -160,8 +161,7 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
 
         if (mDeleteNote != null) {
             if (which == DialogInterface.BUTTON_POSITIVE) {
-                dataBaseHelper.onDeleteSelectedNote(new String[]
-                        {String.valueOf(mDeleteNote.getId())});
+                dataBaseHelper.deleteSelectNote(mDeleteNote);
 
                 mNotesList.remove(mDeleteNote.getPositionInAdapter());
                 mAdapter.notifyItemRemoved(mDeleteNote.getPositionInAdapter());

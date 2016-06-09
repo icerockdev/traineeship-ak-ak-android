@@ -4,9 +4,10 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
-import ru.Artem.meganotes.app.models.ModelNote;
+
+import ru.Artem.meganotes.app.models.Note;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,30 +20,38 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "mydb.db";
     private static final int DATABASE_VERSION = 1;
 
-    public static final String DATABASE_TABLE = "notes";
+    public static final String DATABASE_TABLE_NOTES = "notes";
     public static final String ID_COLUMN = "_id";
-    public static final String TITLE_NOTES_COLUMN = "note_title";
+    public static final String NAME_NOTES_COLUMN = "note_title";
     public static final String CONTENT_COLUMN = "content";
-    public static final String IMG_PATH_COLUMN = "img_path";
-    public static final String CREATE_DATE_COLUMN = "create_date";
     public static final String LAST_UPDATE_DATE_COLUMN = "last_update_date";
 
-    private static final String CREATE_TABLE = "CREATE TABLE " + DATABASE_TABLE
-            + " (" + ID_COLUMN + " INTEGER PRIMARY KEY AUTOINCREMENT, " + TITLE_NOTES_COLUMN
-            + " TEXT NOT NULL, " + CONTENT_COLUMN + " TEXT, " + IMG_PATH_COLUMN
-            + " TEXT, " + CREATE_DATE_COLUMN + " TEXT NOT NULL, " + LAST_UPDATE_DATE_COLUMN
-            + " TEXT);";
+    public static final String DATABASE_TABLE_IMAGES = "imagepaths";
+    public static final String ID_IMAGE = "_id";
+    public static final String IMAGE_SOURCE_COLUMN = "path";
+    public static final String ID_NOTE_COLUMN = "id_note";
 
-    private static DataBaseHelper mInstance;
-    private static SQLiteDatabase mSqLiteDatabase;
-    private final String LOG_TAG = "myLogs";
+    private static final String CREATE_TABLE_NOTES = "CREATE TABLE " + DATABASE_TABLE_NOTES
+            + " (" + ID_COLUMN + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + NAME_NOTES_COLUMN + " TEXT NOT NULL, "
+            + CONTENT_COLUMN + " TEXT, "
+            + LAST_UPDATE_DATE_COLUMN + " TEXT)";
+
+    private static final String CREATE_TABLE_IMAGES = "CREATE TABLE " + DATABASE_TABLE_IMAGES
+            + " (" + ID_IMAGE + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + ID_NOTE_COLUMN + " INTEGER, "
+            + IMAGE_SOURCE_COLUMN + " TEXT, "
+            + "FOREIGN KEY (" + ID_NOTE_COLUMN + ") REFERENCES " + DATABASE_TABLE_IMAGES + "(" + ID_COLUMN + ") ON DELETE CASCADE ON UPDATE CASCADE);";
+
+    private static DataBaseHelper sInstance;
+    private static final String LOG_TAG = DataBaseHelper.class.getName();
+    private static final int EDIT_NOTES_TABLE_KEY = 0;
 
     public static synchronized DataBaseHelper getInstance(Context context) {
-        if (mInstance == null) {
-            mInstance = new DataBaseHelper(context);
-            mSqLiteDatabase = mInstance.getWritableDatabase();
+        if (sInstance == null) {
+            sInstance = new DataBaseHelper(context);
         }
-        return mInstance;
+        return sInstance;
     }
 
     private DataBaseHelper(Context context) {
@@ -50,8 +59,16 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     }
 
     @Override
+    public void onConfigure(SQLiteDatabase db) {
+        super.onConfigure(db);
+
+        db.execSQL("PRAGMA foreign_keys = ON;");
+    }
+
+    @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(CREATE_TABLE);
+        db.execSQL(CREATE_TABLE_NOTES);
+        db.execSQL(CREATE_TABLE_IMAGES);
     }
 
     @Override
@@ -59,87 +76,97 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public void addData(String titleNote, String contentNote, String imgPath,
-                               String createDateNote, String lastUpdateDate) {
-        try {
-            ContentValues values = new ContentValues();
+    public Note addNote(String name, String content, String date, List<String> imagePaths) throws SQLiteException {
+        ContentValues values = new ContentValues();
 
-            values.put(DataBaseHelper.TITLE_NOTES_COLUMN, titleNote);
-            values.put(DataBaseHelper.CONTENT_COLUMN, contentNote);
-            values.put(DataBaseHelper.CONTENT_COLUMN, contentNote);
-            values.put(DataBaseHelper.IMG_PATH_COLUMN, imgPath);
-            values.put(DataBaseHelper.CREATE_DATE_COLUMN, createDateNote);
-            values.put(DataBaseHelper.LAST_UPDATE_DATE_COLUMN, lastUpdateDate);
+        values.put(DataBaseHelper.NAME_NOTES_COLUMN, name);
+        values.put(DataBaseHelper.CONTENT_COLUMN, content);
+        values.put(DataBaseHelper.LAST_UPDATE_DATE_COLUMN, date);
 
-            mSqLiteDatabase.insert(DataBaseHelper.DATABASE_TABLE, null, values);
-        } catch (Throwable t) {
-            Log.e(LOG_TAG, "Ошибка при добавлении в базу");
+        long insertedNoteID = sInstance.getWritableDatabase().insert(DataBaseHelper.DATABASE_TABLE_NOTES, null, values);
+
+        ContentValues imagePath = new ContentValues();
+        if (!imagePaths.isEmpty()) {
+            for (int i = 0; i < imagePaths.size(); i++) {
+                imagePath.put(DataBaseHelper.IMAGE_SOURCE_COLUMN, imagePaths.get(i));
+                imagePath.put(DataBaseHelper.ID_NOTE_COLUMN, insertedNoteID);
+                sInstance.getWritableDatabase().insert(DataBaseHelper.DATABASE_TABLE_IMAGES, null, imagePath);
+            }
         }
+        return new Note(name, content, date, imagePaths, insertedNoteID);
     }
 
-    public void onDeleteSelectedNote(String[] id) {
-        mSqLiteDatabase.delete(DataBaseHelper.DATABASE_TABLE,
-                DataBaseHelper.ID_COLUMN  + " = ?", id);
+    public void deleteSelectNote(Note note) {
+        long id = note.getId();
+        sInstance.getWritableDatabase().delete(DataBaseHelper.DATABASE_TABLE_NOTES,
+                DataBaseHelper.ID_COLUMN + " = ?", new String[]{String.valueOf(id)});
     }
 
-    public ModelNote getInsertedNote() {
-        ModelNote newNote = null;
-
-        String query = "select " + DataBaseHelper.TITLE_NOTES_COLUMN + ", "
-                + DataBaseHelper.CONTENT_COLUMN + ", " + DataBaseHelper.LAST_UPDATE_DATE_COLUMN + ", "
-                + DataBaseHelper.IMG_PATH_COLUMN + ", " + DataBaseHelper.ID_COLUMN +  " from "
-                + DataBaseHelper.DATABASE_TABLE + " where " + DataBaseHelper.ID_COLUMN + " = (select last_insert_rowid())";
-
-        Cursor cursor = mSqLiteDatabase.rawQuery(query, null);
+    public List<Note> getAllNotesWithoutImages() {
+        List<Note> notesList = new ArrayList<>();
+        Cursor cursor = sInstance.getReadableDatabase().query(DATABASE_TABLE_NOTES, null, null, null, null, null, null);
 
         while (cursor.moveToNext()) {
-            newNote = new ModelNote(
-                    cursor.getString(cursor.getColumnIndex(DataBaseHelper.TITLE_NOTES_COLUMN)),
-                    cursor.getString(cursor.getColumnIndex(DataBaseHelper.CONTENT_COLUMN)),
-                    cursor.getString(cursor.getColumnIndex(DataBaseHelper.LAST_UPDATE_DATE_COLUMN)),
-                    cursor.getString(cursor.getColumnIndex(DataBaseHelper.IMG_PATH_COLUMN)),
-                    cursor.getInt(cursor.getColumnIndex(DataBaseHelper.ID_COLUMN)));
-        }
-
-        cursor.close();
-        return newNote;
-    }
-
-    public List<ModelNote> getNotes() {
-        List<ModelNote> notesList = new ArrayList<ModelNote>();
-
-        String query = "select " + DataBaseHelper.TITLE_NOTES_COLUMN + ", "
-                + DataBaseHelper.CONTENT_COLUMN + ", " + DataBaseHelper.LAST_UPDATE_DATE_COLUMN + ", "
-                + DataBaseHelper.IMG_PATH_COLUMN + ", " + DataBaseHelper.ID_COLUMN + " from "
-                + DataBaseHelper.DATABASE_TABLE;
-
-        Cursor cursor = mSqLiteDatabase.rawQuery(query, null);
-
-        while (cursor.moveToNext()) {
-            notesList.add(new ModelNote(
-                    cursor.getString(cursor.getColumnIndex(DataBaseHelper.TITLE_NOTES_COLUMN)),
-                    cursor.getString(cursor.getColumnIndex(DataBaseHelper.CONTENT_COLUMN)),
-                    cursor.getString(cursor.getColumnIndex(DataBaseHelper.LAST_UPDATE_DATE_COLUMN)),
-                    cursor.getString(cursor.getColumnIndex(DataBaseHelper.IMG_PATH_COLUMN)),
-                    cursor.getInt(cursor.getColumnIndex(DataBaseHelper.ID_COLUMN)))
+            notesList.add(new Note(
+                            cursor.getString(cursor.getColumnIndex(DataBaseHelper.NAME_NOTES_COLUMN)),
+                            cursor.getString(cursor.getColumnIndex(DataBaseHelper.CONTENT_COLUMN)),
+                            cursor.getString(cursor.getColumnIndex(DataBaseHelper.LAST_UPDATE_DATE_COLUMN)),
+                            null,
+                            cursor.getInt(cursor.getColumnIndex(DataBaseHelper.ID_COLUMN)))
             );
         }
-
         cursor.close();
         return notesList;
     }
 
-    public void editData(String column, String[] where, String value, String lastUpdateDate) {
+    public void updateNote(Note note) {
+        long idUpdatedNote = note.getId();
+        String nameUpdatedNote = note.getNameNote();
+        String contentUpdatedNote = note.getContent();
+        String dateUpdatedNote = note.getDateLastUpdateNote();
+        List<String> imagesUpdatedNote = note.getPathImg();
+
         ContentValues values = new ContentValues();
+        values.put(NAME_NOTES_COLUMN, nameUpdatedNote);
+        values.put(CONTENT_COLUMN, contentUpdatedNote);
+        values.put(LAST_UPDATE_DATE_COLUMN, dateUpdatedNote);
+        sInstance.getWritableDatabase().update(DATABASE_TABLE_NOTES, values,
+                DataBaseHelper.ID_COLUMN + " = ?", new String[]{String.valueOf(idUpdatedNote)});
 
-        values.put(column, value);
-        values.put(DataBaseHelper.LAST_UPDATE_DATE_COLUMN, lastUpdateDate);
+        List<String> oldImagesThisNote = new ArrayList<>();
+        Cursor cursor = sInstance.getReadableDatabase().query(DATABASE_TABLE_IMAGES,
+                null,
+                ID_NOTE_COLUMN + " = ?",
+                new String[]{String.valueOf(idUpdatedNote)},
+                null, null, null);
+        if (cursor.moveToNext()) {
+            oldImagesThisNote.add(cursor.getString(cursor.getColumnIndex(IMAGE_SOURCE_COLUMN)));
+        }
+        cursor.close();
 
-        mSqLiteDatabase.update(DataBaseHelper.DATABASE_TABLE, values,
-                DataBaseHelper.ID_COLUMN + " = ?", where);
+        if (!oldImagesThisNote.equals(imagesUpdatedNote)) {
+            if (!imagesUpdatedNote.isEmpty()) {
+                ContentValues containerForImages = new ContentValues();
+                for (int i = 0; i < imagesUpdatedNote.size(); i++) {
+                    containerForImages.put(IMAGE_SOURCE_COLUMN, imagesUpdatedNote.get(i));
+                    containerForImages.put(ID_NOTE_COLUMN, idUpdatedNote);
+                    sInstance.getWritableDatabase().insert(DATABASE_TABLE_IMAGES, null, containerForImages);
+                }
+            } else {
+                for (int i = 0; i < oldImagesThisNote.size(); i++) {
+                    sInstance.getWritableDatabase().delete(DATABASE_TABLE_IMAGES, ID_NOTE_COLUMN + "= ?", new String[]{String.valueOf(idUpdatedNote)});
+                    //удаление всех картинок, надо сюда попробовать при тесте ввести переменную и посмотреть сколько удаляет.
+                }
+            }
+        }
     }
 
-    public void deleteAll() {
-        mSqLiteDatabase.delete(DataBaseHelper.DATABASE_TABLE, null, null);
+    public void deleteImage(String id) {
+        sInstance.getWritableDatabase().delete(DATABASE_TABLE_IMAGES, ID_IMAGE + "= ?", new String[]{id});
+    }
+
+    public void deleteAllNotesAndImages() {
+        sInstance.getWritableDatabase().delete(DataBaseHelper.DATABASE_TABLE_NOTES, null, null);
+        sInstance.getWritableDatabase().delete(DataBaseHelper.DATABASE_TABLE_IMAGES, null, null);
     }
 }
