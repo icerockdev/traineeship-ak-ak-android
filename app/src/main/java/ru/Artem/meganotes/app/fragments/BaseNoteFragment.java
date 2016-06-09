@@ -128,7 +128,7 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
             mNotesList.clear();
 
             DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(getActivity().getApplicationContext());
-            dataBaseHelper.deleteAll();
+            dataBaseHelper.deleteAllNotesAndImages();
 
             return true;
         }
