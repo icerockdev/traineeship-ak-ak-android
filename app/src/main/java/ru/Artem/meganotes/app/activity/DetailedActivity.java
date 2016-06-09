@@ -1,17 +1,12 @@
 package ru.Artem.meganotes.app.activity;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -21,14 +16,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
-import ru.Artem.meganotes.app.dialogs.AddImageDialog;
-import ru.Artem.meganotes.app.dialogs.DeleteImageDialog;
 import ru.Artem.meganotes.app.R;
 import ru.Artem.meganotes.app.models.Note;
-import ru.Artem.meganotes.app.utils.DateUtils;
-import ru.Artem.meganotes.app.utils.ImgUtils;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -36,8 +26,7 @@ import java.util.List;
  * Created by Артем on 13.04.2016.
  */
 
-public class DetailedActivity extends AppCompatActivity implements AddImageDialog.OnItemListClickListener,
-        DeleteImageDialog.OnClickListenerDelete {
+public class DetailedActivity extends AppCompatActivity {
 
     private String[] mWhere;
     private ImageView mImageView;
@@ -99,24 +88,6 @@ public class DetailedActivity extends AppCompatActivity implements AddImageDialo
             // множественном добавление, вместо 0 будет переменная из цикла для заполнения
         }
 
-        mImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AddImageDialog addImageDialog = new AddImageDialog();
-
-                addImageDialog.setStyle(DialogFragment.STYLE_NORMAL, R.style.AddImageDialog);
-                addImageDialog.show(getSupportFragmentManager(), AddImageDialog.DIALOG_KEY);
-            }
-        });
-        mImageView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                DeleteImageDialog deleteImageDialog = new DeleteImageDialog();
-
-                deleteImageDialog.show(getSupportFragmentManager(), DeleteImageDialog.DIALOG_KEY);
-                return true;
-            }
-        });
         mSavePath = this.getFilesDir().toString();
     }
 
@@ -215,58 +186,13 @@ public class DetailedActivity extends AppCompatActivity implements AddImageDialo
                     if (getSupportActionBar() != null) getSupportActionBar().setTitle(mSelectNote.getNameNote());
 
                     mTxtContent.setText(mSelectNote.getContent());
-                    setImg(Uri.parse(mSelectNote.getPathImg().get(mSelectNote.getPathImg().size() - 1)));
+                    if (!mSelectNote.getPathImg().isEmpty()) {
+                        setImg(Uri.parse(mSelectNote.getPathImg().get(mSelectNote.getPathImg().size() - 1)));
+                    }
                 }
             }
 
             helper.updateNote(mSelectNote);
-        }
-    }
-
-    @Override
-    public void onClick(DialogFragment dialogFragment, int position) {
-        switch (position) {
-            case 0:
-                if (ActivityCompat.checkSelfPermission(DetailedActivity.this, Manifest.permission.CAMERA)
-                        != PackageManager.PERMISSION_GRANTED) {
-
-                    ActivityCompat.requestPermissions(DetailedActivity.this, new String[]{Manifest.permission.CAMERA}, 0);
-                } else {
-                    try {
-                        mOutFilePath = ImgUtils.cameraRequest(DetailedActivity.this, CAMERA_REQUEST, mSavePath);
-                    } catch (IOException e) {
-                        mOutFilePath = null;
-                        Snackbar.make(mLayout, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
-                    }
-                }
-                break;
-            case 1:
-                if (ActivityCompat.checkSelfPermission(DetailedActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(DetailedActivity.this,
-                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                } else {
-                    ImgUtils.galleryRequest(DetailedActivity.this, GALLERY_REQUEST);
-                }
-                break;
-        }
-        dialogFragment.dismiss();
-    }
-
-    @Override
-    public void onDeleteImage(DialogFragment dialog, int position) {
-        if (position == 0) {
-            String date = DateUtils.getDate();
-            DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
-
-            mImageView.setImageBitmap(null);
-            helper.deleteImage(mWhere[0]);
-
-            mSelectNote.setPathImg(DELETE_IMG);
-            mSelectNote.setDateLastUpdateNote(date);
-            helper.updateNote(mSelectNote);
-
-            dialog.dismiss();
         }
     }
 }
