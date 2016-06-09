@@ -11,12 +11,7 @@ public class DateUtils {
 
     public static String getDate() {
         long date = System.currentTimeMillis();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("d.MM.yyyy  k:m", Locale.ROOT);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("d.MM.yyyy  k:mm", Locale.ROOT);
         return simpleDateFormat.format(date);
-    }
-
-    public static String getDateCreateFile() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.ROOT);
-        return simpleDateFormat.format(new Date());
     }
 }

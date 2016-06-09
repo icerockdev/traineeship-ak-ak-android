@@ -11,25 +11,30 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
 import ru.Artem.meganotes.app.dialogs.AddImageDialog;
 import ru.Artem.meganotes.app.dialogs.DeleteImageDialog;
 import ru.Artem.meganotes.app.R;
-import ru.Artem.meganotes.app.models.ModelNote;
+import ru.Artem.meganotes.app.models.Note;
 import ru.Artem.meganotes.app.utils.DateUtils;
 import ru.Artem.meganotes.app.utils.ImgUtils;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * Created by Артем on 13.04.2016.
@@ -40,16 +45,22 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
 
     private String[] mWhere;
     private ImageView mImageView;
+    private LinearLayout mLayout;
 
     private Uri mOutFilePath = null;
-    private ModelNote mSelectNote;
+    private Note mSelectNote;
 
     private final int GALLERY_REQUEST = 1;
     private final int CAMERA_REQUEST = 2;
+    private final int EDIT_NOTE_TABLE = 0;
+    private final int EDIT_IMAGE_TABLE = 1;
     public static final String DELETE_IMG = "null";
+    private String mSavePath;
     private final String LOG_TAG = DetailedActivity.class.getName();
     public final static String EDIT_NOTE_KEY = "noteEdit";
     public static final int EDIT_NOTE_REQUEST = 1000;
+
+    private static final boolean DEBUG = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +70,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
         final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
         mSelectNote = getIntent().getParcelableExtra(EDIT_NOTE_KEY);
-        mWhere = new String[] {String.valueOf(mSelectNote.getId())};
+        mWhere = new String[]{String.valueOf(mSelectNote.getId())};
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarDetailed);
 
@@ -74,12 +85,24 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
         final TextView textView = (TextView) findViewById(R.id.textView);
         final EditText titleEdit = (EditText) findViewById(R.id.editTitle);
         final EditText contentEdit = (EditText) findViewById(R.id.editContent);
+        mLayout = (LinearLayout) findViewById(R.id.layout);
 
-        final  DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(getApplicationContext());
-
-        textView.setText(mSelectNote.getLastUpdateNote());
+        textView.setText(mSelectNote.getDateLastUpdateNote());
         contentEdit.setText(mSelectNote.getContent());
         titleEdit.setText(mSelectNote.getNameNote());
+
+        mImageView = (ImageView) findViewById(R.id.imageNote);
+        List<String> tempList = mSelectNote.getPathImg();
+        if (!tempList.isEmpty()) {
+            if (DEBUG) {
+                Log.d(LOG_TAG, "we have not emptry List");
+                for (String item : tempList) {
+                    Log.d(LOG_TAG, "path: " + item);
+                }
+            }
+            setImg(Uri.parse(tempList.get(0))); // здесь нужно будет внести изменения при
+            // множественном добавление, вместо 0 будет переменная из цикла для заполнения
+        }
 
         titleEdit.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
@@ -89,9 +112,9 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                 imm.hideSoftInputFromWindow(titleEdit.getWindowToken(), 0);
 
                 mSelectNote.setNameNote(v.getText().toString());
-                mSelectNote.setLastUpdateNote(date);
-
-                dataBaseHelper.editData(DataBaseHelper.TITLE_NOTES_COLUMN, mWhere, v.getText().toString(), date);
+                mSelectNote.setDateLastUpdateNote(date);
+                DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
+                helper.updateNote(mSelectNote);
                 return true;
             }
         });
@@ -103,16 +126,13 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
 
                 imm.hideSoftInputFromWindow(titleEdit.getWindowToken(), 0);
 
-                mSelectNote.setLastUpdateNote(date);
+                mSelectNote.setDateLastUpdateNote(date);
                 mSelectNote.setContent(v.getText().toString());
-
-                dataBaseHelper.editData(DataBaseHelper.CONTENT_COLUMN, mWhere, v.getText().toString(), date);
+                DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
+                helper.updateNote(mSelectNote);
                 return true;
             }
         });
-
-        mImageView = (ImageView) findViewById(R.id.imageNote);
-        setImg(Uri.parse(mSelectNote.getPathImg()));
 
         mImageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -121,10 +141,8 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
 
                 addImageDialog.setStyle(DialogFragment.STYLE_NORMAL, R.style.AddImageDialog);
                 addImageDialog.show(getSupportFragmentManager(), AddImageDialog.DIALOG_KEY);
-
             }
         });
-
         mImageView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -134,6 +152,28 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                 return true;
             }
         });
+        mSavePath = this.getFilesDir().toString();
+    }
+
+    private void setImg(final Uri pathImg) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                InputStream inputStream;
+                if (DEBUG) {
+                    Log.d(LOG_TAG, "we in setIMg, and have in path is: " + pathImg.toString());
+                }
+                try {
+                    inputStream = getContentResolver().openInputStream(pathImg);
+                    final Message message = mHandler.obtainMessage(1,
+                            BitmapFactory.decodeStream(inputStream, null, null));
+                    mHandler.sendMessage(message);
+                } catch (Exception e) {
+                    Log.d(LOG_TAG, "Error is: " + e.getMessage());
+                }
+            }
+        });
+        thread.start();
     }
 
     final Handler mHandler = new Handler() {
@@ -143,29 +183,6 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
             mImageView.setImageBitmap(image);
         }
     };
-
-    private void setImg(final Uri pathImg) {
-
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                InputStream inputStream;
-
-                try {
-                    inputStream = getContentResolver()
-                            .openInputStream(pathImg);
-                    final Message message = mHandler.obtainMessage(1,
-                            BitmapFactory.decodeStream(inputStream, null, null));
-
-                    mHandler.sendMessage(message);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        });
-        thread.start();
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -196,17 +213,14 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(this);
-
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == GALLERY_REQUEST) {
                 mOutFilePath = data.getData();
             }
-
             setImg(mOutFilePath);
             mSelectNote.setPathImg(mOutFilePath.toString());
-            dataBaseHelper.editData(DataBaseHelper.IMG_PATH_COLUMN, mWhere,
-                    mOutFilePath.toString(), DateUtils.getDate());
+            DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
+            helper.updateNote(mSelectNote);
         }
     }
 
@@ -221,7 +235,12 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                             new String[]{Manifest.permission.CAMERA}, 0);
 
                 } else {
-                    mOutFilePath = ImgUtils.cameraRequest(DetailedActivity.this, CAMERA_REQUEST, LOG_TAG);
+                    try {
+                        mOutFilePath = ImgUtils.cameraRequest(DetailedActivity.this, CAMERA_REQUEST, mSavePath);
+                    } catch (IOException e) {
+                        mOutFilePath = null;
+                        Snackbar.make(mLayout, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
+                    }
                 }
                 break;
             case 1:
@@ -234,21 +253,19 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                 }
                 break;
         }
-
         dialogFragment.dismiss();
     }
 
     @Override
     public void onDeleteImage(DialogFragment dialog, int position) {
         if (position == 0) {
-            DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(getApplicationContext());
             String date = DateUtils.getDate();
 
             mImageView.setImageBitmap(null);
-
-            dataBaseHelper.editData(DataBaseHelper.IMG_PATH_COLUMN, mWhere, DELETE_IMG, date);
+            DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
+            helper.deleteImage(mWhere[0]);
             mSelectNote.setPathImg(DELETE_IMG);
-            mSelectNote.setLastUpdateNote(date);
+            mSelectNote.setDateLastUpdateNote(date);
 
             dialog.dismiss();
         }
