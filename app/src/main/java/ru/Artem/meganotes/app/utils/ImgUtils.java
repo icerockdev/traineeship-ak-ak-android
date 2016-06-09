@@ -1,7 +1,6 @@
 package ru.Artem.meganotes.app.utils;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -11,8 +10,6 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
 
 
 /**
@@ -20,14 +17,11 @@ import java.util.Locale;
  */
 public class ImgUtils {
 
-    private static SimpleDateFormat sDateFormat = new SimpleDateFormat("d.MM.yyyy k:m", Locale.ROOT);
-
-    private final static String LOG_TAG = ImgUtils.class.getName();
-
+    private static final String LOG_TAG = ImgUtils.class.getName();
     private static final boolean DEBUG = true;
 
     public static File createImageFile(String folderToSave) throws IOException {
-        String timeStamp = sDateFormat.toString();
+        String timeStamp = DateUtils.getDateCreateFile();
         String imageFileName = String.format("JPEG_%s.jpg", timeStamp);
         return new File(folderToSave, imageFileName);
     }
@@ -36,28 +30,26 @@ public class ImgUtils {
         Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
         if (captureIntent.resolveActivity(activity.getPackageManager()) != null) {
+            File photoFile = createImageFile(folderToSave);
 
-            File photoFile;
-            photoFile = createImageFile(folderToSave);
             if (DEBUG) Log.d(LOG_TAG, "we have in photoFile path: " + photoFile.getPath());
 
-            Uri mOutFilePath = Uri.fromFile(photoFile);
-            captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mOutFilePath);
+            captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
             activity.startActivityForResult(captureIntent, requestCode);
 
-            return mOutFilePath;
+            return Uri.fromFile(photoFile);
         }
         return null;
     }
 
-    public static void galleryRequest(Context context, int requestCode) {
+    public static void galleryRequest(Activity activity, int requestCode) {
         Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
         photoPickerIntent.setType("image/*");
-        ((Activity) context).startActivityForResult(photoPickerIntent, requestCode);
+        activity.startActivityForResult(photoPickerIntent, requestCode);
     }
 
     public static String savePicture(Bitmap bitmap, String folderToSave) throws IOException {
-        String timeStamp = sDateFormat.toString();
+        String timeStamp = DateUtils.getDateCreateFile();
         String imageFileName = String.format("JPEG_%s.jpg", timeStamp);
 
         File file = new File(folderToSave, imageFileName);
