@@ -7,7 +7,7 @@ import android.view.View;
  * Created by Артем on 07.06.2016.
  */
 public class GridLayoutUtils {
-    public static void addViewToGrid(GridLayout field, View view, int size) {//добавить параметр для установки количества колонок
+    public static void addViewToGrid(GridLayout field, View view, int size, int countColumn) {
         GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
 
         layoutParams.width = 0;
@@ -15,6 +15,7 @@ public class GridLayoutUtils {
         layoutParams.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
         layoutParams.rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
 
+        field.setColumnCount(countColumn);
         field.addView(view, layoutParams);
     }
 }
