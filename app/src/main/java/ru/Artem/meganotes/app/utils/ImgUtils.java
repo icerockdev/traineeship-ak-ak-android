@@ -59,7 +59,7 @@ public class ImgUtils {
             File photoFile = createImageFile(folderToSave);
             if (photoFile != null) {
                 captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
-                ((Activity) activity).startActivityForResult(captureIntent, requestCode);
+                activity.startActivityForResult(captureIntent, requestCode);
 
                 return Uri.fromFile(photoFile);
             }
@@ -74,7 +74,7 @@ public class ImgUtils {
     }
 
     public static String savePicture(Bitmap bitmap, String folderToSave) throws IOException {
-        String timeStamp = sDateFormat.toString();
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmssSS").format(new Date());
         String imageFileName = String.format("JPEG_%s.jpg", timeStamp);
 
         File file = new File(folderToSave, imageFileName);

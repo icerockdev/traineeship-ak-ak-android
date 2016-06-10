@@ -197,7 +197,6 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 Snackbar.make(mRootLayoutActivity, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
             }
 
-            mImagePaths.add(selectedImage.toString());
             String name = ImgUtils.getFileNameByUri(selectedImage, this);
 
             CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this,
@@ -211,8 +210,8 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             mTempIdForImages++;
         }
         if ((resultCode == RESULT_OK) && (requestCode == CAMERA_REQUEST)) {
-            mImagePaths.add(mOutFilePath.toString());
             String name = ImgUtils.getFileNameByUri(mOutFilePath, this);
+
             if (mOutFilePath != null) {
                 CustomImageMaker image = new CustomImageMaker(CreateNoteActivity.this,
                         name,

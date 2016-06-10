@@ -58,6 +58,10 @@ public class Note implements Parcelable {
         this.mBitmap = bitmap;
     }
 
+    public void setListPathImages(List<String> listPathImages) {
+        this.mPathImg = listPathImages;
+    }
+
     public String getNameNote() {
         return mNameNote;
     }

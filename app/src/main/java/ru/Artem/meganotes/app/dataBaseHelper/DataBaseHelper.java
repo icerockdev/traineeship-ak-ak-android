@@ -102,15 +102,20 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     }
 
     public List<String> getImagesOfItNote(Note note) {
-        Cursor cursor = sInstance.getReadableDatabase().query(DATABASE_TABLE_IMAGES,
+        Cursor cursor = sInstance.getReadableDatabase().query(
+                DATABASE_TABLE_IMAGES,
                 new String[]{IMAGE_SOURCE_COLUMN},
-                ID_NOTE_COLUMN, new String[]{String.valueOf(note.getId())},
+                String.format("%s = ?", ID_NOTE_COLUMN),
+                new String[]{String.valueOf(note.getId())},
                 null, null, null);
+
         if (cursor != null) {
             List<String> paths = new ArrayList<>();
+
             while (cursor.moveToNext()) {
                 paths.add(cursor.getString(cursor.getColumnIndex(IMAGE_SOURCE_COLUMN)));
             }
+
             return paths;
         } else {
             return null;

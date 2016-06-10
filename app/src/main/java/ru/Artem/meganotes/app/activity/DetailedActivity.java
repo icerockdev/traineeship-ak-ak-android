@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -88,8 +89,8 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
         mLayout = (LinearLayout) findViewById(R.id.layout);
 
         Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
-        int placeForImages = display.getWidth() - 32; //32 = padding x2
-        mImageWidth = (placeForImages / 2) - 10;
+
+        mImageWidth = display.getWidth() / 2;
         mTempIdForImages = 0;
 
         textView.setText(mSelectNote.getDateLastUpdateNote());
@@ -153,7 +154,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                     CustomImageMaker image = new CustomImageMaker(DetailedActivity.this,
                             name,
                             pathImg.toString(),
-                            false,
+                            true,
                             mImageWidth,
                             mImageWidth,
                             mTempIdForImages);
@@ -170,8 +171,11 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
     final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-                    GridLayoutUtils.addViewToGrid(mLayoutForImages, (CustomImageMaker)msg.obj, mImageWidth);
-                    mTempIdForImages++;
+            int columnCount = 2;
+
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) columnCount = 3;
+            GridLayoutUtils.addViewToGrid(mLayoutForImages, (CustomImageMaker)msg.obj, mImageWidth, columnCount);
+            mTempIdForImages++;
         }
     };
 

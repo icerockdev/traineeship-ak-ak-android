@@ -68,7 +68,6 @@ public class CustomImageMaker extends RelativeLayout {
             //TODO
         }
 
-
         mText.setText(text);
 
         mButton.setOnClickListener(new OnClickListener() {
@@ -108,8 +107,7 @@ public class CustomImageMaker extends RelativeLayout {
         });
     }
 
-    public interface OnDeleteImageListener
-    {
+    public interface OnDeleteImageListener {
         void removeElementFromRootView(int id);
         void returnLastDeletedElement();
     }
