@@ -68,6 +68,14 @@ public class CustomImageMaker extends RelativeLayout {
             //TODO
         }
 
+        if (mReadMode)
+        {
+            mButton.setImageResource(R.drawable.ic_info_white_24dp);
+        }
+        else {
+            mButton.setImageResource(R.drawable.ic_delete);
+        }
+
         mText.setText(text);
 
         mButton.setOnClickListener(new OnClickListener() {
