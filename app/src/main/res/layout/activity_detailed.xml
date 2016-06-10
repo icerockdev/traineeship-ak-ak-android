@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:id="@+id/layout">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/layout">
 
     <android.support.v7.widget.Toolbar
             android:id="@+id/toolbarDetailed"
@@ -54,6 +55,13 @@
                     android:layout_alignParentRight="true"
                     android:layout_below="@+id/editContent"
                     android:padding="16dp"/>
+            <android.support.v7.widget.GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/detailedLayout"
+                android:layout_below="@id/textView"
+                app:columnCount="2">
+            </android.support.v7.widget.GridLayout>
 
         </RelativeLayout>
 

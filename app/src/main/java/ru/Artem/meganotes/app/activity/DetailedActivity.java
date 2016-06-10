@@ -5,8 +5,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,6 +13,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayout;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.*;
@@ -26,14 +25,14 @@ import android.widget.TextView;
 
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
 import ru.Artem.meganotes.app.dialogs.AddImageDialog;
-import ru.Artem.meganotes.app.dialogs.DeleteImageDialog;
 import ru.Artem.meganotes.app.R;
 import ru.Artem.meganotes.app.models.Note;
+import ru.Artem.meganotes.app.utils.CustomImageMaker;
 import ru.Artem.meganotes.app.utils.DateUtils;
 import ru.Artem.meganotes.app.utils.ImgUtils;
+import ru.Artem.meganotes.app.utils.GridLayoutUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -41,21 +40,21 @@ import java.util.List;
  */
 
 public class DetailedActivity extends AppCompatActivity implements EditText.OnEditorActionListener,
-        AddImageDialog.OnItemListClickListener, DeleteImageDialog.OnClickListenerDelete {
+        AddImageDialog.OnItemListClickListener {
 
     private String[] mWhere;
-    private ImageView mImageView;
     private LinearLayout mLayout;
+    private GridLayout mLayoutForImages;
 
     private Uri mOutFilePath = null;
     private Note mSelectNote;
 
     private final int GALLERY_REQUEST = 1;
     private final int CAMERA_REQUEST = 2;
-    private final int EDIT_NOTE_TABLE = 0;
-    private final int EDIT_IMAGE_TABLE = 1;
+    private int mImageWidth;
+    private int mTempIdForImages;
     public static final String DELETE_IMG = "null";
-    private String sSavePath;
+    private String mSavePath;
     private final String LOG_TAG = DetailedActivity.class.getName();
     public final static String EDIT_NOTE_KEY = "noteEdit";
     public static final int EDIT_NOTE_REQUEST = 1000;
@@ -85,23 +84,29 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
         final TextView textView = (TextView) findViewById(R.id.textView);
         final EditText titleEdit = (EditText) findViewById(R.id.editTitle);
         final EditText contentEdit = (EditText) findViewById(R.id.editContent);
+        mLayoutForImages = (GridLayout) findViewById(R.id.detailedLayout);
         mLayout = (LinearLayout) findViewById(R.id.layout);
+
+        Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+        int placeForImages = display.getWidth() - 32; //32 = padding x2
+        mImageWidth = (placeForImages / 2) - 10;
+        mTempIdForImages = 0;
 
         textView.setText(mSelectNote.getDateLastUpdateNote());
         contentEdit.setText(mSelectNote.getContent());
         titleEdit.setText(mSelectNote.getNameNote());
 
-        mImageView = (ImageView) findViewById(R.id.imageNote);
         List<String> tempList = mSelectNote.getPathImg();
         if (!tempList.isEmpty()) {
             if (DEBUG) {
-                Log.d(LOG_TAG, "we have not emptry List");
+                Log.d(LOG_TAG, "we have not empty List");
                 for (String item : tempList) {
                     Log.d(LOG_TAG, "path: " + item);
                 }
             }
-            setImg(Uri.parse(tempList.get(0))); // здесь нужно будет внести изменения при
-            // множественном добавление, вместо 0 будет переменная из цикла для заполнения
+            for(int i=0; i<tempList.size();i++) {
+                setImg(Uri.parse(tempList.get(i)));
+            }
         }
 
         titleEdit.setOnEditorActionListener(new EditText.OnEditorActionListener() {
@@ -133,40 +138,26 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                 return true;
             }
         });
-
-        mImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AddImageDialog addImageDialog = new AddImageDialog();
-
-                addImageDialog.setStyle(DialogFragment.STYLE_NORMAL, R.style.AddImageDialog);
-                addImageDialog.show(getSupportFragmentManager(), AddImageDialog.DIALOG_KEY);
-            }
-        });
-        mImageView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                DeleteImageDialog deleteImageDialog = new DeleteImageDialog();
-
-                deleteImageDialog.show(getSupportFragmentManager(), DeleteImageDialog.DIALOG_KEY);
-                return true;
-            }
-        });
-        sSavePath = this.getFilesDir().toString();
+        mSavePath = this.getFilesDir().toString();
     }
 
     private void setImg(final Uri pathImg) {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                InputStream inputStream;
                 if (DEBUG) {
                     Log.d(LOG_TAG, "we in setIMg, and have in path is: " + pathImg.toString());
                 }
                 try {
-                    inputStream = getContentResolver().openInputStream(pathImg);
-                    final Message message = mHandler.obtainMessage(1,
-                            BitmapFactory.decodeStream(inputStream, null, null));
+                    String name = ImgUtils.getFileNameByUri(pathImg, getBaseContext());
+                    CustomImageMaker image = new CustomImageMaker(DetailedActivity.this,
+                            name,
+                            pathImg.toString(),
+                            false,
+                            mImageWidth,
+                            mImageWidth,
+                            mTempIdForImages);
+                    final Message message = mHandler.obtainMessage(1, image);
                     mHandler.sendMessage(message);
                 } catch (Exception e) {
                     Log.d(LOG_TAG, "Error is: " + e.getMessage());
@@ -179,8 +170,8 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
     final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            final Bitmap image = (Bitmap) msg.obj;
-            mImageView.setImageBitmap(image);
+                    GridLayoutUtils.addViewToGrid(mLayoutForImages, (CustomImageMaker)msg.obj, mImageWidth);
+                    mTempIdForImages++;
         }
     };
 
@@ -256,18 +247,4 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
         dialogFragment.dismiss();
     }
 
-    @Override
-    public void onDeleteImage(DialogFragment dialog, int position) {
-        if (position == 0) {
-            String date = DateUtils.getDate();
-
-            mImageView.setImageBitmap(null);
-            DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
-            helper.deleteImage(mWhere[0]);
-            mSelectNote.setPathImg(DELETE_IMG);
-            mSelectNote.setDateLastUpdateNote(date);
-
-            dialog.dismiss();
-        }
-    }
 }

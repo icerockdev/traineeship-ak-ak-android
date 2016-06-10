@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -15,7 +14,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.*;
 import android.support.v7.widget.GridLayout;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -179,8 +177,6 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             Intent intent = new Intent();
             intent.putExtra(CREATE_NOTE_KEY, newNote);
             setResult(CREATE_NOTE_REQUEST, intent);
-        } else {
-            Snackbar.make(mRootLayoutActivity,"Пожалуйста, введите текст",Snackbar.LENGTH_LONG).show();
         }
         super.finish();
     }
