@@ -123,7 +123,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         if (mCallingActivity.getClassName().equals(MainActivity.class.getName())) {
             getMenuInflater().inflate(R.menu.menu_create, menu);
         } else {
-            getMenuInflater().inflate(R.menu.menu_edit, menu);
+            getMenuInflater().inflate(R.menu.menu_edit, menu); // я так понял ты это добавил, но почему-то в пулле у меян не приехал этот элемент меню
         }
         return true;
     }
@@ -352,7 +352,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     public void onBackPressed() {
         saveNoteAndExit();
     }
-    
+
     public void callBack(DialogInterface dialog, int which) {
         switch (which) {
             case Dialog.BUTTON_POSITIVE:

@@ -77,7 +77,8 @@ public class DetailedActivity extends AppCompatActivity {
 
         final TextView textView = (TextView) findViewById(R.id.textView);
         final EditText titleEdit = (EditText) findViewById(R.id.editTitle);
-        final EditText contentEdit = (EditText) findViewById(R.id.editContent);
+        final EditText contentEdit = (EditText) findViewById(R.id.editContent); //вот тут странно, куда-то пропали либо id, либо айтемы, содержащие их.
+        // не у меня, не у тебя этих айди нету в предыдущих версиях кода, я туплю откуда они могли взяться уже час почти.
         mLayoutForImages = (GridLayout) findViewById(R.id.detailedLayout);
         mLayout = (LinearLayout) findViewById(R.id.layout);
 
