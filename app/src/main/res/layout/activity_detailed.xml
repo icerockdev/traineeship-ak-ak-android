@@ -13,7 +13,7 @@
             android:background="?attr/colorPrimary"
             android:minHeight="?attr/actionBarSize"/>
 
-    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    <ScrollView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
@@ -28,32 +28,14 @@
                     android:layout_centerHorizontal="true"
                     android:adjustViewBounds="true"/>
 
-            <EditText
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/editTitle"
-                    android:layout_alignParentLeft="true"
-                    android:layout_below="@+id/imageNote"
-                    android:padding="16dp"
-                    android:layout_marginLeft="16dp"
-                    android:hint="@string/title_note"/>
-
-            <EditText
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/editContent"
-                    android:layout_alignParentLeft="true"
-                    android:layout_below="@+id/editTitle"
-                    android:padding="16dp"
-                    android:layout_marginLeft="16dp"
-                    android:hint="@string/note"/>
-
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/textView"
-                    android:layout_alignParentRight="true"
-                    android:layout_below="@+id/editContent"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:lineSpacingMultiplier="1.2"
+                    android:id="@+id/txtContent"
+                    android:layout_alignParentLeft="true"
+                    android:layout_below="@+id/imageNote"
                     android:padding="16dp"/>
             <android.support.v7.widget.GridLayout
                 android:layout_width="match_parent"

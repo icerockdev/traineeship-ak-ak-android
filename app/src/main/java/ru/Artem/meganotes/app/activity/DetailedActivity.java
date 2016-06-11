@@ -1,65 +1,56 @@
 package ru.Artem.meganotes.app.activity;
 
-import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayout;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.*;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
-import ru.Artem.meganotes.app.dialogs.AddImageDialog;
+
 import ru.Artem.meganotes.app.R;
 import ru.Artem.meganotes.app.models.Note;
 import ru.Artem.meganotes.app.utils.CustomImageMaker;
-import ru.Artem.meganotes.app.utils.DateUtils;
 import ru.Artem.meganotes.app.utils.ImgUtils;
 import ru.Artem.meganotes.app.utils.GridLayoutUtils;
 
-import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 /**
  * Created by Артем on 13.04.2016.
  */
 
-public class DetailedActivity extends AppCompatActivity implements EditText.OnEditorActionListener,
-        AddImageDialog.OnItemListClickListener {
+public class DetailedActivity extends AppCompatActivity {
 
     private String[] mWhere;
-    private LinearLayout mLayout;
+    private ImageView mImageView;
+    private TextView mTxtContent;
     private GridLayout mLayoutForImages;
+    private LinearLayout mLayout;
 
     private Uri mOutFilePath = null;
     private Note mSelectNote;
 
+    private final int EDIT_NOTE_REQUEST = 1002;
     private final int GALLERY_REQUEST = 1;
     private final int CAMERA_REQUEST = 2;
     private int mImageWidth;
     private int mTempIdForImages;
-    public static final String DELETE_IMG = "null";
     private String mSavePath;
-    private final String LOG_TAG = DetailedActivity.class.getName();
-    public final static String EDIT_NOTE_KEY = "noteEdit";
-    public static final int EDIT_NOTE_REQUEST = 1000;
+    public final static String INTENT_EXTRA_OPEN_NOTE = "noteOpen";
 
+    private final String LOG_TAG = DetailedActivity.class.getName();
     private static final boolean DEBUG = true;
 
     @Override
@@ -67,14 +58,16 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_detailed);
-        final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
-        mSelectNote = getIntent().getParcelableExtra(EDIT_NOTE_KEY);
-        mWhere = new String[]{String.valueOf(mSelectNote.getId())};
+        mSelectNote = getIntent().getParcelableExtra(INTENT_EXTRA_OPEN_NOTE);
+        mWhere = new String[] {String.valueOf(mSelectNote.getId())};
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarDetailed);
-
+        mLayout = (LinearLayout) findViewById(R.id.layout);
+        mImageView = (ImageView) findViewById(R.id.imageNote);
+        mTxtContent = (TextView) findViewById(R.id.txtContent);
         setSupportActionBar(toolbar);
+
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorTitleText));
 
         if (getSupportActionBar() != null) {
@@ -96,8 +89,10 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
         textView.setText(mSelectNote.getDateLastUpdateNote());
         contentEdit.setText(mSelectNote.getContent());
         titleEdit.setText(mSelectNote.getNameNote());
+        mTxtContent.setText(mSelectNote.getContent());
 
         List<String> tempList = mSelectNote.getPathImg();
+
         if (!tempList.isEmpty()) {
             if (DEBUG) {
                 Log.d(LOG_TAG, "we have not empty List");
@@ -109,36 +104,6 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
                 setImg(Uri.parse(tempList.get(i)));
             }
         }
-
-        titleEdit.setOnEditorActionListener(new EditText.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                String date = DateUtils.getDate();
-
-                imm.hideSoftInputFromWindow(titleEdit.getWindowToken(), 0);
-
-                mSelectNote.setNameNote(v.getText().toString());
-                mSelectNote.setDateLastUpdateNote(date);
-                DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
-                helper.updateNote(mSelectNote);
-                return true;
-            }
-        });
-
-        contentEdit.setOnEditorActionListener(new EditText.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                String date = DateUtils.getDate();
-
-                imm.hideSoftInputFromWindow(titleEdit.getWindowToken(), 0);
-
-                mSelectNote.setDateLastUpdateNote(date);
-                mSelectNote.setContent(v.getText().toString());
-                DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
-                helper.updateNote(mSelectNote);
-                return true;
-            }
-        });
         mSavePath = this.getFilesDir().toString();
     }
 
@@ -146,6 +111,7 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
+                InputStream inputStream;
                 if (DEBUG) {
                     Log.d(LOG_TAG, "we in setIMg, and have in path is: " + pathImg.toString());
                 }
@@ -172,7 +138,6 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
         @Override
         public void handleMessage(Message msg) {
             int columnCount = 2;
-
             if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) columnCount = 3;
             GridLayoutUtils.addViewToGrid(mLayoutForImages, (CustomImageMaker)msg.obj, mImageWidth, columnCount);
             mTempIdForImages++;
@@ -180,9 +145,32 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
     };
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+
+        getMenuInflater().inflate(R.menu.menu_detailed, menu);
+
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                initSaveIntent();
+
+                finish();
+                return true;
+            case R.id.edit_note:
+                Intent intent = new Intent(this, CreateNoteActivity.class);
+
+                intent.putExtra(CreateNoteActivity.INTENT_EXTRA_EDIT_NOTE, mSelectNote);
+                startActivityForResult(intent, EDIT_NOTE_REQUEST);
+                return true;
+            case R.id.delete_note:
+                mSelectNote.setDeletedNote(true);
+                initSaveIntent();
+
                 finish();
                 return true;
             default:
@@ -190,65 +178,45 @@ public class DetailedActivity extends AppCompatActivity implements EditText.OnEd
         }
     }
 
-    @Override
-    public void finish() {
+    private void initSaveIntent() {
         Intent intent = new Intent();
-        intent.putExtra(EDIT_NOTE_KEY, mSelectNote);
-        setResult(EDIT_NOTE_REQUEST, intent);
 
-        super.finish();
+        intent.putExtra(INTENT_EXTRA_OPEN_NOTE, mSelectNote);
+        setResult(RESULT_OK, intent);
     }
 
     @Override
-    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-        return false;
+    public void onBackPressed() {
+        initSaveIntent();
+        finish();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == GALLERY_REQUEST) {
-                mOutFilePath = data.getData();
+        DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
+
+        if (resultCode == RESULT_OK) {
+            if (requestCode == GALLERY_REQUEST || requestCode == CAMERA_REQUEST) {
+                if (requestCode == GALLERY_REQUEST) mOutFilePath = data.getData();
+                setImg(mOutFilePath);
+
+                mSelectNote.setPathImg(mOutFilePath.toString());
+            } else if (requestCode == EDIT_NOTE_REQUEST) {
+                mSelectNote = data.getParcelableExtra(CreateNoteActivity.INTENT_EXTRA_EDIT_NOTE);
+
+                if (mSelectNote != null) {
+                    if (getSupportActionBar() != null) getSupportActionBar().setTitle(mSelectNote.getNameNote());
+
+                    mTxtContent.setText(mSelectNote.getContent());
+                    if (!mSelectNote.getPathImg().isEmpty()) {
+                        setImg(Uri.parse(mSelectNote.getPathImg().get(mSelectNote.getPathImg().size() - 1)));
+                    }
+                }
             }
-            setImg(mOutFilePath);
-            mSelectNote.setPathImg(mOutFilePath.toString());
-            DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
+
             helper.updateNote(mSelectNote);
         }
     }
-
-    @Override
-    public void onClick(DialogFragment dialogFragment, int position) {
-        switch (position) {
-            case 0:
-                if (ActivityCompat.checkSelfPermission(DetailedActivity.this, Manifest.permission.CAMERA)
-                        != PackageManager.PERMISSION_GRANTED) {
-
-                    ActivityCompat.requestPermissions(DetailedActivity.this,
-                            new String[]{Manifest.permission.CAMERA}, 0);
-
-                } else {
-                    try {
-                        mOutFilePath = ImgUtils.cameraRequest(DetailedActivity.this, CAMERA_REQUEST, getExternalFilesDir(null).getAbsolutePath());
-                    } catch (IOException e) {
-                        mOutFilePath = null;
-                        Snackbar.make(mLayout, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
-                    }
-                }
-                break;
-            case 1:
-                if (ActivityCompat.checkSelfPermission(DetailedActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(DetailedActivity.this,
-                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                } else {
-                    ImgUtils.galleryRequest(DetailedActivity.this, GALLERY_REQUEST);
-                }
-                break;
-        }
-        dialogFragment.dismiss();
-    }
-
 }

@@ -19,6 +19,7 @@ public class Note implements Parcelable {
     private long mId;
     private int mPositionInAdapter;
     private Bitmap mBitmap;
+    private boolean mDeletedNote;
 
     public Note(String nameNote, String noteContent, String lastUpdateNote, List<String> paths, long id) {
         this.mNameNote = nameNote;
@@ -32,10 +33,19 @@ public class Note implements Parcelable {
         this.mNameNote = parcel.readString();
         this.mContent = parcel.readString();
         this.mLastDateUpdateNote = parcel.readString();
+        this.mDeletedNote = parcel.readByte() != 0;
         this.mPathImg = new ArrayList<String>();
         parcel.readList(this.mPathImg, Note.class.getClassLoader());
         this.mPositionInAdapter = parcel.readInt();
         this.mId = parcel.readInt();
+    }
+
+    public boolean isDeletedNote() {
+        return mDeletedNote;
+    }
+
+    public void setDeletedNote(boolean deletedNote) {
+        this.mDeletedNote = deletedNote;
     }
 
     public void setDateLastUpdateNote(String mLastUpdateNote) {
@@ -58,10 +68,6 @@ public class Note implements Parcelable {
         this.mBitmap = bitmap;
     }
 
-    public void setListPathImages(List<String> listPathImages) {
-        this.mPathImg = listPathImages;
-    }
-
     public String getNameNote() {
         return mNameNote;
     }
@@ -70,16 +76,19 @@ public class Note implements Parcelable {
         this.mNameNote = nameNote;
     }
 
+    public void setListPathImages(List<String> listPathImages) {
+        this.mPathImg = listPathImages;
+    }
+    public void setPathImg(String pathImg) {
+        this.mPathImg.add(pathImg);
+    }
+
     public String getDateLastUpdateNote() {
         return mLastDateUpdateNote;
     }
 
     public List<String> getPathImg() {
         return mPathImg;
-    }
-
-    public void setPathImg(String pathImg) {
-        this.mPathImg.add(pathImg);
     }
 
     public long getId() {
@@ -118,6 +127,7 @@ public class Note implements Parcelable {
         dest.writeString(mNameNote);
         dest.writeString(mContent);
         dest.writeString(mLastDateUpdateNote);
+        dest.writeByte((byte) (mDeletedNote ? 1 : 0));
         dest.writeList(mPathImg);
         dest.writeInt(mPositionInAdapter);
         dest.writeLong(mId);

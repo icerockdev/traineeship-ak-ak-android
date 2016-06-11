@@ -10,11 +10,13 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
 
+
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 
 /**
@@ -67,10 +69,10 @@ public class ImgUtils {
         return null;
     }
 
-    public static void galleryRequest(Context context, int requestCode) {
+    public static void galleryRequest(Activity activity, int requestCode) {
         Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
         photoPickerIntent.setType("image/*");
-        ((Activity) context).startActivityForResult(photoPickerIntent, requestCode);
+        activity.startActivityForResult(photoPickerIntent, requestCode);
     }
 
     public static String savePicture(Bitmap bitmap, String folderToSave) throws IOException {
@@ -131,7 +133,6 @@ public class ImgUtils {
                 inSampleSize *= 2;
             }
         }
-
         return inSampleSize;
     }
 }
