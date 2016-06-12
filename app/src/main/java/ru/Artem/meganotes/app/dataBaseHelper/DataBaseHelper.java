@@ -41,6 +41,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             + " (" + ID_IMAGE + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + ID_NOTE_COLUMN + " INTEGER, "
             + IMAGE_SOURCE_COLUMN + " TEXT, "
+            + "UNIQUE (" + IMAGE_SOURCE_COLUMN + ") ON CONFLICT REPLACE, "
             + "FOREIGN KEY (" + ID_NOTE_COLUMN + ") REFERENCES " + DATABASE_TABLE_IMAGES + "(" + ID_COLUMN + ") ON DELETE CASCADE ON UPDATE CASCADE);";
 
     private static DataBaseHelper sInstance;
@@ -154,7 +155,8 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 DataBaseHelper.ID_COLUMN + " = ?", new String[]{String.valueOf(idUpdatedNote)});
 
         List<String> oldImagesThisNote = new ArrayList<>();
-        Cursor cursor = sInstance.getReadableDatabase().query(DATABASE_TABLE_IMAGES,
+        Cursor cursor = sInstance.getReadableDatabase().query(
+                DATABASE_TABLE_IMAGES,
                 null,
                 ID_NOTE_COLUMN + " = ?",
                 new String[]{String.valueOf(idUpdatedNote)},
@@ -172,16 +174,17 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                     containerForImages.put(ID_NOTE_COLUMN, idUpdatedNote);
                     sInstance.getWritableDatabase().insert(DATABASE_TABLE_IMAGES, null, containerForImages);
                 }
-            } else {
+            }/* else {
                 for (int i = 0; i < oldImagesThisNote.size(); i++) {
                     sInstance.getWritableDatabase().delete(DATABASE_TABLE_IMAGES, ID_NOTE_COLUMN + "= ?", new String[]{String.valueOf(idUpdatedNote)});
                     //удаление всех картинок, может быть неактуально, если при удаление каждой одной вызвается функция ниже описанная
                     // надо сюда попробовать при тесте после добавления множества изображений в интерфейс
                     // ввести переменную и посмотреть сколько удалит.
                 }
-            }
+            }*/
         }
     }
+
 
     public void deleteImage(String id) {
         sInstance.getWritableDatabase().delete(DATABASE_TABLE_IMAGES, ID_IMAGE + "= ?", new String[]{id});

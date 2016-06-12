@@ -21,27 +21,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
-            <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/imageNote"
-                    android:layout_centerHorizontal="true"
-                    android:adjustViewBounds="true"/>
-
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:lineSpacingMultiplier="1.2"
                     android:id="@+id/txtContent"
-                    android:layout_alignParentLeft="true"
-                    android:layout_below="@+id/imageNote"
                     android:padding="16dp"/>
+
             <android.support.v7.widget.GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/detailedLayout"
-                android:layout_below="@id/textView"
+                android:layout_below="@id/txtContent"
                 app:columnCount="2">
             </android.support.v7.widget.GridLayout>
 

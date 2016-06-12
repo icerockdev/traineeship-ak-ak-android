@@ -42,11 +42,9 @@ public class CustomImageMaker extends RelativeLayout {
         super(context);
 
         try {
-                onDeleteImageListener = (OnDeleteImageListener) context;
-            }
-        catch (Exception e)
-        {
-            Log.d(LOG_TAG, "Класс должен реализовывать интерфейс" +OnDeleteImageListener.class.getName());
+            onDeleteImageListener = (OnDeleteImageListener) context;
+        } catch (Exception e) {
+            Log.d(LOG_TAG, "Класс должен реализовывать интерфейс" + OnDeleteImageListener.class.getName());
         }
 
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(width, height);
@@ -68,11 +66,9 @@ public class CustomImageMaker extends RelativeLayout {
             //TODO
         }
 
-        if (mReadMode)
-        {
+        if (mReadMode) {
             mButton.setImageResource(R.drawable.ic_info_white_24dp);
-        }
-        else {
+        } else {
             mButton.setImageResource(R.drawable.ic_delete);
         }
 
@@ -117,16 +113,26 @@ public class CustomImageMaker extends RelativeLayout {
 
     public interface OnDeleteImageListener {
         void removeElementFromRootView(int id);
+
         void returnLastDeletedElement();
     }
 
-    public void setIndex(int index)
-    {
+    public void setIndex(int index) {
         mIndex = index;
     }
 
     public void setTextForLabel(String text) {
         mText.setText(text);
+    }
+
+    public String getTextLabel() {
+        return mText.getText().toString();
+    }
+
+    public static CustomImageMaker initCustomView(String path, boolean mode, int size, int id, Context context) {
+        String name = ImgUtils.getFileNameByUri(Uri.parse(path), context);
+
+        return new CustomImageMaker(context, name, path, mode, size, size, id);
     }
 
     public void setImage(String path) {
