@@ -205,8 +205,8 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     public void removeElementFromRootView(int id) {
         lastDeletedElement = (RelativeLayout) mLayoutForImages.getChildAt(id);
         mLayoutForImages.removeView(lastDeletedElement);
-        CustomImageMaker image = (CustomImageMaker) lastDeletedElement;
-        mDeletedPaths.add(image.getImagePath());
+        CustomImageMaker cutomImage = (CustomImageMaker) lastDeletedElement;
+        mDeletedPaths.add(cutomImage.getImagePath());
         mTempIdForImages--;
         syncIdImagesAndChilds();
     }
@@ -279,7 +279,8 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 mEditNote.setContent(mContentNote.getText().toString());
                 mEditNote.setDateLastUpdateNote(date);
                 mEditNote.setListPathImages(mImagePaths);
-
+                Log.d(LOG_TAG,"we trying to edit note");
+                //здесь функция удаления лишних изображений по заметке
                 helper.updateNote(mEditNote);
 
                 intent.putExtra(INTENT_EXTRA_EDIT_NOTE, mEditNote);

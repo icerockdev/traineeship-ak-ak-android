@@ -6,10 +6,12 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import ru.Artem.meganotes.app.models.Note;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -161,37 +163,43 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 ID_NOTE_COLUMN + " = ?",
                 new String[]{String.valueOf(idUpdatedNote)},
                 null, null, null);
-        if (cursor.moveToNext()) {
+        while (cursor.moveToNext()) {
             oldImagesThisNote.add(cursor.getString(cursor.getColumnIndex(IMAGE_SOURCE_COLUMN)));
         }
         cursor.close();
 
+        Log.d(LOG_TAG, "we in update");
+        Log.d(LOG_TAG, "How elements we have in new image array?" + imagesUpdatedNote.size());
+        Log.d(LOG_TAG, "How elements we have in old image array?" + oldImagesThisNote.size());
         if (!oldImagesThisNote.equals(imagesUpdatedNote)) {
+            Log.d(LOG_TAG, "we have different image arrays");
             if (!imagesUpdatedNote.isEmpty()) {
-                ContentValues containerForImages = new ContentValues();
-                for (int i = 0; i < imagesUpdatedNote.size(); i++) {
-                    containerForImages.put(IMAGE_SOURCE_COLUMN, imagesUpdatedNote.get(i));
-                    containerForImages.put(ID_NOTE_COLUMN, idUpdatedNote);
-                    sInstance.getWritableDatabase().insert(DATABASE_TABLE_IMAGES, null, containerForImages);
+                Log.d(LOG_TAG, "we have not empty new array");
+                if (oldImagesThisNote.size() > imagesUpdatedNote.size()) // если старых изображений больше чем новых, т.е. если удаляли
+                {
+                    Log.d(LOG_TAG, "we in deleting");
+                    for (Iterator<String> elementInOld = oldImagesThisNote.iterator(); elementInOld.hasNext(); ) {
+                        for (Iterator<String> elementInNew = imagesUpdatedNote.iterator(); elementInNew.hasNext(); ) {
+                            if (!elementInOld.equals(elementInNew)) {
+                                Log.d(LOG_TAG,"i found =! element, and it: "+elementInOld.toString());
+                                sInstance.getWritableDatabase().delete(DATABASE_TABLE_IMAGES, IMAGE_SOURCE_COLUMN + "=?", new String[]{elementInOld.toString()});
+                            }
+                        }
+                    }
+                } else {
+                    Log.d(LOG_TAG, "we in adding");
+                    ContentValues containerForImages = new ContentValues();
+                    for (int i = 0; i < imagesUpdatedNote.size(); i++) {
+                        containerForImages.put(IMAGE_SOURCE_COLUMN, imagesUpdatedNote.get(i));
+                        containerForImages.put(ID_NOTE_COLUMN, idUpdatedNote);
+                        sInstance.getWritableDatabase().insert(DATABASE_TABLE_IMAGES, null, containerForImages);
+                    }
                 }
-            }/* else {
-                for (int i = 0; i < oldImagesThisNote.size(); i++) {
-                    sInstance.getWritableDatabase().delete(DATABASE_TABLE_IMAGES, ID_NOTE_COLUMN + "= ?", new String[]{String.valueOf(idUpdatedNote)});
-                    //удаление всех картинок, может быть неактуально, если при удаление каждой одной вызвается функция ниже описанная
-                    // надо сюда попробовать при тесте после добавления множества изображений в интерфейс
-                    // ввести переменную и посмотреть сколько удалит.
-                }
-            }*/
+            }
         }
-    }
-
-
-    public void deleteImage(String id) {
-        sInstance.getWritableDatabase().delete(DATABASE_TABLE_IMAGES, ID_IMAGE + "= ?", new String[]{id});
     }
 
     public void deleteAllNotesAndImages() {
         sInstance.getWritableDatabase().delete(DataBaseHelper.DATABASE_TABLE_NOTES, null, null);
-        sInstance.getWritableDatabase().delete(DataBaseHelper.DATABASE_TABLE_IMAGES, null, null);
     }
 }
