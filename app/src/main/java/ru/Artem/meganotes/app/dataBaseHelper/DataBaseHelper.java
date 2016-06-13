@@ -178,10 +178,10 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 if (oldImagesThisNote.size() > imagesUpdatedNote.size()) // если старых изображений больше чем новых, т.е. если удаляли
                 {
                     Log.d(LOG_TAG, "we in deleting");
-                    for (Iterator<String> elementInOld = oldImagesThisNote.iterator(); elementInOld.hasNext(); ) {
-                        for (Iterator<String> elementInNew = imagesUpdatedNote.iterator(); elementInNew.hasNext(); ) {
+                    for (String elementInOld : oldImagesThisNote) {
+                        for (String elementInNew : imagesUpdatedNote ) {
                             if (!elementInOld.equals(elementInNew)) {
-                                Log.d(LOG_TAG,"i found =! element, and it: "+elementInOld.toString());
+                                Log.d(LOG_TAG,"i found =! element, and it: "+elementInOld);
                                 sInstance.getWritableDatabase().delete(DATABASE_TABLE_IMAGES, IMAGE_SOURCE_COLUMN + "=?", new String[]{elementInOld.toString()});
                             }
                         }
