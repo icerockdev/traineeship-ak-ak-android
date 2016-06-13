@@ -12,6 +12,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.*;
 import android.view.*;
 import android.widget.TextView;
+
 import ru.Artem.meganotes.app.activity.CreateNoteActivity;
 import ru.Artem.meganotes.app.activity.DetailedActivity;
 import ru.Artem.meganotes.app.adapters.MainAdapter;
@@ -53,7 +54,7 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
 
         mAdapter = new MainAdapter(mNotesList);
 
-        mCreateNoteFAB = (FloatingActionButton)  rootView.findViewById(R.id.createNote);
+        mCreateNoteFAB = (FloatingActionButton) rootView.findViewById(R.id.createNote);
         RecyclerViewUtils.initRecyclerView(new LinearLayoutManager(getActivity()),
                 (RecyclerView) rootView.findViewById(R.id.recyclerView), mAdapter);
 

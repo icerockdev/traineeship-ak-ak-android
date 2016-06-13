@@ -27,7 +27,7 @@ import java.util.List;
  * Created by Артем on 13.04.2016.
  */
 
-public class DetailedActivity extends AppCompatActivity implements CustomImageMaker.OnDeleteImageListener {
+public class DetailedActivity extends AppCompatActivity {
 
     private TextView mTxtContent;
     private GridLayout mLayoutForImages;
@@ -67,7 +67,8 @@ public class DetailedActivity extends AppCompatActivity implements CustomImageMa
 
         mLayoutForImages = (GridLayout) findViewById(R.id.detailedLayout);
 
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) mColumnCount = 3;
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+            mColumnCount = 3;
 
         mLayoutForImages.setColumnCount(mColumnCount);
 
@@ -87,7 +88,7 @@ public class DetailedActivity extends AppCompatActivity implements CustomImageMa
                     Log.d(LOG_TAG, "path: " + item);
                 }
             }
-            for(String image : tempList) {
+            for (String image : tempList) {
                 setImg(Uri.parse(image));
             }
         }
@@ -103,7 +104,7 @@ public class DetailedActivity extends AppCompatActivity implements CustomImageMa
                 try {
                     final Message message = mHandler.obtainMessage(1,
                             CustomImageMaker.initCustomView(
-                                    pathImg.toString(), false, mImageWidth,
+                                    pathImg.toString(), true, mImageWidth,
                                     mTempIdForImages++, DetailedActivity.this)
                     );
                     mHandler.sendMessage(message);
@@ -177,38 +178,15 @@ public class DetailedActivity extends AppCompatActivity implements CustomImageMa
             mSelectNote = data.getParcelableExtra(CreateNoteActivity.INTENT_EXTRA_EDIT_NOTE);
 
             if (mSelectNote != null) {
-                if (getSupportActionBar() != null) getSupportActionBar().setTitle(mSelectNote.getNameNote());
+                if (getSupportActionBar() != null)
+                    getSupportActionBar().setTitle(mSelectNote.getNameNote());
 
                 mTxtContent.setText(mSelectNote.getContent());
-
+                mLayoutForImages.removeAllViewsInLayout();
                 if (!mSelectNote.getPathImg().isEmpty()) {
                     setImg(Uri.parse(mSelectNote.getPathImg().get(mSelectNote.getPathImg().size() - 1)));
                 }
             }
         }
-    }
-
-    @Override
-    public void removeElementFromRootView(int id) {
-        lastDeletedElement = (RelativeLayout) mLayoutForImages.getChildAt(id);
-        mLayoutForImages.removeView(lastDeletedElement);
-        mTempIdForImages--;
-
-        int imagesCount = mLayoutForImages.getChildCount();
-        for (int i = 0; i < imagesCount; i++) {
-            CustomImageMaker customImageMaker = (CustomImageMaker) mLayoutForImages.getChildAt(i);
-            customImageMaker.setIndex(i);
-        }
-    }
-
-    @Override
-    public void returnLastDeletedElement() {
-            mLayoutForImages.addView(lastDeletedElement);
-            mTempIdForImages++;
-            int imagesCount = mLayoutForImages.getChildCount();
-            for (int i = 0; i < imagesCount; i++) {
-                CustomImageMaker customImageMaker = (CustomImageMaker) mLayoutForImages.getChildAt(i);
-                customImageMaker.setIndex(i);
-            }
     }
 }

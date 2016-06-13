@@ -79,6 +79,7 @@ public class Note implements Parcelable {
     public void setListPathImages(List<String> listPathImages) {
         this.mPathImg = listPathImages;
     }
+
     public void setPathImg(String pathImg) {
         this.mPathImg.add(pathImg);
     }

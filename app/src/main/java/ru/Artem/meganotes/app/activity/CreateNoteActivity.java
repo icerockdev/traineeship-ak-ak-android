@@ -24,9 +24,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.*;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
 import ru.Artem.meganotes.app.dialogs.AddImageDialog;
 import ru.Artem.meganotes.app.R;
@@ -49,12 +51,11 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private LinearLayout mRootLayoutActivity;
     private android.support.v7.widget.GridLayout mLayoutForImages;
     private RelativeLayout lastDeletedElement;
-    private List<String> mImagePaths = new ArrayList<>();
+    List<String> mDeletedPaths;
     private int mImageWidth;
     private int mTempIdForImages;
     private Note mEditNote;
     private int mColumnCount = 2;
-    private int mCountImage = 0;
 
     private Uri mOutFilePath = null;
 
@@ -87,7 +88,8 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         mLayoutForImages = (GridLayout) findViewById(R.id.LayoutForImages);
         mRootLayoutActivity = (LinearLayout) findViewById(R.id.layoutCreate);
 
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) mColumnCount = 3;
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+            mColumnCount = 3;
 
         mLayoutForImages.setColumnCount(mColumnCount);
 
@@ -115,18 +117,10 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                                 CustomImageMaker.initCustomView(imagePath, false, mImageWidth, mTempIdForImages++, this),
                                 mImageWidth, mColumnCount);
                     }
-                    mCountImage = mLayoutForImages.getChildCount();
                 }
             }
         }
-
-        if (DEBUG) {
-            Log.d(LOG_TAG, "our screen width is: " + display.getWidth());
-            Log.d(LOG_TAG, "our screen height is: " + display.getHeight());
-            Log.d(LOG_TAG, "our mImageWidth is " + mImageWidth);
-        }
-
-        mImagePaths = new ArrayList<>();
+        mDeletedPaths = new ArrayList<>();
     }
 
     @Override
@@ -169,7 +163,6 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                     Snackbar.make(mRootLayoutActivity, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
                 }
             }
-
             GridLayoutUtils.addViewToGrid(
                     mLayoutForImages,
                     CustomImageMaker.initCustomView(mOutFilePath.toString(), false, mImageWidth, mTempIdForImages++, this),
@@ -212,19 +205,20 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     public void removeElementFromRootView(int id) {
         lastDeletedElement = (RelativeLayout) mLayoutForImages.getChildAt(id);
         mLayoutForImages.removeView(lastDeletedElement);
+        //mDeletedPaths.add(lastDeletedElement.getChildAt(0) ) вот тут получили изображение, надо его путь теперь как-то добавить в список удаленных.
         mTempIdForImages--;
-
-        int imagesCount = mLayoutForImages.getChildCount();
-        for (int i = 0; i < imagesCount; i++) {
-            CustomImageMaker customImageMaker = (CustomImageMaker) mLayoutForImages.getChildAt(i);
-            customImageMaker.setIndex(i);
-        }
+        syncIdImagesAndChilds();
     }
 
     @Override
     public void returnLastDeletedElement() {
         mLayoutForImages.addView(lastDeletedElement);
         mTempIdForImages++;
+        // а тут так же сделать возвращение этого пути.
+        syncIdImagesAndChilds();
+    }
+
+    private void syncIdImagesAndChilds() {
         int imagesCount = mLayoutForImages.getChildCount();
         for (int i = 0; i < imagesCount; i++) {
             CustomImageMaker customImageMaker = (CustomImageMaker) mLayoutForImages.getChildAt(i);
@@ -234,24 +228,22 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
     private void saveNoteAndExit() {
         if (!mContentNote.getText().toString().isEmpty()) {
+            List<String> mImagePaths = new ArrayList<>();
             DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
             String date = DateUtils.getDate();
             int imagesCount = mLayoutForImages.getChildCount();
 
-            for (int i = mCountImage; i < imagesCount; i++) {
+            for (int i = 0; i < imagesCount; i++) {
                 RelativeLayout customImageMaker = (RelativeLayout) mLayoutForImages.getChildAt(i);
-                RelativeLayout layoutInCustomView = (RelativeLayout) customImageMaker.getChildAt(0);
-                ImageView imageViewInCustomView = (ImageView) layoutInCustomView.getChildAt(0);
-
-                if (DEBUG) {
-                    Log.d(LOG_TAG, "we have in 1st child of CustomImageMaker" + layoutInCustomView.getClass());
-                    Log.d(LOG_TAG, "we have in 2nd child of CustomImageMaker" + imageViewInCustomView.getClass());
-                }
+                RelativeLayout rootLayoutInCustomView = (RelativeLayout) customImageMaker.getChildAt(0);
+                ImageView imageViewInCustomView = (ImageView) rootLayoutInCustomView.getChildAt(0);
+                LinearLayout llInCustomImage = (LinearLayout) rootLayoutInCustomView.getChildAt(1); //получили лейаут, который содержит текствью и кнопку
+                TextView textViewWithName = (TextView) llInCustomImage.getChildAt(0); // вот тут получили текствью, которое отображает имя
 
                 Bitmap bitmap = ((BitmapDrawable) imageViewInCustomView.getDrawable()).getBitmap();
 
                 try {
-                    mImagePaths.add(ImgUtils.savePicture(bitmap, mSavePath));
+                    mImagePaths.add(ImgUtils.savePicture(bitmap, mSavePath, textViewWithName.getText().toString()));
                 } catch (IOException e) {
                     Snackbar.make(mRootLayoutActivity, R.string.str_problems_save, Snackbar.LENGTH_LONG).show();
                 }
@@ -260,6 +252,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             Intent intent = new Intent();
 
             if (mEditNote == null) {
+                //если заметка новая, то попадём сюда, создадим её и отправим в результате
                 Note newNote;
 
                 try {
@@ -280,6 +273,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
                 intent.putExtra(INTENT_RESULT_EXTRA_CREATE_NOTE, newNote);
             } else {
+                //если заметка старая, и просто редактировалась
                 mEditNote.setNameNote(mTitleNote.getText().toString());
                 mEditNote.setContent(mContentNote.getText().toString());
                 mEditNote.setDateLastUpdateNote(date);
