@@ -205,7 +205,8 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     public void removeElementFromRootView(int id) {
         lastDeletedElement = (RelativeLayout) mLayoutForImages.getChildAt(id);
         mLayoutForImages.removeView(lastDeletedElement);
-        //mDeletedPaths.add(lastDeletedElement.getChildAt(0) ) вот тут получили изображение, надо его путь теперь как-то добавить в список удаленных.
+        CustomImageMaker image = (CustomImageMaker) lastDeletedElement;
+        mDeletedPaths.add(image.getImagePath());
         mTempIdForImages--;
         syncIdImagesAndChilds();
     }
@@ -214,7 +215,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     public void returnLastDeletedElement() {
         mLayoutForImages.addView(lastDeletedElement);
         mTempIdForImages++;
-        // а тут так же сделать возвращение этого пути.
+        mDeletedPaths.remove(mDeletedPaths.size());
         syncIdImagesAndChilds();
     }
 
