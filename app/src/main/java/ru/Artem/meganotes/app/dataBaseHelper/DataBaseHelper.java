@@ -198,7 +198,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             }
         }
     }
-
     public void deleteAllNotesAndImages() {
         sInstance.getWritableDatabase().delete(DataBaseHelper.DATABASE_TABLE_NOTES, null, null);
     }

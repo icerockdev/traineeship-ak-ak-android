@@ -17,6 +17,7 @@ import ru.Artem.meganotes.app.activity.CreateNoteActivity;
 import ru.Artem.meganotes.app.activity.DetailedActivity;
 import ru.Artem.meganotes.app.adapters.MainAdapter;
 import ru.Artem.meganotes.app.dialogs.AddImageDialog;
+import ru.Artem.meganotes.app.dialogs.DeleteAllNotesDialog;
 import ru.Artem.meganotes.app.dialogs.DeleteNoteDialog;
 import ru.Artem.meganotes.app.models.Note;
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
@@ -25,7 +26,8 @@ import ru.Artem.meganotes.app.utils.RecyclerViewUtils;
 
 import java.util.List;
 
-public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInteractionFragment {
+public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInteractionFragment,
+        DeleteAllNotesDialog.InteractionWithFragment {
 
     private List<Note> mNotesList;
     private MainAdapter mAdapter;
@@ -159,12 +161,8 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.delete_all_notes) {
-            mAdapter.notifyItemRangeRemoved(0, mNotesList.size());
-            mNotesList.clear();
-
-            DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(getActivity().getApplicationContext());
-            dataBaseHelper.deleteAllNotesAndImages();
+        if (item.getItemId() == R.id.delete_all_notes && !mNotesList.isEmpty()) {
+            new DeleteAllNotesDialog().show(getChildFragmentManager().beginTransaction(), DeleteAllNotesDialog.DIALOG_KEY);
 
             return true;
         }
@@ -189,6 +187,16 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
                 mNotesList.remove(mDeleteNote.getPositionInAdapter());
                 mAdapter.notifyItemRemoved(mDeleteNote.getPositionInAdapter());
             }
+        }
+    }
+
+    @Override
+    public void onClick(DialogInterface dialogInterface, int which) {
+        if (which == DialogInterface.BUTTON_POSITIVE) {
+            mAdapter.notifyItemRangeRemoved(0, mNotesList.size());
+            mNotesList.clear();
+
+            DataBaseHelper.getInstance(getActivity().getApplicationContext()).deleteAllNotesAndImages();
         }
     }
 }

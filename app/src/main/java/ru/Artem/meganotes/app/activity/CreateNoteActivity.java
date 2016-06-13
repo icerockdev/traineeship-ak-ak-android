@@ -115,7 +115,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                     for (String imagePath : mEditNote.getPathImg()) {
                         GridLayoutUtils.addViewToGrid(mLayoutForImages,
                                 CustomImageMaker.initCustomView(imagePath, false, mImageWidth, mTempIdForImages++, this),
-                                mImageWidth, mColumnCount);
+                                mImageWidth);
                     }
                 }
             }
@@ -166,7 +166,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
             GridLayoutUtils.addViewToGrid(
                     mLayoutForImages,
                     CustomImageMaker.initCustomView(mOutFilePath.toString(), false, mImageWidth, mTempIdForImages++, this),
-                    mImageWidth, mColumnCount);
+                    mImageWidth);
         }
     }
 
