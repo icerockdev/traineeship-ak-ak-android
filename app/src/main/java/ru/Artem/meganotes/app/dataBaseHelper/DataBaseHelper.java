@@ -185,7 +185,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         }
     }
 
-
     public void deleteImage(String id) {
         sInstance.getWritableDatabase().delete(DATABASE_TABLE_IMAGES, ID_IMAGE + "= ?", new String[]{id});
     }

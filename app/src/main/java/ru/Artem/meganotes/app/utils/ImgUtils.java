@@ -76,9 +76,6 @@ public class ImgUtils {
     }
 
     public static String savePicture(Bitmap bitmap, String folderToSave, String name) throws IOException {
-       // String timeStamp = DateUtils.getDateCreateFile();
-        String imageFileName = String.format("JPEG_%s", name);
-
         File file = new File(folderToSave, name);
         FileOutputStream fOut = new FileOutputStream(file);
 

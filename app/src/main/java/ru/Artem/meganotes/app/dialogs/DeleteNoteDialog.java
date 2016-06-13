@@ -2,6 +2,7 @@ package ru.Artem.meganotes.app.dialogs;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.support.v4.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ public class DeleteNoteDialog extends DialogFragment {
 
     private static final String ARGS_KEY = "titleNote";
     private static final String LOG_TAG = DeleteNoteDialog.class.getName();
+    private OnInteractionFragment mCallBack;
 
     public static DeleteNoteDialog newInstance(String titleNote) {
         DeleteNoteDialog deleteFragment = new DeleteNoteDialog();
@@ -25,6 +27,18 @@ public class DeleteNoteDialog extends DialogFragment {
         deleteFragment.setArguments(args);
 
         return deleteFragment;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        try {
+            mCallBack = (OnInteractionFragment) getParentFragment();
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + " должен реализовывать интерфейс OnInteractionFragment");
+        }
     }
 
     @Override
@@ -40,9 +54,7 @@ public class DeleteNoteDialog extends DialogFragment {
     private DialogInterface.OnClickListener mOnClick = new DialogInterface.OnClickListener() {
         @Override
         public void onClick(DialogInterface dialog, int which) {
-            OnInteractionFragment callBack = (OnInteractionFragment) getParentFragment();
-            if (callBack != null)
-                callBack.callBack(dialog, which);
+            if (mCallBack != null) mCallBack.callBack(dialog, which);
         }
     };
 

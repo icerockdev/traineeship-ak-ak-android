@@ -119,7 +119,7 @@ public class DetailedActivity extends AppCompatActivity {
     final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            GridLayoutUtils.addViewToGrid(mLayoutForImages, (CustomImageMaker) msg.obj, mImageWidth, mColumnCount);
+            GridLayoutUtils.addViewToGrid(mLayoutForImages, (CustomImageMaker) msg.obj, mImageWidth);
         }
     };
 

@@ -8,14 +8,13 @@ import android.view.View;
  */
 public class GridLayoutUtils {
 
-    public static void addViewToGrid(GridLayout field, View view, int size, int countColumn) {
+    public static void addViewToGrid(GridLayout field, View view, int size) {
         GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
 
-        int index = field.getChildCount();
         layoutParams.width = 0;
         layoutParams.height = size;
-        layoutParams.rowSpec = GridLayout.spec(index / countColumn, 1f);
-        layoutParams.columnSpec = GridLayout.spec(index % countColumn, 1f);
+        layoutParams.rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+        layoutParams.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
 
         field.addView(view, layoutParams);
     }
