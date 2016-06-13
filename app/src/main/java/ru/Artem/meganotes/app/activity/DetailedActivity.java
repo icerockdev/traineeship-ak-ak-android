@@ -2,6 +2,7 @@ package ru.Artem.meganotes.app.activity;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,6 +12,7 @@ import android.support.v7.widget.GridLayout;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.*;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 
@@ -25,10 +27,11 @@ import java.util.List;
  * Created by Артем on 13.04.2016.
  */
 
-public class DetailedActivity extends AppCompatActivity {
+public class DetailedActivity extends AppCompatActivity implements CustomImageMaker.OnDeleteImageListener {
 
     private TextView mTxtContent;
     private GridLayout mLayoutForImages;
+    private RelativeLayout lastDeletedElement;
     private int mColumnCount = 2;
 
     private Note mSelectNote;
@@ -100,7 +103,7 @@ public class DetailedActivity extends AppCompatActivity {
                 try {
                     final Message message = mHandler.obtainMessage(1,
                             CustomImageMaker.initCustomView(
-                                    pathImg.toString(), true, mImageWidth,
+                                    pathImg.toString(), false, mImageWidth,
                                     mTempIdForImages++, DetailedActivity.this)
                     );
                     mHandler.sendMessage(message);
@@ -183,5 +186,29 @@ public class DetailedActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    @Override
+    public void removeElementFromRootView(int id) {
+        lastDeletedElement = (RelativeLayout) mLayoutForImages.getChildAt(id);
+        mLayoutForImages.removeView(lastDeletedElement);
+        mTempIdForImages--;
+
+        int imagesCount = mLayoutForImages.getChildCount();
+        for (int i = 0; i < imagesCount; i++) {
+            CustomImageMaker customImageMaker = (CustomImageMaker) mLayoutForImages.getChildAt(i);
+            customImageMaker.setIndex(i);
+        }
+    }
+
+    @Override
+    public void returnLastDeletedElement() {
+            mLayoutForImages.addView(lastDeletedElement);
+            mTempIdForImages++;
+            int imagesCount = mLayoutForImages.getChildCount();
+            for (int i = 0; i < imagesCount; i++) {
+                CustomImageMaker customImageMaker = (CustomImageMaker) mLayoutForImages.getChildAt(i);
+                customImageMaker.setIndex(i);
+            }
     }
 }
