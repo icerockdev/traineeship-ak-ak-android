@@ -183,8 +183,9 @@ public class DetailedActivity extends AppCompatActivity {
 
                 mTxtContent.setText(mSelectNote.getContent());
                 mLayoutForImages.removeAllViewsInLayout();
-                if (!mSelectNote.getPathImg().isEmpty()) {
-                    setImg(Uri.parse(mSelectNote.getPathImg().get(mSelectNote.getPathImg().size() - 1)));
+
+                for (String pathImage : mSelectNote.getPathImg()) {
+                    setImg(Uri.parse(pathImage));
                 }
             }
         }

@@ -32,7 +32,7 @@ public class ImgUtils {
     private static String mCurrentPhotoPath;
 
     private static File createImageFile(String folderToSave) throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = DateUtils.getDateCreateFile();
         String imageFileName = String.format("JPEG_%s.jpg", timeStamp);
 
         return new File(folderToSave, imageFileName);
@@ -79,7 +79,7 @@ public class ImgUtils {
        // String timeStamp = DateUtils.getDateCreateFile();
         String imageFileName = String.format("JPEG_%s", name);
 
-        File file = new File(folderToSave, imageFileName);
+        File file = new File(folderToSave, name);
         FileOutputStream fOut = new FileOutputStream(file);
 
         bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fOut);
