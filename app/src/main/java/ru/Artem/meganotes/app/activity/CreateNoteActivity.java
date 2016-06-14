@@ -206,7 +206,8 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         lastDeletedElement = (RelativeLayout) mLayoutForImages.getChildAt(id);
         mLayoutForImages.removeView(lastDeletedElement);
         CustomImageMaker cutomImage = (CustomImageMaker) lastDeletedElement;
-        mDeletedPaths.add(cutomImage.getImagePath());
+        mEditNote.setDeleteImage(true);
+        //mDeletedPaths.add(cutomImage.getImagePath());
         mTempIdForImages--;
         syncIdImagesAndChilds();
     }
@@ -215,7 +216,8 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     public void returnLastDeletedElement() {
         mLayoutForImages.addView(lastDeletedElement);
         mTempIdForImages++;
-        mDeletedPaths.remove(mDeletedPaths.size());
+        mEditNote.setDeleteImage(false);
+        //mDeletedPaths.remove(mDeletedPaths.size());
         syncIdImagesAndChilds();
     }
 
