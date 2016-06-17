@@ -3,7 +3,6 @@ package ru.Artem.meganotes.app.activity;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteException;
@@ -50,8 +49,8 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private EditText mContentNote;
     private LinearLayout mRootLayoutActivity;
     private android.support.v7.widget.GridLayout mLayoutForImages;
-    private RelativeLayout lastDeletedElement;
-    List<String> mDeletedPaths;
+    private RelativeLayout mLastDeletedElement;
+    private List<String> mDeletedPaths;
     private int mImageWidth;
     private int mTempIdForImages;
     private Note mEditNote;
@@ -88,8 +87,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         mLayoutForImages = (GridLayout) findViewById(R.id.LayoutForImages);
         mRootLayoutActivity = (LinearLayout) findViewById(R.id.layoutCreate);
 
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
-            mColumnCount = 3;
+        mColumnCount = getResources().getInteger(R.integer.columnCount);
 
         mLayoutForImages.setColumnCount(mColumnCount);
 
@@ -183,7 +181,6 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                         mOutFilePath = ImgUtils.cameraRequest(CreateNoteActivity.this, CAMERA_REQUEST, mSavePath);
                     } catch (IOException e) {
                         mOutFilePath = null;
-                        Log.d(LOG_TAG, e.getMessage());
                         Snackbar.make(mRootLayoutActivity, getString(R.string.str_problems_save), Snackbar.LENGTH_LONG).show();
                     }
                 }
@@ -203,9 +200,9 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
     @Override
     public void removeElementFromRootView(int id) {
-        lastDeletedElement = (RelativeLayout) mLayoutForImages.getChildAt(id);
-        mLayoutForImages.removeView(lastDeletedElement);
-        CustomImageMaker cutomImage = (CustomImageMaker) lastDeletedElement;
+        mLastDeletedElement = (RelativeLayout) mLayoutForImages.getChildAt(id);
+        mLayoutForImages.removeView(mLastDeletedElement);
+        CustomImageMaker cutomImage = (CustomImageMaker) mLastDeletedElement;
         mDeletedPaths.add(cutomImage.getImagePath());
         mTempIdForImages--;
         syncIdImagesAndChilds();
@@ -213,7 +210,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
     @Override
     public void returnLastDeletedElement() {
-        mLayoutForImages.addView(lastDeletedElement);
+        mLayoutForImages.addView(mLastDeletedElement);
         mTempIdForImages++;
         mDeletedPaths.remove(mDeletedPaths.size());
         syncIdImagesAndChilds();
@@ -279,8 +276,6 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 mEditNote.setContent(mContentNote.getText().toString());
                 mEditNote.setDateLastUpdateNote(date);
                 mEditNote.setListPathImages(mImagePaths);
-                Log.d(LOG_TAG,"we trying to edit note");
-                //здесь функция удаления лишних изображений по заметке
                 helper.updateNote(mEditNote);
 
                 intent.putExtra(INTENT_EXTRA_EDIT_NOTE, mEditNote);

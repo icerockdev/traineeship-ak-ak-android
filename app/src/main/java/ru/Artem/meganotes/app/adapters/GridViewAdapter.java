@@ -71,8 +71,7 @@ public class GridViewAdapter extends BaseAdapter {
 
         holder.imageView.setImageURI(Uri.parse(mListImage.get(position)));
         holder.imageButton.setImageResource(mResourceIdDrawable);
-        holder.textView.setText("1234");
-
+        
         return view;
     }
 }
