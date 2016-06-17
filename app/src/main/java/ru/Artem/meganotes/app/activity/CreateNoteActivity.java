@@ -18,10 +18,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayout;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.WindowManager;
 import android.widget.*;
 
 import java.io.IOException;
@@ -54,7 +52,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private int mImageWidth;
     private int mTempIdForImages;
     private Note mEditNote;
-    private int mColumnCount = 2;
+    private int mColumnCount;
 
     private Uri mOutFilePath = null;
 
@@ -75,9 +73,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
         setContentView(R.layout.activity_create);
 
-        Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
-        mImageWidth = display.getWidth() / 2;
-
+        mDeletedPaths = new ArrayList<>();
 
         mTitleNote = (EditText) findViewById(R.id.editTitleNote);
         mContentNote = (EditText) findViewById(R.id.editContentNote);
@@ -85,18 +81,15 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
         mRootLayoutActivity = (LinearLayout) findViewById(R.id.layoutCreate);
         mLayoutForImages = (GridLayout) findViewById(R.id.LayoutForImages);
-        mRootLayoutActivity = (LinearLayout) findViewById(R.id.layoutCreate);
-
-        mColumnCount = getResources().getInteger(R.integer.columnCount);
-
-        mLayoutForImages.setColumnCount(mColumnCount);
+        mImageWidth = ImgUtils.getCustomImageWidth(getBaseContext());
+        ImgUtils.initLayout(getBaseContext(), mLayoutForImages);
+        mTempIdForImages = 0;
 
         mEditNote = getIntent().getParcelableExtra(INTENT_EXTRA_EDIT_NOTE);
 
         setSupportActionBar(toolbar);
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorTitleText));
 
-        mTempIdForImages = 0;
         mSavePath = getExternalFilesDir(null).getAbsolutePath();
 
         if (getSupportActionBar() != null) {
@@ -118,7 +111,6 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                 }
             }
         }
-        mDeletedPaths = new ArrayList<>();
     }
 
     @Override
@@ -126,7 +118,6 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         super.onCreateOptionsMenu(menu);
 
         getMenuInflater().inflate(R.menu.menu_create, menu);
-
         return true;
     }
 

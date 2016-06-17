@@ -20,6 +20,7 @@ import ru.Artem.meganotes.app.R;
 import ru.Artem.meganotes.app.models.Note;
 import ru.Artem.meganotes.app.utils.CustomImageMaker;
 import ru.Artem.meganotes.app.utils.GridLayoutUtils;
+import ru.Artem.meganotes.app.utils.ImgUtils;
 
 import java.util.List;
 
@@ -64,17 +65,9 @@ public class DetailedActivity extends AppCompatActivity {
         }
 
         mTxtContent = (TextView) findViewById(R.id.txtContent);
-
         mLayoutForImages = (GridLayout) findViewById(R.id.detailedLayout);
-
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
-            mColumnCount = 3;
-
-        mLayoutForImages.setColumnCount(mColumnCount);
-
-        Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
-
-        mImageWidth = display.getWidth() / 2;
+        mImageWidth = ImgUtils.getCustomImageWidth(getBaseContext());
+        ImgUtils.initLayout(getBaseContext(), mLayoutForImages);
         mTempIdForImages = 0;
 
         mTxtContent.setText(mSelectNote.getContent());

@@ -47,6 +47,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     private static DataBaseHelper sInstance;
     private static final String LOG_TAG = DataBaseHelper.class.getName();
+    private static final boolean DEBUG = true;
 
     public static synchronized DataBaseHelper getInstance(Context context) {
         if (sInstance == null) {
@@ -130,11 +131,11 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
         while (cursor.moveToNext()) {
             notesList.add(new Note(
-                    cursor.getString(cursor.getColumnIndex(DataBaseHelper.NAME_NOTES_COLUMN)),
-                    cursor.getString(cursor.getColumnIndex(DataBaseHelper.CONTENT_COLUMN)),
-                    cursor.getString(cursor.getColumnIndex(DataBaseHelper.LAST_UPDATE_DATE_COLUMN)),
-                    null,
-                    cursor.getInt(cursor.getColumnIndex(DataBaseHelper.ID_COLUMN)))
+                            cursor.getString(cursor.getColumnIndex(DataBaseHelper.NAME_NOTES_COLUMN)),
+                            cursor.getString(cursor.getColumnIndex(DataBaseHelper.CONTENT_COLUMN)),
+                            cursor.getString(cursor.getColumnIndex(DataBaseHelper.LAST_UPDATE_DATE_COLUMN)),
+                            null,
+                            cursor.getInt(cursor.getColumnIndex(DataBaseHelper.ID_COLUMN)))
             );
         }
         cursor.close();
@@ -166,22 +167,24 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             oldImagesThisNote.add(cursor.getString(cursor.getColumnIndex(IMAGE_SOURCE_COLUMN)));
         }
         cursor.close();
-
-        Log.d(LOG_TAG, "we in update");
-        Log.d(LOG_TAG, "How elements we have in new image array?" + imagesUpdatedNote.size());
-        Log.d(LOG_TAG, "How elements we have in old image array?" + oldImagesThisNote.size());
+        if (DEBUG) {
+            Log.d(LOG_TAG, "we in update");
+            Log.d(LOG_TAG, "How elements we have in new image array?" + imagesUpdatedNote.size());
+            Log.d(LOG_TAG, "How elements we have in old image array?" + oldImagesThisNote.size());
+        }
 
         if (note.isDeleteImage()) {
-            Log.d(LOG_TAG, "we have different image arrays");
-            Log.d(LOG_TAG, "we have not empty new array");
+            if (DEBUG) {
+                Log.d(LOG_TAG, "we have different image arrays");
+                Log.d(LOG_TAG, "we have not empty new array");
+            }
             for (String image : oldImagesThisNote) {
                 if (!imagesUpdatedNote.contains(image)) {
                     sInstance.getWritableDatabase().delete(DATABASE_TABLE_IMAGES, IMAGE_SOURCE_COLUMN + "=?", new String[]{image});
                 }
             }
         }
-
-        Log.d(LOG_TAG, "we in adding");
+        if (DEBUG) Log.d(LOG_TAG, "we in adding");
 
         ContentValues containerForImages = new ContentValues();
         for (String newImage : imagesUpdatedNote) {

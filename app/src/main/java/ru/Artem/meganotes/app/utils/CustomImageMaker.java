@@ -89,12 +89,12 @@ public class CustomImageMaker extends RelativeLayout {
                 } else {
                     final View rootView = getRootView();
                     onDeleteImageListener.removeElementFromRootView(mIndex);
-                    final Snackbar snackbar = Snackbar.make(rootView, "Изображение Удалено", Snackbar.LENGTH_LONG)
-                            .setAction("Восстановить", new View.OnClickListener() {
+                    final Snackbar snackbar = Snackbar.make(rootView, R.string.imageDeleted, Snackbar.LENGTH_LONG)
+                            .setAction(R.string.undo, new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
                                     onDeleteImageListener.returnLastDeletedElement();
-                                    Snackbar.make(rootView, "Восстановлено", Snackbar.LENGTH_SHORT).show();
+                                    Snackbar.make(rootView, R.string.reUndo, Snackbar.LENGTH_SHORT).show();
                                 }
                             });
                     snackbar.show();

@@ -8,7 +8,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.v7.widget.GridLayout;
 import android.util.Log;
+import android.view.Display;
+import android.view.WindowManager;
 
 
 import java.io.*;
@@ -17,6 +20,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import ru.Artem.meganotes.app.R;
 
 
 /**
@@ -130,5 +135,16 @@ public class ImgUtils {
             }
         }
         return inSampleSize;
+    }
+
+    public static int getCustomImageWidth(Context context)
+    {
+        Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+        return display.getWidth() / 2;
+    }
+    public static void initLayout(Context context, GridLayout initLayout)
+    {
+        int columnCount = context.getResources().getInteger(R.integer.columnCount);
+        initLayout.setColumnCount(columnCount);
     }
 }
