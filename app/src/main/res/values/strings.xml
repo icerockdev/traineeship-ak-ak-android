@@ -49,6 +49,9 @@
     <string name="str_problems_message">Проблемы с отображением изображения</string>
     <string name="str_problems_save">Поблемы при сохранение изображения</string>
     <string name="cant_add_note_message">Невозможно добавить заметку</string>
-
+    <string name="string_ok">OK</string>
+    <string name="imageDeleted">Изображение Удалено</string>
+    <string name="undo">Восстановить</string>
+    <string name="reUndo">Восстановлено</string>
 
 </resources>

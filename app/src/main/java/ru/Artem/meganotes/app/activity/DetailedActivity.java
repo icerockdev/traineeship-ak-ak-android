@@ -1,25 +1,27 @@
 package ru.Artem.meganotes.app.activity;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.content.res.Configuration;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayout;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.*;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
+
 import ru.Artem.meganotes.app.R;
 import ru.Artem.meganotes.app.models.Note;
+import ru.Artem.meganotes.app.utils.CustomImageMaker;
+import ru.Artem.meganotes.app.utils.GridLayoutUtils;
+import ru.Artem.meganotes.app.utils.ImgUtils;
 
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -28,27 +30,19 @@ import java.util.List;
 
 public class DetailedActivity extends AppCompatActivity {
 
-    private String[] mWhere;
-    private ImageView mImageView;
     private TextView mTxtContent;
-    private LinearLayout mLayout;
+    private GridLayout mLayoutForImages;
+    private RelativeLayout lastDeletedElement;
+    private int mColumnCount = 2;
 
-    private Uri mOutFilePath = null;
     private Note mSelectNote;
 
     private final int EDIT_NOTE_REQUEST = 1002;
-    private final int GALLERY_REQUEST = 1;
-    private final int CAMERA_REQUEST = 2;
-
+    private int mImageWidth;
+    private int mTempIdForImages;
     public final static String INTENT_EXTRA_OPEN_NOTE = "noteOpen";
 
-    private final int EDIT_NOTE_TABLE = 0;
-    private final int EDIT_IMAGE_TABLE = 1;
-    public static final String DELETE_IMG = "null";
-    private String mSavePath;
-
     private final String LOG_TAG = DetailedActivity.class.getName();
-
     private static final boolean DEBUG = true;
 
     @Override
@@ -58,11 +52,8 @@ public class DetailedActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detailed);
 
         mSelectNote = getIntent().getParcelableExtra(INTENT_EXTRA_OPEN_NOTE);
-        mWhere = new String[] {String.valueOf(mSelectNote.getId())};
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarDetailed);
-        mLayout = (LinearLayout) findViewById(R.id.layout);
-        mImageView = (ImageView) findViewById(R.id.imageNote);
         mTxtContent = (TextView) findViewById(R.id.txtContent);
         setSupportActionBar(toolbar);
 
@@ -73,36 +64,42 @@ public class DetailedActivity extends AppCompatActivity {
             getSupportActionBar().setTitle(mSelectNote.getNameNote());
         }
 
-       mTxtContent.setText(mSelectNote.getContent());
+        mTxtContent = (TextView) findViewById(R.id.txtContent);
+        mLayoutForImages = (GridLayout) findViewById(R.id.detailedLayout);
+        mImageWidth = ImgUtils.getCustomImageWidth(getBaseContext());
+        ImgUtils.initLayout(getBaseContext(), mLayoutForImages);
+        mTempIdForImages = 0;
+
+        mTxtContent.setText(mSelectNote.getContent());
 
         List<String> tempList = mSelectNote.getPathImg();
 
         if (!tempList.isEmpty()) {
             if (DEBUG) {
-                Log.d(LOG_TAG, "we have not emptry List");
+                Log.d(LOG_TAG, "we have not empty List");
                 for (String item : tempList) {
                     Log.d(LOG_TAG, "path: " + item);
                 }
             }
-            setImg(Uri.parse(tempList.get(0))); // здесь нужно будет внести изменения при
-            // множественном добавление, вместо 0 будет переменная из цикла для заполнения
+            for (String image : tempList) {
+                setImg(Uri.parse(image));
+            }
         }
-
-        mSavePath = this.getFilesDir().toString();
     }
 
     private void setImg(final Uri pathImg) {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                InputStream inputStream;
                 if (DEBUG) {
                     Log.d(LOG_TAG, "we in setIMg, and have in path is: " + pathImg.toString());
                 }
                 try {
-                    inputStream = getContentResolver().openInputStream(pathImg);
                     final Message message = mHandler.obtainMessage(1,
-                            BitmapFactory.decodeStream(inputStream, null, null));
+                            CustomImageMaker.initCustomView(
+                                    pathImg.toString(), true, mImageWidth,
+                                    mTempIdForImages++, DetailedActivity.this)
+                    );
                     mHandler.sendMessage(message);
                 } catch (Exception e) {
                     Log.d(LOG_TAG, "Error is: " + e.getMessage());
@@ -115,8 +112,7 @@ public class DetailedActivity extends AppCompatActivity {
     final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            final Bitmap image = (Bitmap) msg.obj;
-            mImageView.setImageBitmap(image);
+            GridLayoutUtils.addViewToGrid(mLayoutForImages, (CustomImageMaker) msg.obj, mImageWidth);
         }
     };
 
@@ -171,28 +167,20 @@ public class DetailedActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        DataBaseHelper helper = DataBaseHelper.getInstance(getApplicationContext());
+        if (resultCode == RESULT_OK && requestCode == EDIT_NOTE_REQUEST) {
+            mSelectNote = data.getParcelableExtra(CreateNoteActivity.INTENT_EXTRA_EDIT_NOTE);
 
-        if (resultCode == RESULT_OK) {
-            if (requestCode == GALLERY_REQUEST || requestCode == CAMERA_REQUEST) {
-                if (requestCode == GALLERY_REQUEST) mOutFilePath = data.getData();
-                setImg(mOutFilePath);
+            if (mSelectNote != null) {
+                if (getSupportActionBar() != null)
+                    getSupportActionBar().setTitle(mSelectNote.getNameNote());
 
-                mSelectNote.setPathImg(mOutFilePath.toString());
-            } else if (requestCode == EDIT_NOTE_REQUEST) {
-                mSelectNote = data.getParcelableExtra(CreateNoteActivity.INTENT_EXTRA_EDIT_NOTE);
+                mTxtContent.setText(mSelectNote.getContent());
+                mLayoutForImages.removeAllViewsInLayout();
 
-                if (mSelectNote != null) {
-                    if (getSupportActionBar() != null) getSupportActionBar().setTitle(mSelectNote.getNameNote());
-
-                    mTxtContent.setText(mSelectNote.getContent());
-                    if (!mSelectNote.getPathImg().isEmpty()) {
-                        setImg(Uri.parse(mSelectNote.getPathImg().get(mSelectNote.getPathImg().size() - 1)));
-                    }
+                for (String pathImage : mSelectNote.getPathImg()) {
+                    setImg(Uri.parse(pathImage));
                 }
             }
-
-            helper.updateNote(mSelectNote);
         }
     }
 }

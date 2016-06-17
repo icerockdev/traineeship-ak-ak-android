@@ -31,6 +31,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.NoteViewHolder
         private TextView mNameNote;
         private TextView mLastUpdateNote;
         private TextView mContentNote;
+
         public NoteViewHolder(View itemView) {
             super(itemView);
 
@@ -45,7 +46,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.NoteViewHolder
         @Override
         public void onClick(View v) {
 
-            if(mOnItemClickListener != null) {
+            if (mOnItemClickListener != null) {
                 mOnItemClickListener.OnItemClick(v, getAdapterPosition());
             }
         }
@@ -53,7 +54,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.NoteViewHolder
         @Override
         public boolean onLongClick(View v) {
 
-            if(mOnLongItemClickListener != null) {
+            if (mOnLongItemClickListener != null) {
                 mOnLongItemClickListener.onLongItemClick(v, getAdapterPosition());
                 return true;
             }
@@ -61,7 +62,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.NoteViewHolder
         }
     }
 
-    public MainAdapter(List<Note> notes){
+    public MainAdapter(List<Note> notes) {
         this.mNotesList = notes;
     }
 
@@ -96,7 +97,6 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.NoteViewHolder
     public void onBindViewHolder(NoteViewHolder noteViewHolder, int i) {
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) noteViewHolder.mContentNote.getLayoutParams();
         Note note = mNotesList.get(i);
-
         if (DEBUG) {
             Log.d("LOG", "we have in i is: " + i);
             Log.d("LOG", "we have in NoteList: " + mNotesList.size() + " elements");
