@@ -20,6 +20,7 @@ public class Note implements Parcelable {
     private int mPositionInAdapter;
     private Bitmap mBitmap;
     private boolean mDeletedNote;
+    private boolean mDeleteImage = false;
 
     public Note(String nameNote, String noteContent, String lastUpdateNote, List<String> paths, long id) {
         this.mNameNote = nameNote;
@@ -38,6 +39,14 @@ public class Note implements Parcelable {
         parcel.readList(this.mPathImg, Note.class.getClassLoader());
         this.mPositionInAdapter = parcel.readInt();
         this.mId = parcel.readInt();
+    }
+
+    public boolean isDeleteImage() {
+        return mDeleteImage;
+    }
+
+    public void setDeleteImage(boolean mDeleteImage) {
+        this.mDeleteImage = mDeleteImage;
     }
 
     public boolean isDeletedNote() {
