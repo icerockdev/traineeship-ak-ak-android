@@ -80,7 +80,8 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
                 Intent intent = new Intent(getActivity(), DetailedActivity.class);
                 DataBaseHelper helper = DataBaseHelper.getInstance(getActivity().getApplicationContext());
 
-                mNotesList.get(position).setListPathImages(helper.getImagesOfItNote(mNotesList.get(position)));
+                if (mNotesList.get(position).getPathImg() == null)
+                    mNotesList.get(position).setListPathImages(helper.getImagesOfItNote(mNotesList.get(position)));
                 mNotesList.get(position).setPositionInAdapter(position);
 
                 intent.putExtra(DetailedActivity.INTENT_EXTRA_OPEN_NOTE, mNotesList.get(position));
