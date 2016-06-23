@@ -5,6 +5,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -126,6 +127,46 @@ public class Note implements Parcelable {
             return new Note[size];
         }
     };
+
+    public static Comparator getComparatorForDate(Boolean bool) {
+        Comparator<Note> comparator = null;
+
+        if (bool) {
+            comparator = new Comparator<Note>() {
+                public int compare(Note o1, Note o2) {
+                    return o1.getDateLastUpdateNote().compareTo(o2.getDateLastUpdateNote());
+                }
+            };
+        } else {
+            comparator = new Comparator<Note>() {
+                public int compare(Note o1, Note o2) {
+                    return o2.getDateLastUpdateNote().compareTo(o1.getDateLastUpdateNote());
+                }
+            };
+        }
+
+        return comparator;
+    }
+
+    public static Comparator getComparatorForName(Boolean bool) {
+        Comparator<Note> comparator = null;
+
+        if (bool) {
+            comparator = new Comparator<Note>() {
+                public int compare(Note o1, Note o2) {
+                    return o1.getNameNote().compareTo(o2.getNameNote());
+                }
+            };
+        } else {
+            comparator = new Comparator<Note>() {
+                public int compare(Note o1, Note o2) {
+                    return o2.getNameNote().compareTo(o1.getNameNote());
+                }
+            };
+        }
+
+        return comparator;
+    }
 
     @Override
     public int describeContents() {
