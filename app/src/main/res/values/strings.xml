@@ -54,4 +54,13 @@
     <string name="undo">Восстановить</string>
     <string name="reUndo">Восстановлено</string>
 
+    <string name="sort_by_date">Сортировать по дате</string>
+    <string name="sort_by_name">Сортировать по названию</string>
+    <string name="asc_date">Сначала новые</string>
+    <string name="desc_date">Сначала старые</string>
+    <string name="asc_name">От А до Я</string>
+    <string name="desc_name">От Я до А</string>
+    <string name="button_agree">Принять</string>
+    <string name="button_disagree">Отклонить</string>
+    <string name="select_type_order">Выберите тип упорядочивания</string>
 </resources>
