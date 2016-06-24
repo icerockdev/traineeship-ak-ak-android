@@ -17,6 +17,7 @@ import android.widget.*;
 
 import ru.Artem.meganotes.app.R;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -122,7 +123,12 @@ public class CustomImageMaker extends RelativeLayout {
     }
 
     public static CustomImageMaker initCustomView(String path, boolean mode, int size, int id, Context context) {
-        String name = ImgUtils.getFileNameByUri(Uri.parse(path), context);
+        String name = null;
+        try {
+            name = ImgUtils.getFileNameByUri(Uri.parse(path), context);
+        } catch (FileNotFoundException e) {
+            e.getMessage();
+        }
 
         return new CustomImageMaker(context, name, path, mode, size, size, id);
     }

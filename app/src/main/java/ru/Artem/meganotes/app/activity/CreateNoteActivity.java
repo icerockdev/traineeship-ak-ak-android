@@ -52,7 +52,6 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private int mImageWidth;
     private int mTempIdForImages;
     private Note mEditNote;
-    private int mColumnCount;
 
     private Uri mOutFilePath = null;
 
@@ -65,7 +64,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     public final static String INTENT_EXTRA_EDIT_NOTE = "noteEdit";
     private String mSavePath;
 
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -193,7 +192,6 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     public void removeElementFromRootView(int id) {
         mLastDeletedElement = (RelativeLayout) mLayoutForImages.getChildAt(id);
         mLayoutForImages.removeView(mLastDeletedElement);
-        CustomImageMaker cutomImage = (CustomImageMaker) mLastDeletedElement;
         mEditNote.setDeleteImage(true);
         mTempIdForImages--;
         syncIdImagesAndChilds();
@@ -204,7 +202,6 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
         mLayoutForImages.addView(mLastDeletedElement);
         mTempIdForImages++;
         mEditNote.setDeleteImage(false);
-        //mDeletedPaths.remove(mDeletedPaths.size());
         syncIdImagesAndChilds();
     }
 
