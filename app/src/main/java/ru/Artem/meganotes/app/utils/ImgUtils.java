@@ -71,6 +71,11 @@ public class ImgUtils {
             Bitmap bmp = BitmapFactory.decodeStream(is);
             String timeStamp = DateUtils.getDateCreateFile();
             String imageFileName = String.format("JPEG_%s.jpg", timeStamp);
+            try {
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             return imageFileName;
         }
     }
