@@ -122,14 +122,9 @@ public class CustomImageMaker extends RelativeLayout {
         return mText.getText().toString();
     }
 
-    public static CustomImageMaker initCustomView(String path, boolean mode, int size, int id, Context context) {
+    public static CustomImageMaker initCustomView(String path, boolean mode, int size, int id, Context context) throws IOException {
         String name = null;
-        try {
-            name = ImgUtils.getFileNameByUri(Uri.parse(path), context);
-        } catch (FileNotFoundException e) {
-            e.getMessage();
-        }
-
+                name = ImgUtils.getFileNameByUri(Uri.parse(path), context);
         return new CustomImageMaker(context, name, path, mode, size, size, id);
     }
 

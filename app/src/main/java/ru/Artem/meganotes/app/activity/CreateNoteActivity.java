@@ -103,9 +103,13 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
                 if (!mEditNote.getPathImg().isEmpty()) {
                     for (String imagePath : mEditNote.getPathImg()) {
-                        GridLayoutUtils.addViewToGrid(mLayoutForImages,
-                                CustomImageMaker.initCustomView(imagePath, false, mImageWidth, mTempIdForImages++, this),
-                                mImageWidth);
+                        try {
+                            GridLayoutUtils.addViewToGrid(mLayoutForImages,
+                                    CustomImageMaker.initCustomView(imagePath, false, mImageWidth, mTempIdForImages++, this),
+                                    mImageWidth);
+                        } catch (IOException e) {
+                            Snackbar.make(mRootLayoutActivity, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
+                        }
                     }
                 }
             }
@@ -151,10 +155,14 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                     Snackbar.make(mRootLayoutActivity, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
                 }
             }
-            GridLayoutUtils.addViewToGrid(
-                    mLayoutForImages,
-                    CustomImageMaker.initCustomView(mOutFilePath.toString(), false, mImageWidth, mTempIdForImages++, this),
-                    mImageWidth);
+            try {
+                GridLayoutUtils.addViewToGrid(
+                        mLayoutForImages,
+                        CustomImageMaker.initCustomView(mOutFilePath.toString(), false, mImageWidth, mTempIdForImages++, this),
+                        mImageWidth);
+            } catch (IOException e) {
+                Snackbar.make(mRootLayoutActivity, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
+            }
         }
     }
 

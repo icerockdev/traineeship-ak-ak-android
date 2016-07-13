@@ -44,7 +44,7 @@ public class ImgUtils {
         return new File(folderToSave, imageFileName);
     }
 
-    public static String getFileNameByUri(Uri uri, Context context) throws FileNotFoundException {
+    public static String getFileNameByUri(Uri uri, Context context) throws IOException {
         String tmp = uri.toString();
         Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
         if (DEBUG) Log.d(LOG_TAG,"we have string version of tmp: "+tmp);
@@ -71,11 +71,8 @@ public class ImgUtils {
             Bitmap bmp = BitmapFactory.decodeStream(is);
             String timeStamp = DateUtils.getDateCreateFile();
             String imageFileName = String.format("JPEG_%s.jpg", timeStamp);
-            try {
-                is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            is.close();
+
             return imageFileName;
         }
     }
