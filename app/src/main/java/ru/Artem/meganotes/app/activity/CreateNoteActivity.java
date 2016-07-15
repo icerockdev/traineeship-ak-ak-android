@@ -52,7 +52,6 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     private int mImageWidth;
     private int mTempIdForImages;
     private Note mEditNote;
-    private int mColumnCount;
 
     private Uri mOutFilePath = null;
 
@@ -65,7 +64,7 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
     public final static String INTENT_EXTRA_EDIT_NOTE = "noteEdit";
     private String mSavePath;
 
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,9 +103,13 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
 
                 if (!mEditNote.getPathImg().isEmpty()) {
                     for (String imagePath : mEditNote.getPathImg()) {
-                        GridLayoutUtils.addViewToGrid(mLayoutForImages,
-                                CustomImageMaker.initCustomView(imagePath, false, mImageWidth, mTempIdForImages++, this),
-                                mImageWidth);
+                        try {
+                            GridLayoutUtils.addViewToGrid(mLayoutForImages,
+                                    CustomImageMaker.initCustomView(imagePath, false, mImageWidth, mTempIdForImages++, this),
+                                    mImageWidth);
+                        } catch (IOException e) {
+                            Snackbar.make(mRootLayoutActivity, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
+                        }
                     }
                 }
             }
@@ -152,10 +155,14 @@ public class CreateNoteActivity extends AppCompatActivity implements AddImageDia
                     Snackbar.make(mRootLayoutActivity, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
                 }
             }
-            GridLayoutUtils.addViewToGrid(
-                    mLayoutForImages,
-                    CustomImageMaker.initCustomView(mOutFilePath.toString(), false, mImageWidth, mTempIdForImages++, this),
-                    mImageWidth);
+            try {
+                GridLayoutUtils.addViewToGrid(
+                        mLayoutForImages,
+                        CustomImageMaker.initCustomView(mOutFilePath.toString(), false, mImageWidth, mTempIdForImages++, this),
+                        mImageWidth);
+            } catch (IOException e) {
+                Snackbar.make(mRootLayoutActivity, getString(R.string.str_problems_message), Snackbar.LENGTH_LONG).show();
+            }
         }
     }
 

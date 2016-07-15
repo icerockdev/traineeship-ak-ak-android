@@ -16,7 +16,6 @@ import android.view.WindowManager;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -31,10 +30,12 @@ public class ImgUtils {
 
     private static SimpleDateFormat sDateFormat = new SimpleDateFormat("d.MM.yyyy k:mm", Locale.ROOT);
 
+    private final static String GALLERY_CONST = "media";
+
     private final static String LOG_TAG = ImgUtils.class.getName();
 
     private static final boolean DEBUG = true;
-    private static String mCurrentPhotoPath;
+
 
     private static File createImageFile(String folderToSave) throws IOException {
         String timeStamp = DateUtils.getDateCreateFile();
@@ -43,21 +44,37 @@ public class ImgUtils {
         return new File(folderToSave, imageFileName);
     }
 
-    public static String getFileNameByUri(Uri uri, Context context) {
+    public static String getFileNameByUri(Uri uri, Context context) throws IOException {
         String tmp = uri.toString();
         Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+        if (DEBUG) Log.d(LOG_TAG,"we have string version of tmp: "+tmp);
+        if (DEBUG) Log.d(LOG_TAG,"we have in cursor is "+cursor);
+        if (DEBUG) Log.d(LOG_TAG,"we have authority? "+uri.getAuthority());
+        if (uri.getAuthority().equals(GALLERY_CONST))
+        {
+            if (cursor != null) {
+                cursor.moveToFirst();
+                tmp = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
+                if (DEBUG) Log.d(LOG_TAG, "we have in tmp after changing " + tmp);
+                cursor.close();
+            }
+            if (DEBUG) Log.d(LOG_TAG, "we have problems with " + tmp);
+            int index = tmp.lastIndexOf('/') + 1;
+            char[] massive = new char[tmp.length() - index];
+            tmp.getChars(index, tmp.length(), massive, 0);
 
-        if (cursor != null) {
-            cursor.moveToFirst();
-            tmp = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
-            cursor.close();
+            return new String(massive);
         }
+        else{
+            InputStream is;
+            is = context.getContentResolver().openInputStream(uri);
+            Bitmap bmp = BitmapFactory.decodeStream(is);
+            String timeStamp = DateUtils.getDateCreateFile();
+            String imageFileName = String.format("JPEG_%s.jpg", timeStamp);
+            is.close();
 
-        int index = tmp.lastIndexOf('/') + 1;
-        char[] massive = new char[tmp.length() - index];
-        tmp.getChars(index, tmp.length(), massive, 0);
-
-        return new String(massive);
+            return imageFileName;
+        }
     }
 
     public static Uri cameraRequest(Activity activity, int requestCode, String folderToSave) throws IOException {
