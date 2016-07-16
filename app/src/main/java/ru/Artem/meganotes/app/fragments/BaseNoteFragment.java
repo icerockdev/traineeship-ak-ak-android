@@ -36,7 +36,7 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
     private MainAdapter mAdapter;
     private FloatingActionButton mCreateNoteFAB;
     private Note mDeleteNote;
-    private final boolean DEBUG = true;
+    private static final boolean DEBUG = true;
 
     private final String LOG_TAG = BaseNoteFragment.class.getName();
 
@@ -108,12 +108,12 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
 
         if (DEBUG) {
             List<Note> tempList = mNotesList;
-            Collections.sort(tempList, Note.getComparatorForName(false)); // сортировка от Я до А
+            Collections.sort(tempList, new Note.ComparatorForName(false)); // сортировка от Я до А
             for (Note obj : tempList) {
                 Log.d(LOG_TAG, "Sort list(Я-А): " + obj.getNameNote());
             }
 
-            Collections.sort(tempList, Note.getComparatorForName(true)); // сортировка от А до Я
+            Collections.sort(tempList, new Note.ComparatorForName(true)); // сортировка от А до Я
             for (Note obj : tempList) {
                 Log.d(LOG_TAG, "Sort list(А-Я): " + obj.getNameNote());
             }
