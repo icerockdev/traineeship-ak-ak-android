@@ -20,7 +20,7 @@ public class DialogSelectSort extends DialogFragment {
 
     private static final String LOG_TAG = DialogSelectSort.class.getName();
     public static final String DIALOG_KEY = DialogSelectSort.class.getName();
-    private static String ARGS_KEY = "key_for_select_mode";
+    private static String KEY_SORT_BY_DATE = "key_date_sort";
     private OnClickListener mListener;
     private boolean mASC;
 
@@ -36,11 +36,11 @@ public class DialogSelectSort extends DialogFragment {
         }
     }
 
-    public static DialogSelectSort newInstance(Boolean mode) {
+    public static DialogSelectSort newInstance(boolean sortByDate) {
         DialogSelectSort dialogSelectSort = new DialogSelectSort();
 
         Bundle args = new Bundle();
-        args.putBoolean(ARGS_KEY, mode);
+        args.putBoolean(KEY_SORT_BY_DATE, sortByDate);
         dialogSelectSort.setArguments(args);
 
         return dialogSelectSort;
@@ -75,7 +75,7 @@ public class DialogSelectSort extends DialogFragment {
 
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) relativeLayout.getLayoutParams();
 
-        if (getArguments().getBoolean(ARGS_KEY)) {
+        if (getArguments().getBoolean(KEY_SORT_BY_DATE)) {
             radioGroupDate.setVisibility(View.VISIBLE);
             radioGroupName.setVisibility(View.INVISIBLE);
             layoutParams.addRule(RelativeLayout.BELOW, radioGroupDate.getId());
