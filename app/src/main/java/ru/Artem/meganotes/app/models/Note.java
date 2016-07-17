@@ -3,9 +3,11 @@ package ru.Artem.meganotes.app.models;
 import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by Артем on 07.04.2016.
@@ -21,6 +23,8 @@ public class Note implements Parcelable {
     private Bitmap mBitmap;
     private boolean mDeletedNote;
     private boolean mDeleteImage = false;
+
+    private static final String LOG_TAG = Note.class.getName();
 
     public Note(String nameNote, String noteContent, String lastUpdateNote, List<String> paths, long id) {
         this.mNameNote = nameNote;
@@ -126,6 +130,46 @@ public class Note implements Parcelable {
             return new Note[size];
         }
     };
+
+    public static class ComparatorForName implements Comparator<Note> {
+
+        private boolean mASC = false;
+
+        public ComparatorForName(boolean asc) {
+            this.mASC = asc;
+        }
+
+        @Override
+        public int compare(Note lhs, Note rhs) {
+            return mASC ? lhs.getNameNote().compareTo(rhs.getNameNote()) :
+                    rhs.getNameNote().compareTo(lhs.getNameNote());
+        }
+    }
+
+    public static class ComparatorForDate implements Comparator<Note> {
+
+        private boolean mASC = false;
+
+        public ComparatorForDate(boolean asc) {
+            this.mASC = asc;
+        }
+
+        @Override
+        public int compare(Note lhs, Note rhs)  {
+            SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy  kk:mm", Locale.ROOT);
+            Date lDate = null;
+            Date rDate = null;
+
+            try {
+                lDate = format.parse(lhs.getDateLastUpdateNote());
+                rDate = format.parse(rhs.getDateLastUpdateNote());
+            } catch (ParseException e) {
+                Log.e(LOG_TAG, e.getMessage());
+            }
+
+            return mASC ? lDate.compareTo(rDate) : rDate.compareTo(lDate);
+        }
+    }
 
     @Override
     public int describeContents() {

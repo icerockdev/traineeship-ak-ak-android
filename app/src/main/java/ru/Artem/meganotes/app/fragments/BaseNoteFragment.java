@@ -10,6 +10,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.*;
+import android.util.Log;
 import android.view.*;
 import android.widget.TextView;
 
@@ -24,6 +25,8 @@ import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
 import ru.Artem.meganotes.app.R;
 import ru.Artem.meganotes.app.utils.RecyclerViewUtils;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInteractionFragment,
@@ -33,6 +36,7 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
     private MainAdapter mAdapter;
     private FloatingActionButton mCreateNoteFAB;
     private Note mDeleteNote;
+    private static final boolean DEBUG = true;
 
     private final String LOG_TAG = BaseNoteFragment.class.getName();
 
@@ -101,6 +105,19 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
                 deleteNoteDialog.show(getChildFragmentManager().beginTransaction(), AddImageDialog.DIALOG_KEY);
             }
         });
+
+        if (DEBUG) {
+            List<Note> tempList = mNotesList;
+            Collections.sort(tempList, new Note.ComparatorForName(false)); // сортировка от Я до А
+            for (Note obj : tempList) {
+                Log.d(LOG_TAG, "Sort list(Я-А): " + obj.getNameNote());
+            }
+
+            Collections.sort(tempList, new Note.ComparatorForName(true)); // сортировка от А до Я
+            for (Note obj : tempList) {
+                Log.d(LOG_TAG, "Sort list(А-Я): " + obj.getNameNote());
+            }
+        }
     }
 
     @Override
