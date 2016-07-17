@@ -133,25 +133,25 @@ public class Note implements Parcelable {
 
     public static class ComparatorForName implements Comparator<Note> {
 
-        boolean asc = false;
+        private boolean mASC = false;
 
         public ComparatorForName(boolean asc) {
-            this.asc = asc;
+            this.mASC = asc;
         }
 
         @Override
         public int compare(Note lhs, Note rhs) {
-            return asc ? lhs.getNameNote().compareTo(rhs.getNameNote()) :
+            return mASC ? lhs.getNameNote().compareTo(rhs.getNameNote()) :
                     rhs.getNameNote().compareTo(lhs.getNameNote());
         }
     }
 
     public static class ComparatorForDate implements Comparator<Note> {
 
-        boolean asc = false;
+        private boolean mASC = false;
 
         public ComparatorForDate(boolean asc) {
-            this.asc = asc;
+            this.mASC = asc;
         }
 
         @Override
@@ -167,7 +167,7 @@ public class Note implements Parcelable {
                 Log.e(LOG_TAG, e.getMessage());
             }
 
-            return asc ? lDate.compareTo(rDate) : rDate.compareTo(lDate);
+            return mASC ? lDate.compareTo(rDate) : rDate.compareTo(lDate);
         }
     }
 
