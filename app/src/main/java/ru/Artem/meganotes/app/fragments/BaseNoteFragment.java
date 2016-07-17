@@ -215,7 +215,7 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
 
 
     @Override
-    public void onClickButtonFromDialog(DialogSelectSort dialogSelectSort, int which, boolean direction) {
+    public void onClickButtonFromDialog(DialogSelectSort dialogSelectSort, int which, boolean asc) {
         switch (which) {
             case DialogInterface.BUTTON_POSITIVE:
                 if (mModeSortByDate) {
