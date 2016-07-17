@@ -10,4 +10,8 @@
     <color name="colorTitleText">#ffffff</color>
     <color name="colorButtonHome">#ffffff</color>
     <color name="colorSeparatorLine">#808080</color>
+
+    <color name="colorButtonTextInDialog">#2196F3</color>
+
+
 </resources>

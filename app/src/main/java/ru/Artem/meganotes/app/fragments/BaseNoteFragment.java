@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.*;
 import android.view.*;
@@ -19,20 +20,23 @@ import ru.Artem.meganotes.app.adapters.MainAdapter;
 import ru.Artem.meganotes.app.dialogs.AddImageDialog;
 import ru.Artem.meganotes.app.dialogs.DeleteAllNotesDialog;
 import ru.Artem.meganotes.app.dialogs.DeleteNoteDialog;
+import ru.Artem.meganotes.app.dialogs.DialogSelectSort;
 import ru.Artem.meganotes.app.models.Note;
 import ru.Artem.meganotes.app.dataBaseHelper.DataBaseHelper;
 import ru.Artem.meganotes.app.R;
 import ru.Artem.meganotes.app.utils.RecyclerViewUtils;
 
+import java.util.Collections;
 import java.util.List;
 
 public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInteractionFragment,
-        DeleteAllNotesDialog.InteractionWithFragment {
+        DeleteAllNotesDialog.InteractionWithFragment, DialogSelectSort.OnClickListener {
 
     private List<Note> mNotesList;
     private MainAdapter mAdapter;
     private FloatingActionButton mCreateNoteFAB;
     private Note mDeleteNote;
+    private boolean mModeSortByDate;
 
     private final String LOG_TAG = BaseNoteFragment.class.getName();
 
@@ -166,6 +170,14 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
             new DeleteAllNotesDialog().show(getChildFragmentManager().beginTransaction(), DeleteAllNotesDialog.DIALOG_KEY);
 
             return true;
+        } else if (item.getItemId() == R.id.sort_by_date || item.getItemId() == R.id.sort_by_name) {
+            mModeSortByDate = item.getItemId() == R.id.sort_by_date;
+
+            DialogSelectSort dialogSelectSort = DialogSelectSort.newInstance(mModeSortByDate);
+            dialogSelectSort.setStyle(DialogFragment.STYLE_NORMAL, R.style.DialogSelectSort);
+            dialogSelectSort.show(getChildFragmentManager(), DialogSelectSort.DIALOG_KEY);
+
+            return true;
         }
         return false;
     }
@@ -199,5 +211,25 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
 
             DataBaseHelper.getInstance(getActivity().getApplicationContext()).deleteAllNotesAndImages();
         }
+    }
+
+
+    @Override
+    public void onClickButtonFromDialog(DialogSelectSort dialogSelectSort, int which, boolean asc) {
+        switch (which) {
+            case DialogInterface.BUTTON_POSITIVE:
+                if (mModeSortByDate) {
+                    //TODO issue20
+                    Snackbar.make(getView(), "Сортировка списка по дате", Snackbar.LENGTH_SHORT).show();
+                } else {
+                    //TODO issue20
+                    Snackbar.make(getView(), "Сортировка списка по названию", Snackbar.LENGTH_SHORT).show();
+                }
+
+                mAdapter.notifyDataSetChanged();
+                break;
+        }
+
+        dialogSelectSort.dismiss();
     }
 }
