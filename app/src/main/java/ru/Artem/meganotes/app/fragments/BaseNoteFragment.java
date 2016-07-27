@@ -1,6 +1,8 @@
 package ru.Artem.meganotes.app.fragments;
 
 import android.app.Activity;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +12,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.*;
+import android.util.Log;
 import android.view.*;
 import android.widget.TextView;
 
@@ -35,6 +38,7 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
     private Note mDeleteNote;
 
     private final String LOG_TAG = BaseNoteFragment.class.getName();
+    private static final boolean DEBUG = true;
 
     private final int CREATE_NOTE_REQUEST = 1003;
     private final int OPEN_NOTE_REQUEST = 1001;
@@ -47,6 +51,7 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
         DataBaseHelper dataBaseHelper = DataBaseHelper.getInstance(getActivity().getApplicationContext());
 
         mNotesList = dataBaseHelper.getAllNotesWithoutImages();
+        handleIntent(getActivity().getIntent());
     }
 
     @Override
@@ -158,6 +163,14 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
         super.onCreateOptionsMenu(menu, inflater);
 
         inflater.inflate(R.menu.menu_main, menu);
+
+        // Associate searchable configuration with the SearchView
+        final SearchManager searchManager =
+                (SearchManager) getContext().getSystemService(Context.SEARCH_SERVICE);
+        final SearchView searchView =
+                (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setSearchableInfo(
+                searchManager.getSearchableInfo(getActivity().getComponentName()));
     }
 
     @Override
@@ -198,6 +211,18 @@ public class BaseNoteFragment extends Fragment implements DeleteNoteDialog.OnInt
             mNotesList.clear();
 
             DataBaseHelper.getInstance(getActivity().getApplicationContext()).deleteAllNotesAndImages();
+        }
+    }
+
+    protected void onNewIntent(Intent intent) {
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            if (DEBUG) Log.d(LOG_TAG,"we have search querry is "+query);
         }
     }
 }
