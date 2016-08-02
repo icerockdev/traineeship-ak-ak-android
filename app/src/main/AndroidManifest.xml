@@ -16,8 +16,7 @@
 
         <activity
                 android:name=".activity.MainActivity"
-                android:label="@string/app_name"
-                android:windowSoftInputMode="stateHidden">
+                android:label="@string/app_name">
                 <intent-filter>
                     <action android:name="android.intent.action.MAIN" />
                     <category android:name="android.intent.category.LAUNCHER" />
@@ -25,12 +24,10 @@
         </activity>
 
         <activity
-                android:name=".activity.DetailedActivity"
-                android:windowSoftInputMode="stateHidden"/>
+                android:name=".activity.DetailedActivity"/>
 
         <activity
-                android:name=".activity.CreateNoteActivity"
-                android:windowSoftInputMode="stateHidden"/>
+                android:name=".activity.CreateNoteActivity"/>
 
     </application>
 

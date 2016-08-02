@@ -10,4 +10,5 @@
     <color name="colorTitleText">#ffffff</color>
     <color name="colorButtonHome">#ffffff</color>
     <color name="colorSeparatorLine">#808080</color>
+    <color name="backgroundWindow">#ebecf0</color>
 </resources>

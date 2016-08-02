@@ -1,41 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView
+<LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:card_view="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/cardView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:focusable="true"
-        android:foreground="?android:attr/selectableItemBackground"
-        card_view:contentPadding="8dp"
-        card_view:cardElevation="8dp">
+        android:id="@+id/item_layout"
+        android:orientation="vertical">
 
         <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp">
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackground"
+                android:padding="16dp">
 
-        <TextView
-                android:id="@+id/nameNote"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textStyle="bold"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:layout_alignParentTop="true"/>
+                <TextView
+                        android:id="@+id/nameNote"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="bold"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:layout_alignParentTop="true"/>
 
-        <TextView
-                android:id="@+id/content_note"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:textAppearance="?android:attr/textAppearanceMedium"/>
+                <TextView
+                        android:id="@+id/content_note"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/nameNote"
+                        android:textAppearance="?android:attr/textAppearanceMedium"/>
 
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/lastUpdateNote"
-                android:layout_below="@+id/content_note"/>
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/lastUpdateNote"
+                        android:layout_below="@+id/content_note"/>
         </RelativeLayout>
 
-</android.support.v7.widget.CardView>
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:background="@drawable/shadow"/>
+
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:background="@color/backgroundWindow"/>
+
+</LinearLayout>
