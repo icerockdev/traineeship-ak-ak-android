@@ -4,16 +4,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/item_layout"
-        android:layout_marginBottom="8dp"
-        android:orientation="vertical"
-        android:focusable="true"
-        android:clickable="true"
-        android:background="@drawable/focusable">
+        android:orientation="vertical">
 
         <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/material_grey_50"
+                android:background="?attr/selectableItemBackground"
                 android:padding="16dp">
 
                 <TextView
@@ -42,4 +38,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:background="@drawable/shadow"/>
+
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:background="@color/backgroundWindow"/>
+
 </LinearLayout>
